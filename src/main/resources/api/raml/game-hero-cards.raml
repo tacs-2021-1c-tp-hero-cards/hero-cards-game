@@ -1,0 +1,159 @@
+#%RAML 1.0
+title: game hero cards
+version: v1
+baseUri: http://localhost:9090/api
+                    
+/sigin:
+  post:
+    body:
+      application/json:
+        example: example/sigin.raml
+/login:
+  post:
+    responses:
+      200:
+        body:
+          application/json:
+            example: example/login.raml
+/admin:
+  /users:
+    description: "Se debe poder seleccionar un usuario y ver sus estadísticas individuales"
+    /{userId}:
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                example: example/cards_get.raml
+  /scoreboards:
+    description: "Se debe proveer un scoreboard"
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: example/cards_get.raml
+  /stats:
+    description: "Se deben proveer estadísticas de cantidad de partidas creadas, en curso, terminadas y canceladas permitiendo seleccionar el rango de fechas"
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: example/cards_get.raml
+  /cards:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: example/cards_get.raml
+    /{cardId}:
+      post:
+        responses:
+          200:
+            body:
+              application/json:
+                example: example/cards_post.raml      
+      put:
+        responses:
+          200:
+            body:
+              application/json:
+                example: example/cards_post.raml        
+      delete:
+        responses:
+          204:
+  /decks:
+    description: "El administrador tiene la capacidad de manejar los mazos (crear, eliminar, modificar) y ponerles un nombre"
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: example/cards_get.raml
+    /{deckId}:
+      post:
+        responses:
+          200:
+            body:
+              application/json:
+                example: example/cards_get.raml
+      put:
+        responses:
+          200:
+            body:
+              application/json:
+                example: example/cards_get.raml
+      delete:
+        responses:
+          204:
+/users:
+    /logout:
+      post:
+        body:
+          application/json:
+            example: example/sigin.raml
+        responses:
+          200:
+            body:
+              application/json:
+    /decks:
+      description: "obtener el listado de mazos de cartas que hay"
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                example: example/cards_get.raml
+    /cards:
+      description: "Cualquier usuario debe poder buscar cartas por nombre y ver sus atributos. Adicionalmente se pide ver otros datos que devuelva la API"
+      get:
+        queryParameters:
+          search: string
+        responses:
+          200:
+            body:
+              application/json:
+                example: example/cards_get.raml
+      post:
+        description: "Se deben presentar las cartas con su imagen y atributos"
+        responses:
+          200:
+            body:
+              application/json:
+                example: example/cards_get.raml
+
+    /matches:
+      description: "Crear una nueva partida desafiando a otro usuario y seleccionando un mazo."
+      post:
+        body:
+          application/json:
+            example: example/cards_get.raml
+        responses:
+          200:
+            body:
+              application/json:
+                example: example/cards_get.raml
+      /{matchId}:
+        description: "Continuar una partida. Retorna el resultado de una partida y todas sus jugadas"
+        get:
+          responses:
+            200:
+              body:
+                application/json:
+                  example: example/cards_get.raml
+        post:
+          description: "continue the match"
+          body:
+            application/json:
+              example: example/cards_get.raml
+          responses:
+            200:
+              body:
+                application/json:
+                  example: example/cards_get.raml
+        delete:
+          description: "Abandonar/ Dar por perdida la partida."
+          responses:
+            204:
