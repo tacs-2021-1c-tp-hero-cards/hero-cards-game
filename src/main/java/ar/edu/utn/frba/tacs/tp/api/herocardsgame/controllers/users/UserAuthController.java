@@ -10,8 +10,6 @@ public class UserAuthController {
 
 
   @PostMapping("/logout")
-  public void logout() {
-
-  }
+  public void logout() { }
 
 }

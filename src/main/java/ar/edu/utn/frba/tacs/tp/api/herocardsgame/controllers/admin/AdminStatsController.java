@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class AdminStatsController {
 
   @GetMapping("/scoreboards")
-  public void getScoreBoards() {
-
-  }
+  public void getScoreBoards() { }
 
   @GetMapping("/stats")
   public void getStats() {

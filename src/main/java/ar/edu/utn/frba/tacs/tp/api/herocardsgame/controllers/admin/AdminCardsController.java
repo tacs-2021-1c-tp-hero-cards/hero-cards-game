@@ -13,21 +13,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping("/admin")
 public class AdminCardsController {
 
-
   @GetMapping("/cards")
-  public void getCards() {
-
-  }
+  public void getCards() { }
 
   @PostMapping("/cards")
   @RequestMapping(method = RequestMethod.POST, value = {"/cards/{cardId}"})
-  public void createCards(@PathVariable("cardId") String cardId) {
+  public void createCard(@PathVariable("cardId") String cardId) {
     System.out.println(cardId);
   }
 
   @PutMapping("/cards")
   @RequestMapping(method = RequestMethod.PUT, value = {"/cards/{cardId}"})
-  public void updateCards(@PathVariable("cardId") String cardId) {
+  public void updateCard(@PathVariable("cardId") String cardId) {
     System.out.println(cardId);
   }
 

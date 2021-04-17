@@ -21,7 +21,7 @@ public class UserCardsController {
 
   @PostMapping("/cards")
   @RequestMapping(method = RequestMethod.POST, value = {"/cards/{cardId}"})
-  public void createCards(@PathVariable("cardId") String cardId) {
+  public void createCard(@PathVariable("cardId") String cardId) {
     System.out.println(cardId);
   }
 

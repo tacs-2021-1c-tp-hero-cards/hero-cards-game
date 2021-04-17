@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Controller
 public class AccountsController {
 
-
   /**
    * TODO authentication with one of the following platforms
    * TODO We should validate username, password
