@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers.users;
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,29 +9,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
-@RequestMapping("/users")
-public class UserMatchController {
+public class MatchesController {
 
 
-  @GetMapping("/matches")
-  @RequestMapping(method = RequestMethod.GET, value = {"/matches/{matchId}"})
+  @GetMapping("/users/matches")
+  @RequestMapping(method = RequestMethod.GET, value = {"/users/matches/{matchId}"})
   public void getMatch(@PathVariable("matchId") String matchId) {
     System.out.println(matchId);
   }
 
-  @DeleteMapping("/matches")
-  @RequestMapping(method = RequestMethod.DELETE, value = {"/matches/{matchId}"})
+  @DeleteMapping("/users/matches")
+  @RequestMapping(method = RequestMethod.DELETE, value = {"/users/matches/{matchId}"})
   public void deleteMatch(@PathVariable("matchId") String matchId) {
     System.out.println(matchId);
   }
 
-  @PostMapping("/matches")
-  @RequestMapping(method = RequestMethod.POST, value = {"/matches/{matchId}"})
+  @PostMapping("/users/matches")
+  @RequestMapping(method = RequestMethod.POST, value = {"/users/matches/{matchId}"})
   public void continueMatch(@PathVariable("matchId") String matchId) {
     System.out.println(matchId);
   }
 
-  @PostMapping("/matches")
+  @PostMapping("/users/matches")
   public void createMatch() {
     System.out.println("create a new match");
   }

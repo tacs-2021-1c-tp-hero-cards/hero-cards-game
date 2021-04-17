@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers.admin;
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * y ponerles un nombre
  */
 @Controller
-@RequestMapping("/admin")
-public class AdminDecksController {
+public class DecksController {
 
 
   @GetMapping("/decks")
@@ -25,8 +24,8 @@ public class AdminDecksController {
    *  TODO we should validate all the cards added has attributes needed for the game.
    * @param deckId
    */
-  @PostMapping("/decks")
-  @RequestMapping(method = RequestMethod.POST, value = {"/decks/{deckId}"})
+  @PostMapping("/admin/decks")
+  @RequestMapping(method = RequestMethod.POST, value = {"/admin/decks/{deckId}"})
   public void createDeck(@PathVariable("deckId") String deckId) {
     System.out.println(deckId);
   }
@@ -35,14 +34,14 @@ public class AdminDecksController {
    * TODO use the same validation to create the deck
    * @param deckId
    */
-  @PutMapping("/decks")
-  @RequestMapping(method = RequestMethod.PUT, value = {"/decks/{deckId}"})
+  @PutMapping("/admin/decks")
+  @RequestMapping(method = RequestMethod.PUT, value = {"/admin/decks/{deckId}"})
   public void updateDeck(@PathVariable("deckId") String deckId) {
     System.out.println(deckId);
   }
 
-  @DeleteMapping("/decks")
-  @RequestMapping(method = RequestMethod.DELETE, value = {"/decks/{deckId}"})
+  @DeleteMapping("/admin/decks")
+  @RequestMapping(method = RequestMethod.DELETE, value = {"/admin/decks/{deckId}"})
   public void deleteDeck(@PathVariable("deckId") String deckId) {
     System.out.println(deckId);
   }

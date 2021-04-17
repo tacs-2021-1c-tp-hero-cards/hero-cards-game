@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers.admin;
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 @RequestMapping("/admin")
-public class AdminStatsController {
+public class StatsController {
 
   @GetMapping("/scoreboards")
   public void getScoreBoards() { }
