@@ -10,3 +10,7 @@
 ### How to Install Locally
 * `git clone git@github.com:tacs-2021-1c-tp-hero-cards/hero-cards-game.git`
 * Then Import settings.gradle using Intellij idea
+
+## Docker instructions
+* Run this command to build `docker build --build-arg JAR_FILE=build/libs/\*.jar -t springio/hero-cards-api .`
+* Run this command to run `docker run -p 8080:8080 springio/hero-cards-api`
