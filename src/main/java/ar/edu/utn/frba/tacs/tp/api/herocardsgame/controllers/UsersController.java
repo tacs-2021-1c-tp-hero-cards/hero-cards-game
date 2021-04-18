@@ -1,7 +1,10 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
+import static java.util.Collections.singletonList;
+
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Authentication;
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +39,8 @@ public class UsersController {
    * @param user
    * @return
    */
-  @PostMapping("/sigIn")
-  public ResponseEntity<Authentication>  sigIn(@RequestBody User user) {
+  @PostMapping("/signIn")
+  public ResponseEntity<Authentication>  signIn(@RequestBody User user) {
     System.out.println("user: " + user.getUsername() );
     final String token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjEifQ";
     final Authentication auth = new Authentication(token);
@@ -46,8 +49,11 @@ public class UsersController {
 
   @GetMapping("/admin/users")
   @RequestMapping(method = RequestMethod.GET, value = {"/admin/users/{userId}"})
-  public void getUsers(@PathVariable("userId") String userId) {
+  public ResponseEntity<List<User>> getUsers(@PathVariable("userId") String userId) {
     System.out.println(userId);
+    final User user = new User(userId, "fullname", "password", "token");
+    final List<User> users = singletonList(user);
+    return ResponseEntity.ok().body(users);
   }
 
   @PostMapping("/users/logout")
