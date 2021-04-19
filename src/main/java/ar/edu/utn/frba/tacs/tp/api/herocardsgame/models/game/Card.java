@@ -12,6 +12,19 @@ public class Card {
   private Integer combat;
   private Integer strength;
 
+  public Card(Long id, String name, Integer height, Integer weight, Integer intelligence, Integer speed, Integer power,
+              Integer combat, Integer strength) {
+    this.id = id;
+    this.name = name;
+    this.height = height;
+    this.weight = weight;
+    this.intelligence = intelligence;
+    this.speed = speed;
+    this.power = power;
+    this.combat = combat;
+    this.strength = strength;
+  }
+
   public Long getId() {
     return id;
   }
