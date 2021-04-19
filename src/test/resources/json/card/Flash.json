@@ -1,0 +1,11 @@
+{
+  "id": 2,
+  "name": "Flash",
+  "height": "180",
+  "weight":"80",
+  "intelligence": "70",
+  "speed":"85000000",
+  "power": "50",
+  "combat":"10",
+  "strength": "50"
+}

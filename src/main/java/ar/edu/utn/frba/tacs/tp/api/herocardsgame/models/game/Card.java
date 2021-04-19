@@ -2,6 +2,8 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game;
 
 public class Card {
 
+  private Long id;
+  private String name;
   private Integer height;
   private Integer weight;
   private Integer intelligence;
@@ -10,6 +12,13 @@ public class Card {
   private Integer combat;
   private Integer strength;
 
+  public Long getId() {
+    return id;
+  }
+
+  public String getName() {
+    return name;
+  }
 
   public Integer getHeight() {
     return height;
