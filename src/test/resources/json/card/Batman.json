@@ -1,0 +1,11 @@
+{
+  "id": 1,
+  "name": "Batman",
+  "height": "203",
+  "weight":"106",
+  "intelligence": "50",
+  "speed":"85",
+  "power": "78",
+  "combat":"12",
+  "strength": "500"
+}

@@ -1,40 +1,42 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card;
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.FileConstructorUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Controller
 public class CardsController {
-
+    
   @GetMapping("/cards")
   @RequestMapping(method = RequestMethod.GET, value = {"/users/cards"})
-  public void getCards(@RequestParam("search") String search) {
-    System.out.println(search);
+  public ResponseEntity<List<Card>> getCards() {
+    Card batman = FileConstructorUtils.createFromFile("src/test/resources/json/card/Batman.json", Card.class);
+    Card flash = FileConstructorUtils.createFromFile("src/test/resources/json/card/Flash.json", Card.class);
+    return ResponseEntity.status(HttpStatus.OK).body(Arrays.asList(batman, flash));
   }
 
   @PostMapping("/admin/cards")
-  @RequestMapping(method = RequestMethod.POST, value = {"/admin/cards/{cardId}"})
-  public void createCard(@PathVariable("cardId") String cardId) {
-    System.out.println(cardId);
+  @RequestMapping(method = RequestMethod.POST, value = {"/admin/cards"})
+  public ResponseEntity<Card> createCard(@RequestBody Card card) {
+    return ResponseEntity.status(HttpStatus.CREATED).body(card);
   }
 
   @PutMapping("/admin/cards")
   @RequestMapping(method = RequestMethod.PUT, value = {"/admin/cards/{cardId}"})
-  public void updateCard(@PathVariable("cardId") String cardId) {
-    System.out.println(cardId);
+  public ResponseEntity updateCard(@PathVariable("cardId") String cardId, @RequestBody Card card) {
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @DeleteMapping("/admin/cards")
   @RequestMapping(method = RequestMethod.DELETE, value = {"/admin/cards/{cardId}"})
-  public void deleteCard(@PathVariable("cardId") String cardId) {
-    System.out.println(cardId);
+  public ResponseEntity deleteCard(@PathVariable("cardId") String cardId) {
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   /**
@@ -47,6 +49,5 @@ public class CardsController {
   public void presentCard(@PathVariable("cardId") String cardId) {
     System.out.println(cardId);
   }
-
 
 }
