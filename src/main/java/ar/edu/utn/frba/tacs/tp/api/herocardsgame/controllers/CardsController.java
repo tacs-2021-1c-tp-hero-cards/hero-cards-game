@@ -13,8 +13,7 @@ import java.util.List;
 @Controller
 public class CardsController {
     
-  @GetMapping("/cards")
-  @RequestMapping(method = RequestMethod.GET, value = {"/users/cards"})
+  @GetMapping("/users/cards")
   public ResponseEntity<List<Card>> getCards() {
     Card batman = FileConstructorUtils.createFromFile("src/test/resources/json/card/Batman.json", Card.class);
     Card flash = FileConstructorUtils.createFromFile("src/test/resources/json/card/Flash.json", Card.class);
@@ -22,19 +21,17 @@ public class CardsController {
   }
 
   @PostMapping("/admin/cards")
-  @RequestMapping(method = RequestMethod.POST, value = {"/admin/cards"})
   public ResponseEntity<Card> createCard(@RequestBody Card card) {
     return ResponseEntity.status(HttpStatus.CREATED).body(card);
   }
 
-  @PutMapping("/admin/cards")
-  @RequestMapping(method = RequestMethod.PUT, value = {"/admin/cards/{cardId}"})
+
+  @PutMapping("/admin/cards/{cardId}")
   public ResponseEntity updateCard(@PathVariable("cardId") String cardId, @RequestBody Card card) {
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
-  @DeleteMapping("/admin/cards")
-  @RequestMapping(method = RequestMethod.DELETE, value = {"/admin/cards/{cardId}"})
+  @DeleteMapping("/admin/cards/{cardId}")
   public ResponseEntity deleteCard(@PathVariable("cardId") String cardId) {
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
