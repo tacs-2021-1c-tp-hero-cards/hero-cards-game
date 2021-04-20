@@ -27,7 +27,7 @@ dependencies {
 	testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.7.0'
 	testImplementation group: 'org.junit.platform', name: 'junit-platform-runner', version: '1.7.0'
 
-	testCompile group: 'junit', name: 'junit'
+	testCompileOnly group: 'junit', name: 'junit'
 }
 
 test {

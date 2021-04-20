@@ -25,6 +25,7 @@ public class CardsController {
     return ResponseEntity.status(HttpStatus.CREATED).body(card);
   }
 
+
   @PutMapping("/admin/cards/{cardId}")
   public ResponseEntity updateCard(@PathVariable("cardId") String cardId, @RequestBody Card card) {
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
