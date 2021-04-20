@@ -1,0 +1,74 @@
+{
+  "id": 1,
+  "players": [
+    {
+      "username": "Heisenberg",
+      "availableCards": [],
+      "prizeCards": []
+    },
+    {
+      "username": "Diesel",
+      "availableCards": [],
+      "prizeCards": [
+        {
+          "id": 2,
+          "name": "Flash",
+          "powerstats": {
+            "height": "180",
+            "weight": "80",
+            "intelligence": "70",
+            "speed": "85000000",
+            "power": "50",
+            "combat": "10",
+            "strength": "50"
+          }
+        },
+        {
+          "id": 1,
+          "name": "Batman",
+          "powerstats": {
+            "height": "203",
+            "weight": "106",
+            "intelligence": "50",
+            "speed": "85",
+            "power": "78",
+            "combat": "12",
+            "strength": "500"
+          }
+        }
+      ]
+    }
+  ],
+  "deck": {
+    "id": 42,
+    "name": "Justice League",
+    "cards": [
+      {
+        "id": 1,
+        "name": "Batman",
+        "powerstats": {
+          "height": "203",
+          "weight": "106",
+          "intelligence": "50",
+          "speed": "85",
+          "power": "78",
+          "combat": "12",
+          "strength": "500"
+        }
+      },
+      {
+        "id": 2,
+        "name": "Flash",
+        "powerstats": {
+          "height": "180",
+          "weight": "80",
+          "intelligence": "70",
+          "speed": "85000000",
+          "power": "50",
+          "combat": "10",
+          "strength": "50"
+        }
+      }
+    ]
+  }
+}
