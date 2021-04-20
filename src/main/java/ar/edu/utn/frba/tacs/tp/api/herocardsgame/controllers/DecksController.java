@@ -23,8 +23,8 @@ public class DecksController {
 
   @GetMapping("/users/decks")
   public ResponseEntity<List<Deck>> getDecks() {
-    Card batman = FileConstructorUtils.createFromFile("src/test/resources/json/card/Batman.json", Card.class);
-    Card flash = FileConstructorUtils.createFromFile("src/test/resources/json/card/Flash.json", Card.class);
+    Card batman = FileConstructorUtils.createFromFile("src/main/resources/json/card/Batman.json", Card.class);
+    Card flash = FileConstructorUtils.createFromFile("src/main/resources/json/card/Flash.json", Card.class);
 
     Deck batmanDeck = new Deck(1L, "Batman deck", Collections.singletonList(batman));
     Deck flashDeck = new Deck(2L, "Justice League deck", Arrays.asList(batman, flash));

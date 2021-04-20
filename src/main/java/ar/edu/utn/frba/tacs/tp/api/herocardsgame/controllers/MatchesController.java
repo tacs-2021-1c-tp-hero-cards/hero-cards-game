@@ -16,7 +16,7 @@ public class MatchesController {
 
   @GetMapping("/users/matches/{matchId}")
   public ResponseEntity<Match> getMatch(@PathVariable("matchId") String matchId) {
-    Match match = FileConstructorUtils.createFromFile("src/test/resources/json/match/MatchExample1.json", Match.class);
+    Match match = FileConstructorUtils.createFromFile("src/main/resources/json/match/MatchExample1.json", Match.class);
     return ResponseEntity.status(HttpStatus.OK).body(match);
   }
 
@@ -27,13 +27,13 @@ public class MatchesController {
 
   @PostMapping("/users/matches/{matchId}/nextDuel")
   public ResponseEntity continueMatch(@PathVariable("matchId") String matchId) {
-    Match match = FileConstructorUtils.createFromFile("src/test/resources/json/match/MatchExample2.json", Match.class);
+    Match match = FileConstructorUtils.createFromFile("src/main/resources/json/match/MatchExample2.json", Match.class);
     return ResponseEntity.status(HttpStatus.OK).body(match);
   }
 
   @PostMapping("/users/matches")
   public ResponseEntity<Match> createMatch() {
-    Match match = FileConstructorUtils.createFromFile("src/test/resources/json/match/MatchExample1.json", Match.class);
+    Match match = FileConstructorUtils.createFromFile("src/main/resources/json/match/MatchExample1.json", Match.class);
     return ResponseEntity.status(HttpStatus.CREATED).body(match);
   }
 

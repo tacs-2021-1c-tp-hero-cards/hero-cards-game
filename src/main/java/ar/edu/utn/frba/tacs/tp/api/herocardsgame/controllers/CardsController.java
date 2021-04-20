@@ -15,8 +15,9 @@ public class CardsController {
     
   @GetMapping("/users/cards")
   public ResponseEntity<List<Card>> getCards() {
-    Card batman = FileConstructorUtils.createFromFile("src/test/resources/json/card/Batman.json", Card.class);
-    Card flash = FileConstructorUtils.createFromFile("src/test/resources/json/card/Flash.json", Card.class);
+    Card batman = FileConstructorUtils.createFromFile("src/main/resources/json/card/Batman.json", Card.class);
+    Card flash = FileConstructorUtils.createFromFile("src/main/resources/json/card/Flash.json", Card.class);
+
     return ResponseEntity.status(HttpStatus.OK).body(Arrays.asList(batman, flash));
   }
 
