@@ -47,8 +47,7 @@ public class UsersController {
     return ResponseEntity.ok().body(auth);
   }
 
-  @GetMapping("/admin/users")
-  @RequestMapping(method = RequestMethod.GET, value = {"/admin/users/{userId}"})
+  @GetMapping("/admin/users/{userId}")
   public ResponseEntity<List<User>> getUsers(@PathVariable("userId") String userId) {
     System.out.println(userId);
     final User user = new User(userId, "fullname", "password", "token");
