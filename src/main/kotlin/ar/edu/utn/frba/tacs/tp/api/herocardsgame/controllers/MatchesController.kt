@@ -1,14 +1,12 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match;
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateMatchRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.FileConstructorUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*
 
 @Controller
 class MatchesController {
@@ -31,7 +29,7 @@ class MatchesController {
     }
 
     @PostMapping("/users/matches")
-    fun createMatch(): ResponseEntity<Match> {
+    fun createMatch(@RequestBody createMatchRequest: CreateMatchRequest): ResponseEntity<Match> {
         val match = FileConstructorUtils.createFromFile("src/main/resources/json/match/MatchExample1.json", Match::class.java);
         return ResponseEntity.status(HttpStatus.CREATED).body(match);
     }
