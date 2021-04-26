@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*
 @Controller
 class DecksController {
 
-    @GetMapping("/users/decks")
+    @GetMapping("/decks")
     fun getDecks(): ResponseEntity<List<Deck>> {
         val batman = FileConstructorUtils.createFromFile("src/main/resources/json/card/Batman.json", Card::class.java);
         val flash = FileConstructorUtils.createFromFile("src/main/resources/json/card/Flash.json", Card::class.java);
