@@ -20,7 +20,7 @@ class UsersController {
      * @param user
      * @return
      */
-    @PostMapping("/login")
+    @PostMapping("/logIn")
     fun login(@RequestBody user: User): ResponseEntity<Authentication> {
         println("user: " + user.username);
         val token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjEifQ";
@@ -35,7 +35,7 @@ class UsersController {
      * @param user
      * @return
      */
-    @PostMapping("/signIn")
+    @PostMapping("/signUp")
     fun signIn(@RequestBody user: User): ResponseEntity<Authentication> {
         println("user: " + user.username);
         val token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjEifQ";
