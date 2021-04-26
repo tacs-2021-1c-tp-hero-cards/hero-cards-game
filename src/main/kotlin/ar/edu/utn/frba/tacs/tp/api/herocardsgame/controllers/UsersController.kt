@@ -51,7 +51,7 @@ class UsersController {
         return ResponseEntity.ok().body(users);
     }
 
-    @PostMapping("/users/logout")
+    @PostMapping("/logOut")
     fun logout(): ResponseEntity<Void> {
         println("logout");
         return ResponseEntity.ok().build();
