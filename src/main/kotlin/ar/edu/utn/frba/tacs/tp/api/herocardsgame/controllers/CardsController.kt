@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card;
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.FileConstructorUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

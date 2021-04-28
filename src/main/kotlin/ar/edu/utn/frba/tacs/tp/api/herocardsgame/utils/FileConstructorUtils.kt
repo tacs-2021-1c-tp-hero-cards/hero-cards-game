@@ -14,5 +14,13 @@ class FileConstructorUtils {
                 throw RuntimeException(e);
             }
         }
+
+        fun <T> createFromContent(content: String, classReturn: Class<T>): T {
+            try {
+                return Gson().fromJson(content, classReturn)
+            } catch (e: IOException) {
+                throw RuntimeException(e);
+            }
+        }
     }
 }

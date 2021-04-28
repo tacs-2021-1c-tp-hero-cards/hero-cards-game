@@ -24,6 +24,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 
 	implementation("com.google.code.gson", "gson", "2.8.6")
+
+	implementation("com.squareup.okhttp3:okhttp:4.9.1")
+	implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
+
 	testImplementation("org.junit.jupiter", "junit-jupiter-api","5.7.0")
 	testImplementation("org.junit.jupiter", "junit-jupiter-engine", "5.7.0")
 	testImplementation("org.junit.platform", "junit-platform-launcher")
@@ -52,4 +56,8 @@ tasks.jacocoTestReport {
 		csv.isEnabled = false
 		html.destination = layout.buildDirectory.dir("jacocoHtml").get().asFile
 	}
+}
+
+tasks.withType<Test> {
+		environment("ACCESS_TOKEN","10226310284967175")
 }
