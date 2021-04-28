@@ -57,3 +57,7 @@ tasks.jacocoTestReport {
 		html.destination = layout.buildDirectory.dir("jacocoHtml").get().asFile
 	}
 }
+
+tasks.withType<Test> {
+		environment("ACCESS_TOKEN","10226310284967175")
+}
