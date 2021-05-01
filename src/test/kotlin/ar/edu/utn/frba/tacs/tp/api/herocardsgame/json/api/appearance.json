@@ -1,0 +1,17 @@
+{
+  "response": "success",
+  "id": "70",
+  "name": "Batman",
+  "gender": "Male",
+  "race": "Human",
+  "height": [
+    "6'2",
+    "188 cm"
+  ],
+  "weight": [
+    "210 lb",
+    "95 kg"
+  ],
+  "eye-color": "blue",
+  "hair-color": "black"
+}
