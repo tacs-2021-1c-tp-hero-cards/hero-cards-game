@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 class CardsController(val superHeroIntegration: SuperHeroIntegration) {
 
-    @GetMapping("/card/{card-id}")
+    @GetMapping("/cards/{card-id}")
     fun getCard(@PathVariable("card-id") cardId: String): ResponseEntity<Card> {
         return try {
             val card = superHeroIntegration.getCard(cardId)
@@ -21,10 +21,10 @@ class CardsController(val superHeroIntegration: SuperHeroIntegration) {
         }
     }
 
-    @GetMapping("/card/search/{name-card}")
-    fun getCardByName(@PathVariable("name-card") nameCard: String): ResponseEntity<List<Card>> {
+    @GetMapping("/cards/search/{name-card}")
+    fun getCardByName(@PathVariable("card-name") cardName: String): ResponseEntity<List<Card>> {
         return try {
-            val card = superHeroIntegration.searchCardByName(nameCard)
+            val card = superHeroIntegration.searchCardByName(cardName)
             ResponseEntity.status(HttpStatus.OK).body(card)
         } catch (e: ElementNotFoundException) {
             ResponseEntity.status(HttpStatus.NOT_FOUND).build()

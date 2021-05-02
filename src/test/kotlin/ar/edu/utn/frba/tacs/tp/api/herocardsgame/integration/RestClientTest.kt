@@ -22,12 +22,12 @@ internal class RestClientTest {
     @Test
     fun buildUrlWithUriParams() {
         val buildUrl = instance.buildUrl("/{}/powerstats", "id")
-        assertEquals("https//test.com/api/ACCESS_TOKEN/id/powerstats", buildUrl)
+        assertEquals("https://test.com/api/ACCESS_TOKEN/id/powerstats", buildUrl)
     }
 
     @Test
     fun buildUrlWithOutUriParams() {
         val buildUrl = instance.buildUrl("/search/name")
-        assertEquals("https//test.com/api/ACCESS_TOKEN/search/name", buildUrl)
+        assertEquals("https://test.com/api/ACCESS_TOKEN/search/name", buildUrl)
     }
 }
