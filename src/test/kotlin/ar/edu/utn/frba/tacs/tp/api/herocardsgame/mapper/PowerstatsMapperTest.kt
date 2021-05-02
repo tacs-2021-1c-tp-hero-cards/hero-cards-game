@@ -1,8 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.api.AppearanceApi
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.api.CharacterApi
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.api.PowerstatsApi
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.AppearanceApi
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.PowerstatsApi
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.FileConstructorUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

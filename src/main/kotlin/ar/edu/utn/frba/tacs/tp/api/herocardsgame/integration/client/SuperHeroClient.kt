@@ -1,8 +1,8 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.api.CharacterApi
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.api.CharactersSearchApi
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.CharacterApi
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.CharactersSearchApi
 import org.springframework.stereotype.Component
 
 @Component

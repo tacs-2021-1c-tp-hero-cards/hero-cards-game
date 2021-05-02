@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.api
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api
 
 data class WorkApi(
     val response: String,

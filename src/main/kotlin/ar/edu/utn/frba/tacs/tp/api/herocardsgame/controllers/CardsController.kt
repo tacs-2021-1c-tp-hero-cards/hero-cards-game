@@ -12,24 +12,22 @@ import org.springframework.web.bind.annotation.*;
 class CardsController(val superHeroIntegration: SuperHeroIntegration) {
 
     @GetMapping("/cards/{card-id}")
-    fun getCard(@PathVariable("card-id") cardId: String): ResponseEntity<Card> {
-        return try {
+    fun getCard(@PathVariable("card-id") cardId: String): ResponseEntity<Card> =
+        try {
             val card = superHeroIntegration.getCard(cardId)
             ResponseEntity.status(HttpStatus.OK).body(card)
         } catch (e: ElementNotFoundException) {
             ResponseEntity.status(HttpStatus.NOT_FOUND).build()
         }
-    }
 
-    @GetMapping("/cards/search/{name-card}")
-    fun getCardByName(@PathVariable("card-name") cardName: String): ResponseEntity<List<Card>> {
-        return try {
+    @GetMapping("/cards/search/{card-name}")
+    fun getCardByName(@PathVariable("card-name") cardName: String): ResponseEntity<List<Card>> =
+        try {
             val card = superHeroIntegration.searchCardByName(cardName)
             ResponseEntity.status(HttpStatus.OK).body(card)
         } catch (e: ElementNotFoundException) {
             ResponseEntity.status(HttpStatus.NOT_FOUND).build()
         }
-    }
 
     //Hace falta definir estos servicios???
 

@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.api.CharacterApi
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.api.CharactersSearchApi
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.CharacterApi
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.CharactersSearchApi
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 import org.springframework.stereotype.Component
 

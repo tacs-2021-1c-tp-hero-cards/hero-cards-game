@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client
 
 import com.google.gson.Gson
 import okhttp3.OkHttpClient

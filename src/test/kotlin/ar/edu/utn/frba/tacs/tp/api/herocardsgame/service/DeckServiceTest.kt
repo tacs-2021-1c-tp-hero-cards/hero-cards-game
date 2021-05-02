@@ -1,9 +1,10 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.service
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.DeckIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.SuperHeroIntegration
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.FileConstructorUtils
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
@@ -11,72 +12,57 @@ import org.mockito.Mockito.*
 internal class DeckServiceTest {
 
     private val superHeroIntegrationMock = mock(SuperHeroIntegration::class.java)
-    private val instance = DeckService(superHeroIntegrationMock)
+    private val deckIntegrationMock = mock(DeckIntegration::class.java)
+    private val instance = DeckService(superHeroIntegrationMock, deckIntegrationMock)
 
-    private val idDeck = 0L
-    private val nameDeck = "testDeck"
+    private val deckId = 0L
+    private val deckName = "testDeck"
+    private val batman = BuilderContextUtils.buildBatman()
+    private val flash = BuilderContextUtils.buildFlash()
 
     @Test
-    fun buildDeck_ok() {
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(buildBatman())
-        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(buildFlash())
+    fun addDeck() {
+        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(batman)
+        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(flash)
+        `when`(deckIntegrationMock.calculateId()).thenReturn(deckId)
 
-        val deck = instance.addDeck(nameDeck, listOf("1", "2"))
-        assertEquals(idDeck, deck.id)
-        assertEquals(nameDeck, deck.name)
+        instance.addDeck(deckName, listOf("1", "2"))
+
+        verify(deckIntegrationMock, times(1))
+            .saveDeck(deck = Deck(name = deckName, cards = listOf(batman, flash)))
+    }
+
+    @Test
+    fun addDeckWithId() {
+        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(batman)
+        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(flash)
+
+        instance.addDeck(deckName, listOf("1", "2"))
+
+        verify(deckIntegrationMock, times(1))
+            .saveDeck(0L, Deck(name = deckName, cards = listOf(batman, flash)))
+    }
+
+    @Test
+    fun deleteDeck() {
+        instance.deleteDeck(deckId.toString())
+        verify(deckIntegrationMock, times(1)).deleteDeck(deckId)
+    }
+
+    @Test
+    fun buildDeck() {
+        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(batman)
+        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(flash)
+
+        val deck = instance.buildDeck(deckName, listOf("1", "2"))
+        assertNull(deck.id)
+        assertEquals(deckName, deck.name)
         assertEquals(2, deck.cards.size)
-        assertEquals(1, instance.getAllDeck().size)
-    }
-
-    @Test
-    fun searchDeck() {
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(buildBatman())
-        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(buildFlash())
-
-        val batmanDeck = instance.addDeck("batmanDeck", listOf("1"))
-        val flashDeck = instance.addDeck("flashDeck", listOf("2"))
-
-        val searchDecks = instance.searchDeck(flashDeck.id.toString(), batmanDeck.name)
-        assertEquals(0, searchDecks.size)
-    }
-
-    @Test
-    fun searchDeckByName() {
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(buildBatman())
-        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(buildFlash())
-
-        val batmanDeck = instance.addDeck("batmanDeck", listOf("1"))
-        instance.addDeck("flashDeck", listOf("2"))
-
-        val searchDecks = instance.searchDeck(null, "batmanDeck")
-        assertEquals(1, searchDecks.size)
-
-        val searchDeck = searchDecks.first()
-        assertEquals(batmanDeck.name, searchDeck.name)
-        assertEquals(batmanDeck.id, searchDeck.id)
-        assertEquals(batmanDeck.cards, searchDeck.cards)
-    }
-
-    @Test
-    fun searchDeckById() {
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(buildBatman())
-        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(buildFlash())
-
-        instance.addDeck("batmanDeck", listOf("1"))
-        val flashDeck = instance.addDeck("flashDeck", listOf("2"))
-
-        val searchDecks = instance.searchDeck(flashDeck.id.toString(), null)
-        assertEquals(1, searchDecks.size)
-
-        val searchDeck = searchDecks.first()
-        assertEquals(flashDeck.name, searchDeck.name)
-        assertEquals(flashDeck.id, searchDeck.id)
-        assertEquals(flashDeck.cards, searchDeck.cards)
     }
 
     @Test
     fun addCardInDeckNotFoundDeck() {
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(buildBatman())
+        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(batman)
         assertThrows(ElementNotFoundException::class.java) {
             instance.addCardInDeck("deckId", "1")
         }
@@ -92,22 +78,21 @@ internal class DeckServiceTest {
 
     @Test
     fun addCardInDeck() {
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(buildBatman())
-        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(buildFlash())
+        val deck = Deck(deckId, deckName, listOf(batman))
+        `when`(deckIntegrationMock.getAllDeck())
+            .thenReturn(listOf(deck))
+        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(flash)
 
-        val deck = instance.addDeck("batmanDeck", listOf("1"))
+        instance.addCardInDeck(deckId.toString(), "2")
 
-        instance.addCardInDeck(deck.id.toString(), "2")
-
-        val foundDeck = instance.getAllDeck().first()
-        assertEquals(deck.name, foundDeck.name)
-        assertEquals(deck.id, foundDeck.id)
-        assertEquals(2, foundDeck.cards.size)
+        assertEquals(deckName, deck.name)
+        assertEquals(deckId, deck.id)
+        assertEquals(2, deck.cards.size)
     }
 
     @Test
     fun deleteCardInDeckNotFoundDeck() {
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(buildBatman())
+        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(batman)
         assertThrows(ElementNotFoundException::class.java) {
             instance.deleteCardInDeck("deckId", "1")
         }
@@ -123,37 +108,91 @@ internal class DeckServiceTest {
 
     @Test
     fun deleteCardInDeck() {
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(buildBatman())
-        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(buildFlash())
+        val deck = Deck(deckId, deckName, listOf(batman, flash))
+        `when`(deckIntegrationMock.getAllDeck())
+            .thenReturn(listOf(deck))
 
-        val deck = instance.addDeck("batmanDeck", listOf("1","2"))
+        instance.deleteCardInDeck(deckId.toString(), "2")
 
-        instance.deleteCardInDeck(deck.id.toString(), "2")
-
-        val foundDeck = instance.getAllDeck().first()
-        assertEquals(deck.name, foundDeck.name)
-        assertEquals(deck.id, foundDeck.id)
-        assertEquals(1, foundDeck.cards.size)
+        assertEquals(deckName, deck.name)
+        assertEquals(deckId, deck.id)
+        assertEquals(1, deck.cards.size)
     }
 
     @Test
-    fun deleteDeck(){
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(buildBatman())
-        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(buildFlash())
+    fun searchDeck() {
+        val deck = Deck(deckId, deckName, listOf(batman, flash))
+        val deck2 = Deck(1L, deckName, listOf(batman, flash))
+        val deck3 = Deck(deckId, "testDeck2", listOf(batman, flash))
+        `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(deck, deck2, deck3))
 
-        val deck = instance.addDeck("batmanDeck", listOf("1", "2"))
-        instance.deleteDeck(deck.id.toString())
+        val foundDecks = instance.searchDeck(deckId.toString(), deckName)
+        assertEquals(1, foundDecks.size)
 
-        assertTrue(instance.getAllDeck().isEmpty())
+        val foundDeck = foundDecks.first()
+        assertEquals(deck, foundDeck)
     }
 
-    private fun buildBatman() = FileConstructorUtils.createFromFile(
-        "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/card/Batman.json",
-        Card::class.java
-    )
+    @Test
+    fun searchDeckByName() {
+        val deck = Deck(deckId, deckName, listOf(batman, flash))
+        val deck2 = Deck(deckId, "testDeck2", listOf(batman, flash))
+        `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(deck, deck2))
 
-    private fun buildFlash() = FileConstructorUtils.createFromFile(
-        "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/card/Flash.json",
-        Card::class.java
-    )
+        val foundDecks = instance.searchDeck(deckId.toString(), deckName)
+        assertEquals(1, foundDecks.size)
+
+        val foundDeck = foundDecks.first()
+        assertEquals(deck, foundDeck)
+    }
+
+    @Test
+    fun searchDeckById() {
+        val deck = Deck(deckId, deckName, listOf(batman, flash))
+        val deck2 = Deck(1L, deckName, listOf(batman, flash))
+        `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(deck, deck2))
+
+        val foundDecks = instance.searchDeck(deckId.toString(), deckName)
+        assertEquals(1, foundDecks.size)
+
+        val foundDeck = foundDecks.first()
+        assertEquals(deck, foundDeck)
+    }
+
+    @Test
+    fun updateDeckCardsWithEmptyCards() {
+        val deck = Deck(deckId, deckName, listOf(batman, flash))
+        instance.updateDeckCards(deck, emptyList())
+        verify(superHeroIntegrationMock, times(0)).getCard(anyString())
+    }
+
+    @Test
+    fun updateDeckByName() {
+        val deck = Deck(deckId, deckName, listOf(batman))
+
+        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(batman)
+        `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(deck))
+
+        instance.updateDeck(deckId.toString(), "deckName2", emptyList())
+
+        assertEquals("deckName2", deck.name)
+        val cards = deck.cards
+        assertEquals(1, cards.size)
+        assertEquals(batman, cards.first())
+    }
+
+    @Test
+    fun updateDeckByCards() {
+        val deck = Deck(deckId, deckName, listOf(batman))
+
+        `when`(superHeroIntegrationMock.getCard("2")).thenReturn(flash)
+        `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(deck))
+
+        instance.updateDeck(deckId.toString(), null, listOf("2"))
+
+        assertEquals(deckName, deck.name)
+        val cards = deck.cards
+        assertEquals(1, cards.size)
+        assertEquals(flash, cards.first())
+    }
 }

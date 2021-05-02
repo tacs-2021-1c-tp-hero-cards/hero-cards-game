@@ -1,10 +1,9 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.RestClient
 import okhttp3.OkHttpClient
-import okhttp3.Response
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 
 internal class RestClientTest {
