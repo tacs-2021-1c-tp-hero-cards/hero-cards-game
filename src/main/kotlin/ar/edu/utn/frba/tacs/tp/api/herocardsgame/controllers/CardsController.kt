@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 class CardsController(val superHeroIntegration: SuperHeroIntegration) {
 
+    /**
+     * @param cardId
+     * @return card
+     */
     @GetMapping("/cards/{card-id}")
     fun getCard(@PathVariable("card-id") cardId: String): ResponseEntity<Card> =
         try {
@@ -20,6 +24,10 @@ class CardsController(val superHeroIntegration: SuperHeroIntegration) {
             ResponseEntity.status(HttpStatus.NOT_FOUND).build()
         }
 
+    /**
+     * @param cardName
+     * @return list of card
+     */
     @GetMapping("/cards/search/{card-name}")
     fun getCardByName(@PathVariable("card-name") cardName: String): ResponseEntity<List<Card>> =
         try {

@@ -22,7 +22,7 @@ class UsersController(
 
     /**
      * @param createUserRequest
-     * @return
+     * @return userId
      */
     @PostMapping("/signUp")
     fun signUp(@RequestBody createUserRequest: CreateUserRequest): ResponseEntity<Long> =
@@ -40,7 +40,7 @@ class UsersController(
 
     /**
      * @param activateUserSessionRequest
-     * @return
+     * @return authentication
      */
     @PostMapping("/logIn")
     fun logIn(@RequestBody activateUserSessionRequest: ActivateUserSessionRequest): ResponseEntity<Authentication> =
@@ -70,7 +70,7 @@ class UsersController(
 
     /**
      * @param userId
-     * @return
+     * @return list of users
      */
     @GetMapping("/admin/users/{user-id}")
     fun getUsers(@PathVariable("user-id") userId: String): ResponseEntity<List<User>> =
