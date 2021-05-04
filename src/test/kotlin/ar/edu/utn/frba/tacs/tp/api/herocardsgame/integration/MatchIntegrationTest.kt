@@ -21,7 +21,7 @@ internal class MatchIntegrationTest{
         val match = Match(matchId, emptyList(), deckTest, MatchStatus.IN_PROGRESS)
         matchesInProgressMapMock[0L] = match
 
-        val allMatchesInProgress = instance.getAllMatchesInProgress()
+        val allMatchesInProgress = instance.getAllMatches()
         assertEquals(1, allMatchesInProgress.size)
 
         val found = allMatchesInProgress.first()

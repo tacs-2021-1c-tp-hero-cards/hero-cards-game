@@ -61,4 +61,28 @@ internal class MatchServiceTest {
         assertEquals(player, otherPlayers.first())
         assertEquals(otherPlayer, otherPlayers.last())
     }
+
+    @Test
+    fun searchMatchById() {
+        val player = Player(userName = userName)
+        val otherPlayer = Player(userName = otherUserName)
+
+        `when`(matchIntegrationMock.getAllMatches()).thenReturn(
+            listOf(
+                Match(
+                    0L,
+                    listOf(player),
+                    deck,
+                    MatchStatus.IN_PROGRESS
+                ), Match(1L, listOf(otherPlayer), deck, MatchStatus.FINALIZED)
+            )
+        )
+
+        val matchFound = instance.searchMatchById("1")
+
+        assertEquals(1L, matchFound.id)
+        assertEquals(deck, matchFound.deck)
+        assertEquals(MatchStatus.FINALIZED, matchFound.status)
+        assertEquals(otherPlayer, matchFound.players.first())
+    }
 }

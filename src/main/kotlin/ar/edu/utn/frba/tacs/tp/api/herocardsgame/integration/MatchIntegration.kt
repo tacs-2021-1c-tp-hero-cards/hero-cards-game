@@ -6,22 +6,22 @@ import org.springframework.stereotype.Component
 
 @Component
 class MatchIntegration(
-    private val matchesInProgressMap: HashMap<Long, Match> = hashMapOf()
+    private val matchesMap: HashMap<Long, Match> = hashMapOf()
 ) {
 
-    fun getAllMatchesInProgress(): List<Match> = matchesInProgressMap.values.toList()
+    fun getAllMatches(): List<Match> = matchesMap.values.toList()
 
     fun saveMatch(match: Match): Match {
         val id = calculateId()
         match.updateId(id)
-        matchesInProgressMap[id] = match
+        matchesMap[id] = match
         return match
     }
 
-    fun calculateId(): Long = matchesInProgressMap.size.toLong()
+    fun calculateId(): Long = matchesMap.size.toLong()
 
     fun updateStatus(id: Long, newStatus: MatchStatus): Match{
-        val match = matchesInProgressMap[id]!!
+        val match = matchesMap[id]!!
         match.updateStatus(newStatus)
         return match
     }

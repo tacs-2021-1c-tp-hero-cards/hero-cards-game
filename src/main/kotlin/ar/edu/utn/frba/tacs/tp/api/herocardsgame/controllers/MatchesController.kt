@@ -3,7 +3,6 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match;
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateMatchRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.MatchService
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.UserService
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.FileConstructorUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +12,9 @@ import org.springframework.web.bind.annotation.*
 @Controller
 class MatchesController(private val matchService: MatchService) {
 
-    @GetMapping("/users/matches/{matchId}")
-    fun getMatch(@PathVariable("matchId") matchId: String): ResponseEntity<Match> {
-        val match =
-            FileConstructorUtils.createFromFile("src/main/resources/json/match/MatchExample1.json", Match::class.java);
-        return ResponseEntity.status(HttpStatus.OK).body(match);
-    }
+    @GetMapping("/users/matches/{match-id}")
+    fun getMatch(@PathVariable("match-id") matchId: String): ResponseEntity<Match> =
+        ResponseEntity.status(HttpStatus.OK).body(matchService.searchMatchById(matchId))
 
     @DeleteMapping("/users/matches/{matchId}")
     fun deleteMatch(@PathVariable("matchId") matchId: String): ResponseEntity<Void> {

@@ -19,7 +19,7 @@ class MatchService(
     }
 
     fun buildPlayers(usersId: List<String>, deck: Deck): List<Player> {
-        var players = usersId.map{
+        var players = usersId.map {
             val searchUser = userService.searchUser(id = it.toLong()).first()
             Player(userName = searchUser.userName)
         }
@@ -35,5 +35,7 @@ class MatchService(
     }
 
     fun newShift(players: List<Player>): List<Player> = players.drop(1) + players.first()
+
+    fun searchMatchById(matchId: String): Match = matchIntegration.getAllMatches().first { matchId.toLong() == it.id }
 
 }
