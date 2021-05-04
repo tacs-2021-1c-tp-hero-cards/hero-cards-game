@@ -39,7 +39,7 @@ class DecksController(
     fun createDeck(@RequestBody createDeckRequest: CreateDeckRequest): ResponseEntity<Deck> =
         ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(deckService.addDeck(createDeckRequest.cardName, createDeckRequest.cardIds));
+            .body(deckService.addDeck(createDeckRequest.deckName, createDeckRequest.cardIds));
 
     /**
      * TODO use the same validation to create the deck
@@ -63,7 +63,6 @@ class DecksController(
         deckService.addCardInDeck(deckId, addCardToDeckRequest.cardId)
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
 
     @DeleteMapping("/admin/decks/{deck-id}/card/{card-id}")
     fun deleteCardToDeck(

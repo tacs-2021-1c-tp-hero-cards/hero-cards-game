@@ -32,7 +32,6 @@ class Deck(
 
         other as Deck
 
-        if (id != other.id) return false
         if (name != other.name) return false
         if (cards != other.cards) return false
 
@@ -40,11 +39,9 @@ class Deck(
     }
 
     override fun hashCode(): Int {
-        var result = id?.hashCode() ?: 0
-        result = 31 * result + name.hashCode()
+        var result = name.hashCode()
         result = 31 * result + cards.hashCode()
         return result
     }
-
 
 }

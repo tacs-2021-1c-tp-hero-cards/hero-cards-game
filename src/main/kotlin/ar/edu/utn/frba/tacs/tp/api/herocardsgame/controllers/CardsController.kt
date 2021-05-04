@@ -28,22 +28,4 @@ class CardsController(val superHeroIntegration: SuperHeroIntegration) {
         } catch (e: ElementNotFoundException) {
             ResponseEntity.status(HttpStatus.NOT_FOUND).build()
         }
-
-    //Hace falta definir estos servicios???
-
-    @PostMapping("/admin/cards")
-    fun createCard(@RequestBody card: Card): ResponseEntity<Card> {
-        return ResponseEntity.status(HttpStatus.CREATED).body(card);
-    }
-
-    @PutMapping("/admin/cards/{card-id}")
-    fun updateCard(@PathVariable("card-id") cardId: String, @RequestBody card: Card): ResponseEntity<Void> {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @DeleteMapping("/admin/cards/{card-id}")
-    fun deleteCard(@PathVariable("card-id") cardId: String): ResponseEntity<Void> {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
 }
