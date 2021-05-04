@@ -5,6 +5,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.DeckIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.SuperHeroIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
@@ -45,8 +46,18 @@ internal class DeckServiceTest {
 
     @Test
     fun deleteDeck() {
+        `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(Deck(deckId, deckName, listOf(batman))))
+
         instance.deleteDeck(deckId.toString())
         verify(deckIntegrationMock, times(1)).deleteDeck(deckId)
+    }
+
+    @Test
+    fun deleteEmptyDeck() {
+        `when`(deckIntegrationMock.getAllDeck()).thenReturn(emptyList())
+        assertThrows(ElementNotFoundException::class.java) {
+            instance.deleteDeck(deckId.toString())
+        }
     }
 
     @Test
@@ -79,8 +90,7 @@ internal class DeckServiceTest {
     @Test
     fun addCardInDeck() {
         val deck = Deck(deckId, deckName, listOf(batman))
-        `when`(deckIntegrationMock.getAllDeck())
-            .thenReturn(listOf(deck))
+        `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(deck))
         `when`(superHeroIntegrationMock.getCard("2")).thenReturn(flash)
 
         instance.addCardInDeck(deckId.toString(), "2")

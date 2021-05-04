@@ -16,8 +16,10 @@ class DeckService(
     fun addDeck(nameDeck: String, cardIds: List<String>): Deck =
         deckIntegration.saveDeck(deck = buildDeck(nameDeck, cardIds))
 
-    fun deleteDeck(deckId: String) =
+    fun deleteDeck(deckId: String) {
+        searchDeckById(deckId)
         deckIntegration.deleteDeck(deckId.toLong())
+    }
 
     fun buildDeck(name: String, cardIds: List<String>): Deck {
         val cards = cardIds.map { superHeroIntegration.getCard(it) }

@@ -19,21 +19,28 @@ class DecksController(
     private val deckService: DeckService
 ) {
 
+    /**
+     * @return list of deck
+     */
     @GetMapping("/decks")
     fun getDecks(): ResponseEntity<List<Deck>> =
         ResponseEntity.status(HttpStatus.OK).body(deckService.searchDeck())
 
+    /**
+     * @param deckId, deckName
+     * @return list of deck
+     */
     @GetMapping("/decks/search")
     fun getDeckByIdOrName(
-        @RequestParam(value = "deck-id") deckId: String,
-        @RequestParam(value = "deck-name") deckName: String
+        @RequestParam(value = "deck-id") deckId: String?,
+        @RequestParam(value = "deck-name") deckName: String?
     ): ResponseEntity<List<Deck>> =
         ResponseEntity.status(HttpStatus.OK).body(deckService.searchDeck(deckId, deckName))
 
     /**
      *  TODO we should validate all the cards added has attributes needed for the game.
-     * @param deck
-     * @return
+     * @param createDeckRequest
+     * @return deck
      */
     @PostMapping("/admin/decks")
     fun createDeck(@RequestBody createDeckRequest: CreateDeckRequest): ResponseEntity<Deck> =
@@ -43,36 +50,46 @@ class DecksController(
 
     /**
      * TODO use the same validation to create the deck
-     * @param deckId
+     * @param deckId, updateDeckRequest
      * @return
      */
     @PutMapping("/admin/decks/{deck-id}")
     fun updateDeck(
-        @PathVariable("deck-id") deckId: String,
-        @RequestBody updateDeckRequest: UpdateDeckRequest
+        @PathVariable("deck-id") deckId: String, @RequestBody updateDeckRequest: UpdateDeckRequest
     ): ResponseEntity<Void> {
-        deckService.updateDeck(deckId, updateDeckRequest.deckName, updateDeckRequest.deckCards)
+        deckService.updateDeck(deckId, updateDeckRequest.deckName, updateDeckRequest.deckCards?:emptyList())
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 
+    /**
+     * TODO use the same validation to create the deck
+     * @param deckId, cardId
+     * @return
+     */
     @PatchMapping("/admin/decks/{deck-id}/card")
     fun addCardToDeck(
-        @PathVariable("deck-id") deckId: String,
-        @RequestBody addCardToDeckRequest: AddCardToDeckRequest
+        @PathVariable("deck-id") deckId: String, @RequestBody cardId: Map<String, String>
     ): ResponseEntity<Void> {
-        deckService.addCardInDeck(deckId, addCardToDeckRequest.cardId)
+        deckService.addCardInDeck(deckId, cardId["cardId"]!!)
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    /**
+     * @param deckId, cardId
+     * @return
+     */
     @DeleteMapping("/admin/decks/{deck-id}/card/{card-id}")
     fun deleteCardToDeck(
-        @PathVariable("deck-id") deckId: String,
-        @PathVariable("card-id") cardId: String
+        @PathVariable("deck-id") deckId: String, @PathVariable("card-id") cardId: String
     ): ResponseEntity<Void> {
         deckService.deleteCardInDeck(deckId, cardId)
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    /**
+     * @param deckId
+     * @return
+     */
     @DeleteMapping("/admin/decks/{deck-id}")
     fun deleteDeck(@PathVariable("deck-id") deckId: String): ResponseEntity<Void> {
         deckService.deleteDeck(deckId)

@@ -53,12 +53,4 @@ internal class DeckIntegrationTest {
         instance.deleteDeck(deck.id!!)
         assertTrue(deckMapMock.values.toList().isEmpty())
     }
-
-    @Test
-    fun deleteEmptyDeck() {
-        assertTrue(deckMapMock.values.toList().isEmpty())
-        Assertions.assertThrows(ElementNotFoundException::class.java) {
-            instance.deleteDeck(0L)
-        }
-    }
 }
