@@ -56,7 +56,7 @@ class UserService(
             throw ElementNotFoundException("token", userToken)
         }
 
-        userIntegration.deleteUserSession(userToken)
+        userIntegration.deleteUserSession(users.first())
     }
 }
 

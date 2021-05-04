@@ -1,7 +1,9 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.HashService
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 internal class UserIntegrationTest {
@@ -60,7 +62,7 @@ internal class UserIntegrationTest {
 
         assertEquals(1, userSessionMapMock.size)
 
-        assertEquals(instance.calculateToken(user), userSessionMapMock.keys.first())
+        assertEquals(HashService.calculateToken(user), userSessionMapMock.keys.first())
         assertEquals(user.token, userSessionMapMock.keys.first())
         assertEquals(userId, userSessionMapMock.values.first())
     }
@@ -68,10 +70,20 @@ internal class UserIntegrationTest {
     @Test
     fun deleteUserSession(){
         val user = User(id = userId, userName = userName, fullName = fullName, password = password)
-        val token = instance.calculateToken(user)
+        val token = HashService.calculateToken(user)
+        user.updateToken(token)
         userSessionMapMock[token] = userId
+        userMapMock[userId] = user
 
-        instance.deleteUserSession(token)
+        instance.deleteUserSession(user)
         assertEquals(0, userSessionMapMock.size)
+        assertEquals(userId, userMapMock.keys.first())
+
+        val userFound = userMapMock.values.first()
+        assertEquals(userId, userFound.id)
+        assertEquals(userName, userFound.userName)
+        assertEquals(fullName, userFound.fullName)
+        assertEquals(password, userFound.password)
+        assertNull(userFound.token)
     }
 }

@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.HashService
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -25,20 +26,15 @@ class UserIntegration(
     fun getAllUserSession(): HashMap<String, Long> = userSessionMap
 
     fun addUserSession(user: User): String {
-        val token = calculateToken(user)
+        val token = HashService.calculateToken(user)
         user.updateToken(token)
         userSessionMap[token] = user.id!!
         return token
     }
 
-    fun deleteUserSession(token: String){
-        userSessionMap.remove(token)
+    fun deleteUserSession(user: User){
+        userSessionMap.remove(user.token)
+        user.deleteToken()
+        userMap[user.id!!] = user
     }
-
-    fun calculateToken(user: User): String {
-        val input = user.id.toString() + user.userName + user.fullName
-        val md = MessageDigest.getInstance("MD5")
-        return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
-    }
-
 }

@@ -82,12 +82,13 @@ internal class UserServiceTest {
 
     @Test
     fun deactivateUserSession() {
+        val user = User(userName = userName, fullName = fullName, password = password, token = token)
         `when`(userIntegrationMock.getAllUser())
-            .thenReturn(listOf(User(userName = userName, fullName = fullName, password = password, token = token)))
+            .thenReturn(listOf(user))
 
         instance.deactivateUserSession(token)
 
-        verify(userIntegrationMock, Mockito.times(1)).deleteUserSession(token)
+        verify(userIntegrationMock, Mockito.times(1)).deleteUserSession(user)
     }
 
     @Test

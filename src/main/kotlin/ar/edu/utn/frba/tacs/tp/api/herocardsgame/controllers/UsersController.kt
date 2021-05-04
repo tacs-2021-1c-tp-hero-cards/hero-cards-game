@@ -31,7 +31,7 @@ class UsersController(
                 userService.createUser(
                     createUserRequest.userName,
                     createUserRequest.fullName,
-                    createUserRequest.password
+                    createUserRequest.buildPasswordHash()
                 )
             ResponseEntity.ok().body(newUser.id!!)
         } catch (e: InvalidUserException) {
@@ -48,7 +48,7 @@ class UsersController(
             val token =
                 userService.activateUserSession(
                     activateUserSessionRequest.userName,
-                    activateUserSessionRequest.password
+                    activateUserSessionRequest.buildPasswordHash()
                 )
             ResponseEntity.ok().body(Authentication(token))
         } catch (e: ElementNotFoundException) {
