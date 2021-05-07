@@ -1,9 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

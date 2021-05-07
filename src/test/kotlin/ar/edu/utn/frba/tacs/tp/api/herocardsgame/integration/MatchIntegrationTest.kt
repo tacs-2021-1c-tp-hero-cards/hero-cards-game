@@ -33,7 +33,7 @@ internal class MatchIntegrationTest{
 
     @Test
     fun saveMatch() {
-        instance.saveMatch(Match(matchId, emptyList(), deckTest, MatchStatus.IN_PROGRESS))
+        instance.saveMatch(match = Match(matchId, emptyList(), deckTest, MatchStatus.IN_PROGRESS))
 
         val allMatchesInProgress = matchesInProgressMapMock.values.toList()
 
@@ -46,20 +46,4 @@ internal class MatchIntegrationTest{
         assertEquals(MatchStatus.IN_PROGRESS, found.status)
     }
 
-    @Test
-    fun updateStatus() {
-        val match = Match(matchId, emptyList(), deckTest, MatchStatus.IN_PROGRESS)
-        matchesInProgressMapMock[0L] = match
-
-        instance.updateStatus(matchId, MatchStatus.FINALIZED)
-
-        val allMatchesInProgress = matchesInProgressMapMock.values.toList()
-        assertEquals(1, allMatchesInProgress.size)
-
-        val found = allMatchesInProgress.first()
-        assertEquals(matchId, found.id)
-        assertEquals(deckTest, found.deck)
-        assertTrue(found.players.isEmpty())
-        assertEquals(MatchStatus.FINALIZED, found.status)
-    }
 }

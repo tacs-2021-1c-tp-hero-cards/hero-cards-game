@@ -11,18 +11,12 @@ class MatchIntegration(
 
     fun getAllMatches(): List<Match> = matchesMap.values.toList()
 
-    fun saveMatch(match: Match): Match {
-        val id = calculateId()
-        match.updateId(id)
-        matchesMap[id] = match
-        return match
+    fun saveMatch(id: Long = calculateId(), match: Match): Match {
+        val newMatch = match.copy(id = id)
+        matchesMap[id] = newMatch
+        return newMatch
     }
 
     fun calculateId(): Long = matchesMap.size.toLong()
 
-    fun updateStatus(id: Long, newStatus: MatchStatus): Match{
-        val match = matchesMap[id]!!
-        match.updateStatus(newStatus)
-        return match
-    }
 }

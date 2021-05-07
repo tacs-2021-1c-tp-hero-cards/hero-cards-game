@@ -1,16 +1,45 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
+
 data class Match(
-    var id: Long? = null,
+    val id: Long? = null,
     val players: List<Player>,
     val deck: Deck,
-    var status: MatchStatus
-){
-    fun updateId(newId: Long){
-        id = newId
+    val status: MatchStatus
+) {
+
+    fun resolveDuel(duelType: DuelType): Match {
+        val player = players.first()
+        val opponent = players.last()
+
+        val playerCard = player.availableCards.first()
+        val opponentCard = opponent.availableCards.first()
+
+        val playerList = when (playerCard.duel(opponentCard, duelType)) {
+            DuelResult.WIN -> listOf(player.winDuel(opponentCard), opponent.loseDuel())
+            DuelResult.LOSE -> listOf(player.loseDuel(), opponent.winDuel(playerCard))
+            else -> listOf(player.tieDuel(), opponent.tieDuel())
+        }
+
+        return this.copy(players = playerList)
     }
 
-    fun updateStatus(newStatus: MatchStatus){
-        status = newStatus
+    fun updateTurn(): Match =
+        this.copy(players = players.reversed())
+
+    fun updateStatusMatch(): Match =
+        this.copy(status = if (players.any { it.availableCards.isEmpty() }) MatchStatus.FINALIZED else MatchStatus.IN_PROGRESS)
+
+    fun abortMatch(): Match =
+        this.copy(status = MatchStatus.CANCELLED)
+
+    fun validateNotFinalizedOrCancelled() {
+        if (this.status == MatchStatus.FINALIZED || this.status == MatchStatus.CANCELLED) {
+            throw InvalidMatchException(this.id!!)
+        }
     }
+
 }

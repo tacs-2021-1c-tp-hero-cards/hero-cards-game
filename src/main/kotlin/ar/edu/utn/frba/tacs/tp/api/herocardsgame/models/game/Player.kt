@@ -1,17 +1,25 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
 data class Player(
+    val id: Long,
     val userName: String,
-    var availableCards: List<Card> = emptyList(),
-    var prizeCards: List<Card> = emptyList()
-){
+    val availableCards: List<Card> = emptyList(),
+    val prizeCards: List<Card> = emptyList()
+) {
 
-    fun addAvailableCards(card: Card){
-        availableCards = availableCards.plus(card)
-    }
+    fun winDuel(priceCard: Card) : Player =
+        this.copy(
+            prizeCards = prizeCards + priceCard + availableCards.first(),
+            availableCards = availableCards.drop(1)
+        )
 
-    fun addPrizeCards(card: Card){
-        prizeCards = prizeCards.plus(card)
-    }
+    fun loseDuel(): Player =
+        this.copy(availableCards = availableCards.drop(1))
+
+    fun tieDuel(): Player =
+        this.copy(
+            prizeCards = prizeCards + availableCards.first(),
+            availableCards = availableCards.drop(1)
+        )
 
 }

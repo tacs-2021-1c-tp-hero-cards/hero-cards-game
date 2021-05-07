@@ -1,11 +1,11 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
-class Powerstats(
+data class Powerstats(
     val height: Int,
     val weight: Int,
     val intelligence: Int,
     val speed: Int,
     val power: Int,
     val combat: Int,
-    val strength: Int
+    val strength: Int,
 )
