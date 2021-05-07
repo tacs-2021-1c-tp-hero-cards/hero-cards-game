@@ -10,12 +10,10 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateUserRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.*
 
 @Controller
+@CrossOrigin(origins =["*"], allowedHeaders = ["*"])
 class UsersController(
     private val userService: UserService
 ) {
@@ -33,6 +31,7 @@ class UsersController(
                     createUserRequest.fullName,
                     createUserRequest.buildPasswordHash()
                 )
+            println("${newUser.userName}, ${newUser.fullName}, ${newUser.password}, ${newUser.id}")
             ResponseEntity.ok().body(newUser.id!!)
         } catch (e: InvalidUserException) {
             ResponseEntity.badRequest().build()
