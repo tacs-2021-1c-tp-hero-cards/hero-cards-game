@@ -61,8 +61,7 @@ internal class UserIntegrationTest {
         instance.addUserSession(user)
 
         assertEquals(1, userSessionMapMock.size)
-
-        assertEquals(HashService.calculateToken(user), userSessionMapMock.keys.first())
+        
         assertEquals(user.token, userSessionMapMock.keys.first())
         assertEquals(userId, userSessionMapMock.values.first())
     }
