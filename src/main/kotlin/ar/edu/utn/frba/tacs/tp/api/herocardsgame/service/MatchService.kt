@@ -47,7 +47,7 @@ class MatchService(
         match.validateNotFinalizedOrCancelled()
         validateUserDuel(match, token)
 
-        return match.resolveDuel(duelType).updateTurn().updateStatusMatch()
+        return matchIntegration.saveMatch(matchId.toLong(), match.resolveDuel(duelType).updateTurn().updateStatusMatch())
     }
 
     private fun validateUserDuel(match: Match, token: String) {
@@ -62,6 +62,6 @@ class MatchService(
         match.validateNotFinalizedOrCancelled()
         validateUserDuel(match, token)
 
-        return match.abortMatch()
+        return matchIntegration.saveMatch(matchId.toLong(), match.abortMatch())
     }
 }

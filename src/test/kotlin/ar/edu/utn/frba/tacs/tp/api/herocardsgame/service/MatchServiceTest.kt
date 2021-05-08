@@ -121,8 +121,16 @@ internal class MatchServiceTest {
             status = MatchStatus.IN_PROGRESS
         )
 
+        val matchResult = match.copy(
+            players = listOf(
+                otherPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()),
+                player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash))
+            ), status = MatchStatus.FINALIZED
+        )
+
         `when`(matchIntegrationMock.getAllMatches()).thenReturn(listOf(match))
         `when`(userServiceMock.searchUser(id = userId, token = "tokenTest")).thenReturn(listOf(user1))
+        `when`(matchIntegrationMock.saveMatch(matchId,matchResult)).thenReturn(matchResult)
 
         val resultNextDuel = instance.nextDuel(deckId.toString(), "tokenTest", DuelType.SPEED)
         assertEquals(MatchStatus.FINALIZED, resultNextDuel.status)
@@ -199,8 +207,11 @@ internal class MatchServiceTest {
             status = MatchStatus.IN_PROGRESS
         )
 
+        val matchResult = match.copy(status = MatchStatus.CANCELLED)
+
         `when`(matchIntegrationMock.getAllMatches()).thenReturn(listOf(match))
         `when`(userServiceMock.searchUser(id = userId, token = "tokenTest")).thenReturn(listOf(user1))
+        `when`(matchIntegrationMock.saveMatch(matchId, matchResult)).thenReturn(matchResult)
 
         val abortMatch = instance.abortMatch(matchId.toString(), "tokenTest")
 
@@ -258,6 +269,7 @@ internal class MatchServiceTest {
             instance.abortMatch(matchId.toString(), "tokenTest")
         }
     }
+
     @Test
     fun abortMatch_turnException() {
         val match = Match(
