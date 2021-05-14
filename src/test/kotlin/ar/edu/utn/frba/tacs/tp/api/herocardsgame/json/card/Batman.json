@@ -1,13 +1,14 @@
 {
-  "id": 1,
+  "id": "69",
   "name": "Batman",
   "powerstats": {
-    "height": "203",
-    "weight": "106",
-    "intelligence": "50",
-    "speed": "85",
-    "power": "78",
-    "combat": "12",
-    "strength": "500"
-  }
+    "height": "178",
+    "weight": "77",
+    "intelligence": "81",
+    "speed": "29",
+    "power": "63",
+    "combat": "90",
+    "strength": "40"
+  },
+  "imageUrl": "https://www.superherodb.com/pictures2/portraits/10/100/10441.jpg"
 }

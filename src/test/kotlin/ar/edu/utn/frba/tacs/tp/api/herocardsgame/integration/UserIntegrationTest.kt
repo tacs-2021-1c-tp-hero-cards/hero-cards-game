@@ -56,25 +56,24 @@ internal class UserIntegrationTest {
 
     @Test
     fun addUserSession() {
-        val user = User(id = userId, userName = userName, fullName = fullName, password = password)
-
-        instance.addUserSession(user)
+        val newUser =
+            instance.addUserSession(User(id = userId, userName = userName, fullName = fullName, password = password))
 
         assertEquals(1, userSessionMapMock.size)
-        
-        assertEquals(user.token, userSessionMapMock.keys.first())
+
+        assertEquals(newUser.token, userSessionMapMock.keys.first())
         assertEquals(userId, userSessionMapMock.values.first())
     }
 
     @Test
-    fun deleteUserSession(){
-        val user = User(id = userId, userName = userName, fullName = fullName, password = password)
-        val token = HashService.calculateToken(user)
-        user.updateToken(token)
+    fun deleteUserSession() {
+        val token = "token"
+        val user = User(id = userId, userName = userName, fullName = fullName, password = password, token = token)
         userSessionMapMock[token] = userId
         userMapMock[userId] = user
 
         instance.deleteUserSession(user)
+
         assertEquals(0, userSessionMapMock.size)
         assertEquals(userId, userMapMock.keys.first())
 

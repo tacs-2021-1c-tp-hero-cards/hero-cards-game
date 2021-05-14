@@ -13,7 +13,7 @@ class SuperHeroIntegration(
 
     fun getCard(id: String): Card {
         val character = client.getCharacter(id)
-        return mapper.mapCard(character)
+        return mapper.map(character)
     }
 
     fun searchCardByName(characterName : String): List<Card> {

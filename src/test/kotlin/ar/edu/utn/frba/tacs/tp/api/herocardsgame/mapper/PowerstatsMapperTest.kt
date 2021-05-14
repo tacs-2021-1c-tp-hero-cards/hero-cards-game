@@ -1,9 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.AppearanceApi
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.PowerstatsApi
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.FileConstructorUtils
-import org.junit.jupiter.api.Assertions.*
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class PowerstatsMapperTest {
@@ -12,18 +10,8 @@ internal class PowerstatsMapperTest {
 
     @Test
     fun mapPowerstatsFromPowerstatsApiAndAppearanceApi() {
-
-        val appearanceApi =
-            FileConstructorUtils.createFromFile(
-                "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/appearance.json",
-                AppearanceApi::class.java
-            )
-
-        val powerstatsApi =
-            FileConstructorUtils.createFromFile(
-                "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/powerstats.json",
-                PowerstatsApi::class.java
-            )
+        val appearanceApi = BuilderContextUtils.buildAppearanceApi()
+        val powerstatsApi = BuilderContextUtils.buildPowerstatsApi()
 
         val powerstats = instance.map(powerstatsApi, appearanceApi)
 

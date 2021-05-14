@@ -1,47 +1,19 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
-class Deck(
-    var id: Long? = null,
-    var name: String,
-    var cards: List<Card>
+data class Deck(
+    val id: Long? = null,
+    val name: String,
+    val cards: List<Card> = emptyList()
 ) {
 
-    fun updateId(newId: Long){
-        id = newId
-    }
+    fun addCard(card: Card) = copy(cards = cards + card)
 
-    fun rename(newName: String) {
-        name = newName
-    }
+    fun removeCard(cardId: Long) = copy(cards = cards.filterNot { it.id == cardId })
 
-    fun addCard(card: Card) {
-        cards = cards.plus(card)
-    }
+    fun mixCards(): Deck = copy(cards = cards.shuffled())
 
-    fun removeCard(cardId: Long) {
-        cards = cards.filterNot { it.id == cardId }
-    }
+    fun rename(newName: String?): Deck = newName?.let { copy(name = it) } ?: this
 
-    fun removeAllCard(){
-        cards = emptyList()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Deck
-
-        if (name != other.name) return false
-        if (cards != other.cards) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + cards.hashCode()
-        return result
-    }
+    fun replaceCards(cards: List<Card>): Deck = if (cards.isNotEmpty()) copy(cards = cards) else this
 
 }

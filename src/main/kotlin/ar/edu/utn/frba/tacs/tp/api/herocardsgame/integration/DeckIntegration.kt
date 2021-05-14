@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
 import org.springframework.stereotype.Component
 
@@ -11,18 +10,14 @@ class DeckIntegration(
 
     fun getAllDeck(): List<Deck> = deckMap.values.toList()
 
-    fun saveDeck(deckId: Long = calculateId(), deck: Deck): Deck {
-        deck.updateId(deckId)
-        deckMap[deckId] = deck
-        return deck
+    fun saveDeck(deck: Deck): Deck {
+        val deckId = deck.id?: calculateId()
+        val newDeck = deck.copy(id = deckId)
+        deckMap[deckId] = newDeck
+        return newDeck
     }
 
-    fun deleteDeck(deckId: Long) =
-        if (deckMap.containsKey(deckId)) {
-            deckMap.remove(deckId)
-        } else {
-            throw ElementNotFoundException("deck", deckId.toString())
-        }
+    fun deleteDeck(deckId: Long) = deckMap.remove(deckId)
 
     fun calculateId(): Long = deckMap.size.toLong()
 

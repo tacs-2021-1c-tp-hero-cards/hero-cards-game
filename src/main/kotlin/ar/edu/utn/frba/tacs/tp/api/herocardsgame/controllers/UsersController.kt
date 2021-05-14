@@ -44,12 +44,12 @@ class UsersController(
     @PostMapping("/logIn")
     fun logIn(@RequestBody activateUserSessionRequest: ActivateUserSessionRequest): ResponseEntity<Authentication> =
         try {
-            val token =
+            val user =
                 userService.activateUserSession(
                     activateUserSessionRequest.userName,
                     activateUserSessionRequest.buildPasswordHash()
                 )
-            ResponseEntity.ok().body(Authentication(token))
+            ResponseEntity.ok().body(Authentication(user.token!!))
         } catch (e: ElementNotFoundException) {
             ResponseEntity.badRequest().build()
         }

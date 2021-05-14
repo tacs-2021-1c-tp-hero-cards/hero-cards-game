@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.service
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
@@ -22,11 +23,11 @@ class MatchService(
 
     fun buildPlayers(usersId: List<String>, deck: Deck): List<Player> {
         var players = usersId.map {
-            val searchUser = userService.searchUser(id = it.toLong()).first()
+            val searchUser = userService.searchUserById(it)
             Player(userName = searchUser.userName, id = searchUser.id!!)
         }
 
-        deck.cards.forEach {
+        deck.mixCards().cards.forEach {
             players = dealCards(players, it)
         }
 
@@ -39,7 +40,11 @@ class MatchService(
         return players.drop(1) + player.copy(availableCards = availableCards + card)
     }
 
-    fun searchMatchById(matchId: String): Match = matchIntegration.getAllMatches().first { matchId.toLong() == it.id }
+    fun searchMatchById(matchId: String): Match {
+        val matches = matchIntegration.getAllMatches().filter { matchId.toLong() == it.id }
+        matches.ifEmpty { throw ElementNotFoundException("match", matchId) }
+        return matches.first()
+    }
 
     fun nextDuel(matchId: String, token: String, duelType: DuelType): Match {
         val match = searchMatchById(matchId)
@@ -47,7 +52,7 @@ class MatchService(
         match.validateNotFinalizedOrCancelled()
         validateUserDuel(match, token)
 
-        return matchIntegration.saveMatch(matchId.toLong(), match.resolveDuel(duelType).updateTurn().updateStatusMatch())
+        return matchIntegration.saveMatch(match.resolveDuel(duelType).updateTurn().updateStatusMatch())
     }
 
     private fun validateUserDuel(match: Match, token: String) {
@@ -62,6 +67,6 @@ class MatchService(
         match.validateNotFinalizedOrCancelled()
         validateUserDuel(match, token)
 
-        return matchIntegration.saveMatch(matchId.toLong(), match.abortMatch())
+        return matchIntegration.saveMatch(match.abortMatch())
     }
 }

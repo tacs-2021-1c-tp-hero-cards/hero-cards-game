@@ -5,7 +5,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.DeckIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.SuperHeroIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
@@ -41,7 +40,7 @@ internal class DeckServiceTest {
         instance.addDeck(deckName, listOf("1", "2"))
 
         verify(deckIntegrationMock, times(1))
-            .saveDeck(0L, Deck(name = deckName, cards = listOf(batman, flash)))
+            .saveDeck(Deck(name = deckName, cards = listOf(batman, flash)))
     }
 
     @Test
@@ -95,9 +94,8 @@ internal class DeckServiceTest {
 
         instance.addCardInDeck(deckId.toString(), "2")
 
-        assertEquals(deckName, deck.name)
-        assertEquals(deckId, deck.id)
-        assertEquals(2, deck.cards.size)
+        verify(deckIntegrationMock, times(1))
+            .saveDeck(deck.copy(cards = listOf(batman, flash)))
     }
 
     @Test
@@ -119,14 +117,11 @@ internal class DeckServiceTest {
     @Test
     fun deleteCardInDeck() {
         val deck = Deck(deckId, deckName, listOf(batman, flash))
-        `when`(deckIntegrationMock.getAllDeck())
-            .thenReturn(listOf(deck))
+        `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(deck))
 
         instance.deleteCardInDeck(deckId.toString(), "2")
 
-        assertEquals(deckName, deck.name)
-        assertEquals(deckId, deck.id)
-        assertEquals(1, deck.cards.size)
+        verify(deckIntegrationMock, times(1)).saveDeck(deck.copy(cards = listOf(batman)))
     }
 
     @Test
@@ -170,39 +165,23 @@ internal class DeckServiceTest {
     }
 
     @Test
-    fun updateDeckCardsWithEmptyCards() {
-        val deck = Deck(deckId, deckName, listOf(batman, flash))
-        instance.updateDeckCards(deck, emptyList())
-        verify(superHeroIntegrationMock, times(0)).getCard(anyString())
-    }
-
-    @Test
     fun updateDeckByName() {
         val deck = Deck(deckId, deckName, listOf(batman))
-
-        `when`(superHeroIntegrationMock.getCard("1")).thenReturn(batman)
         `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(deck))
 
         instance.updateDeck(deckId.toString(), "deckName2", emptyList())
 
-        assertEquals("deckName2", deck.name)
-        val cards = deck.cards
-        assertEquals(1, cards.size)
-        assertEquals(batman, cards.first())
+        verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(name = "deckName2"))
     }
 
     @Test
     fun updateDeckByCards() {
         val deck = Deck(deckId, deckName, listOf(batman))
-
         `when`(superHeroIntegrationMock.getCard("2")).thenReturn(flash)
         `when`(deckIntegrationMock.getAllDeck()).thenReturn(listOf(deck))
 
         instance.updateDeck(deckId.toString(), null, listOf("2"))
 
-        assertEquals(deckName, deck.name)
-        val cards = deck.cards
-        assertEquals(1, cards.size)
-        assertEquals(flash, cards.first())
+        verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(cards = listOf(flash)))
     }
 }

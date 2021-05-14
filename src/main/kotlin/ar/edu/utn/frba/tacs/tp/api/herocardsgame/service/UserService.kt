@@ -21,6 +21,28 @@ class UserService(
         return userIntegration.saveUser(User(userName = userName, fullName = fullName, password = password))
     }
 
+    fun activateUserSession(userName: String, password: String): User {
+        val users = searchUser(userName = userName, password = password)
+
+        if (users.isEmpty()) {
+            throw ElementNotFoundException("user", userName)
+        }
+
+        return userIntegration.addUserSession(users.first())
+    }
+
+    fun deactivateUserSession(userToken: String) {
+        val users = searchUser(token = userToken)
+
+        if (users.isEmpty()) {
+            throw ElementNotFoundException("token", userToken)
+        }
+
+        userIntegration.deleteUserSession(users.first())
+    }
+
+    //Search
+
     fun searchUser(
         id: Long? = null,
         userName: String? = null,
@@ -39,24 +61,10 @@ class UserService(
         return usersResult
     }
 
-    fun activateUserSession(userName: String, password: String): String {
-        val users = searchUser(userName = userName, password = password)
-
-        if (users.isEmpty()) {
-            throw ElementNotFoundException("user", userName)
-        }
-
-        return userIntegration.addUserSession(users.first())
-    }
-
-    fun deactivateUserSession(userToken: String) {
-        val users = searchUser(token = userToken)
-
-        if (users.isEmpty()) {
-            throw ElementNotFoundException("token", userToken)
-        }
-
-        userIntegration.deleteUserSession(users.first())
+    fun searchUserById(userId: String): User{
+        val user = searchUser(id = userId.toLong())
+        user.ifEmpty { throw ElementNotFoundException("user", userId) }
+        return user.first()
     }
 }
 

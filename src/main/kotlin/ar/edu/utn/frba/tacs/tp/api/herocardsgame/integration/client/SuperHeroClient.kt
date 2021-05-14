@@ -10,23 +10,17 @@ class SuperHeroClient : RestClient() {
 
     private val pathGetCharacter = "/{}"
     private val pathGetSearchName = "/search/{}"
-    private val pathGetPowerstats = "/{}/powerstats"
-    private val pathGetBiography = "/{}/biography"
-    private val pathGetAppearance = "/{}/appearance"
-    private val pathGetWork = "/{}/work"
-    private val pathGetConnections = "/{}/connections"
-    private val pathGetImage = "/{}/image"
 
     fun getCharacter(id: String): CharacterApi {
-        val response = doGet(pathGetCharacter, CharacterApi::class.java, id)
+        val response = doGet<CharacterApi>(pathGetCharacter, id)
         if (response.error != null) {
             throw ElementNotFoundException("character", id)
         }
         return response
     }
 
-    fun getCharacterByName(characterName : String): CharactersSearchApi {
-        val response = doGet(pathGetSearchName, CharactersSearchApi::class.java, characterName)
+    fun getCharacterByName(characterName: String): CharactersSearchApi {
+        val response = doGet<CharactersSearchApi>(pathGetSearchName, characterName)
         if (response.error != null) {
             throw ElementNotFoundException("character", characterName)
         }

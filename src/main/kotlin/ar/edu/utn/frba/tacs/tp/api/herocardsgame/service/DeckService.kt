@@ -14,7 +14,7 @@ class DeckService(
 ) {
 
     fun addDeck(nameDeck: String, cardIds: List<String>): Deck =
-        deckIntegration.saveDeck(deck = buildDeck(nameDeck, cardIds))
+        deckIntegration.saveDeck(buildDeck(nameDeck, cardIds))
 
     fun deleteDeck(deckId: String) {
         searchDeckById(deckId)
@@ -26,12 +26,14 @@ class DeckService(
         return Deck(name = name, cards = cards)
     }
 
-    fun addCardInDeck(deckId: String, cardId: String) {
-        searchDeckById(deckId).addCard(superHeroIntegration.getCard(cardId))
+    fun addCardInDeck(deckId: String, cardId: String): Deck {
+        val newDeck = searchDeckById(deckId).addCard(superHeroIntegration.getCard(cardId))
+        return deckIntegration.saveDeck(newDeck)
     }
 
-    fun deleteCardInDeck(deckId: String, cardId: String) {
-        searchDeckById(deckId).removeCard(cardId.toLong())
+    fun deleteCardInDeck(deckId: String, cardId: String): Deck {
+        val newDeck = searchDeckById(deckId).removeCard(cardId.toLong())
+        return deckIntegration.saveDeck(newDeck)
     }
 
     fun searchDeckById(deckId: String): Deck {
@@ -45,19 +47,10 @@ class DeckService(
             .filter { deckName == null || deckName == it.name }
             .filter { deckId == null || deckId == it.id.toString() }
 
-    fun updateDeck(deckId: String, name: String?, cards: List<String>) {
-        val deck = searchDeckById(deckId)
-        name?.let { deck.rename(it) }
-        updateDeckCards(deck, cards)
-    }
-
-    fun updateDeckCards(deck: Deck, cards: List<String>) {
-        if (cards.isNotEmpty()) {
-            deck.removeAllCard()
-        }
-
-        cards.map {
-            deck.addCard(superHeroIntegration.getCard(it))
-        }
+    fun updateDeck(deckId: String, newName: String?, cards: List<String>): Deck {
+        val newDeck = searchDeckById(deckId)
+            .rename(newName)
+            .replaceCards(cards.map { superHeroIntegration.getCard(it) })
+        return deckIntegration.saveDeck(newDeck)
     }
 }

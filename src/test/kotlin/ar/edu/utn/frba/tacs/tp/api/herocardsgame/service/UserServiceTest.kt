@@ -4,6 +4,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundExcept
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -58,6 +59,22 @@ internal class UserServiceTest {
         assertEquals(fullNameOk, instance.searchUser(fullName = fullName).first())
         assertEquals(passwordOk, instance.searchUser(password = password).first())
         assertEquals(tokenOk, instance.searchUser(token = token).first())
+    }
+
+    @Test
+    fun searchUserById() {
+        val user = User(userId, "null", "null", "null", "null")
+        `when`(userIntegrationMock.getAllUser()).thenReturn(listOf(user))
+        assertEquals(user, instance.searchUserById(userId.toString()))
+    }
+
+    @Test
+    fun searchUserById_emptyUser() {
+        `when`(userIntegrationMock.getAllUser()).thenReturn(emptyList())
+
+        assertThrows(ElementNotFoundException::class.java) {
+            instance.searchUserById(userId.toString())
+        }
     }
 
     @Test

@@ -11,16 +11,17 @@ internal class DeckIntegrationTest {
     private val deckMapMock: HashMap<Long, Deck> = hashMapOf()
     private val instance = DeckIntegration(deckMapMock)
 
+    private val batman = BuilderContextUtils.buildBatman()
+    private val flash = BuilderContextUtils.buildFlash()
+
     @Test
     fun getAllDeck() {
-        val deck = Deck(0L, "deckTest", listOf(BuilderContextUtils.buildBatman(), BuilderContextUtils.buildFlash()))
+        val deck = Deck(0L, "deckTest", listOf(batman, flash))
         deckMapMock[0L] = deck
 
         val allDeck = instance.getAllDeck()
         assertEquals(1, allDeck.size)
-
-        val found = allDeck.first()
-        assertEquals(deck, found)
+        assertEquals(deck, allDeck.first())
     }
 
     @Test
@@ -28,7 +29,7 @@ internal class DeckIntegrationTest {
         instance.saveDeck(
             deck = Deck(
                 name = "deckTest",
-                cards = listOf(BuilderContextUtils.buildBatman(), BuilderContextUtils.buildFlash())
+                cards = listOf(batman, flash)
             )
         )
 
@@ -41,14 +42,16 @@ internal class DeckIntegrationTest {
 
         val cards = foundDeck.cards
         assertEquals(2, cards.size)
+        assertTrue(cards.contains(batman))
+        assertTrue(cards.contains(flash))
     }
 
     @Test
     fun deleteDeck() {
-        val deck = Deck(0L, "deckTest", listOf(BuilderContextUtils.buildBatman(), BuilderContextUtils.buildFlash()))
-        deckMapMock[0L] = deck
+        deckMapMock[0L] = Deck(0L, "deckTest", listOf(batman, flash))
+        assertTrue(deckMapMock.values.toList().isNotEmpty())
 
-        instance.deleteDeck(deck.id!!)
+        instance.deleteDeck(0L)
         assertTrue(deckMapMock.values.toList().isEmpty())
     }
 }

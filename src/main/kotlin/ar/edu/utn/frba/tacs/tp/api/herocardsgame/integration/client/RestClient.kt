@@ -15,11 +15,10 @@ abstract class RestClient(
     private var accessToken: String = "10225693555586194"
 ) {
 
-    fun <T> doGet(serviceUrl: String, classReturn: Class<T>, vararg uriParams: String): T {
+    inline fun <reified T> doGet(serviceUrl: String, vararg uriParams: String): T {
         val fullUrl = buildUrl(serviceUrl, *uriParams)
-        run(fullUrl).use {
-            return buildResponse(it, classReturn)
-        }
+        val response = run(fullUrl)
+        return buildResponse(response)
     }
 
     fun buildUrl(serviceUrl: String, vararg uriParams: String): String {
@@ -29,14 +28,14 @@ abstract class RestClient(
         return protocol + host + baseUrl + accessToken + serviceUrlWithParams
     }
 
-    private fun run(url: String): Response {
+    fun run(url: String): Response {
         val request: Request = Request.Builder().url(url).build()
         return client.newCall(request).execute()
     }
 
-    private fun <T> buildResponse(response: Response, classReturn: Class<T>): T {
+    inline fun <reified T> buildResponse(response: Response): T {
         try {
-            return Gson().fromJson(response.body!!.string(), classReturn)
+            return Gson().fromJson(response.body!!.string(), T::class.java)
         } catch (e: IOException) {
             throw RuntimeException(e);
         }

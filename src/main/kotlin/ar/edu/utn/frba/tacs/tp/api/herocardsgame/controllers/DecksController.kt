@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.AddCardToDeckRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateDeckRequest
@@ -44,9 +45,13 @@ class DecksController(
      */
     @PostMapping("/admin/decks")
     fun createDeck(@RequestBody createDeckRequest: CreateDeckRequest): ResponseEntity<Deck> =
-        ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(deckService.addDeck(createDeckRequest.deckName, createDeckRequest.cardIds));
+        try {
+            ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(deckService.addDeck(createDeckRequest.deckName, createDeckRequest.cardIds))
+        } catch (e: ElementNotFoundException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+        }
 
     /**
      * TODO use the same validation to create the deck
@@ -56,10 +61,18 @@ class DecksController(
     @PutMapping("/admin/decks/{deck-id}")
     fun updateDeck(
         @PathVariable("deck-id") deckId: String, @RequestBody updateDeckRequest: UpdateDeckRequest
-    ): ResponseEntity<Void> {
-        deckService.updateDeck(deckId, updateDeckRequest.deckName, updateDeckRequest.deckCards?:emptyList())
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-    }
+    ): ResponseEntity<Deck> =
+        try {
+            ResponseEntity.status(HttpStatus.NO_CONTENT).body(
+                deckService.updateDeck(
+                    deckId,
+                    updateDeckRequest.deckName,
+                    updateDeckRequest.deckCards ?: emptyList()
+                )
+            )
+        } catch (e: ElementNotFoundException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+        }
 
     /**
      * TODO use the same validation to create the deck
@@ -69,10 +82,12 @@ class DecksController(
     @PatchMapping("/admin/decks/{deck-id}/card")
     fun addCardToDeck(
         @PathVariable("deck-id") deckId: String, @RequestBody cardId: Map<String, String>
-    ): ResponseEntity<Void> {
-        deckService.addCardInDeck(deckId, cardId["cardId"]!!)
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+    ): ResponseEntity<Deck> =
+        try {
+            ResponseEntity.status(HttpStatus.NO_CONTENT).body(deckService.addCardInDeck(deckId, cardId["cardId"]!!))
+        } catch (e: ElementNotFoundException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+        }
 
     /**
      * @param deckId, cardId
@@ -81,9 +96,10 @@ class DecksController(
     @DeleteMapping("/admin/decks/{deck-id}/card/{card-id}")
     fun deleteCardToDeck(
         @PathVariable("deck-id") deckId: String, @PathVariable("card-id") cardId: String
-    ): ResponseEntity<Void> {
-        deckService.deleteCardInDeck(deckId, cardId)
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    ): ResponseEntity<Deck> = try {
+        ResponseEntity.status(HttpStatus.NO_CONTENT).body(deckService.deleteCardInDeck(deckId, cardId))
+    } catch (e: ElementNotFoundException) {
+        ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
     }
 
     /**
@@ -91,9 +107,12 @@ class DecksController(
      * @return
      */
     @DeleteMapping("/admin/decks/{deck-id}")
-    fun deleteDeck(@PathVariable("deck-id") deckId: String): ResponseEntity<Void> {
-        deckService.deleteDeck(deckId)
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+    fun deleteDeck(@PathVariable("deck-id") deckId: String): ResponseEntity<Void> =
+        try {
+            deckService.deleteDeck(deckId)
+            ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+        }catch (e: ElementNotFoundException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+        }
 
 }

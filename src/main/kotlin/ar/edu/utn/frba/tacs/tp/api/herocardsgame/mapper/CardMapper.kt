@@ -6,15 +6,16 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 import org.springframework.stereotype.Component
 
 @Component
-class CardMapper(val powerstatsMapper: PowerstatsMapper) {
+class CardMapper(val powerstatsMapper: PowerstatsMapper, val imageMapper: ImageMapper) {
 
-    fun mapCard(characterApi: CharacterApi): Card =
+    fun map(characterApi: CharacterApi): Card =
         Card(
-            id = characterApi.id.toLong(),
-            name = characterApi.name,
-            powerstats = powerstatsMapper.map(characterApi.powerstats, characterApi.appearance)
+            id = characterApi.id!!.toLong(),
+            name = characterApi.name!!,
+            powerstats = powerstatsMapper.map(characterApi.powerstats!!, characterApi.appearance!!),
+            imageUrl = imageMapper.map(characterApi.image!!)
         )
 
     fun mapCharactersSearch(charactersSearchApi: CharactersSearchApi): List<Card> =
-        charactersSearchApi.results.map { mapCard(it) }
+        charactersSearchApi.results.map { map(it) }
 }

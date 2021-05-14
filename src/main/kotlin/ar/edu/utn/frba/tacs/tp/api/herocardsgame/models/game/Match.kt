@@ -41,5 +41,4 @@ data class Match(
             throw InvalidMatchException(this.id!!)
         }
     }
-
 }

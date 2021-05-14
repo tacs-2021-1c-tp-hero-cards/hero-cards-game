@@ -11,9 +11,10 @@ class MatchIntegration(
 
     fun getAllMatches(): List<Match> = matchesMap.values.toList()
 
-    fun saveMatch(id: Long = calculateId(), match: Match): Match {
-        val newMatch = match.copy(id = id)
-        matchesMap[id] = newMatch
+    fun saveMatch(match: Match): Match {
+        val matchId = match.id ?: calculateId()
+        val newMatch = match.copy(id = matchId)
+        matchesMap[matchId] = newMatch
         return newMatch
     }
 

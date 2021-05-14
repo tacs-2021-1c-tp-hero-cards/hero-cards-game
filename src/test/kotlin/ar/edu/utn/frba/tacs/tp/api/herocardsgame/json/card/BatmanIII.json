@@ -1,0 +1,14 @@
+{
+  "id": "71",
+  "name": "Batman II",
+  "powerstats": {
+    "height": "178",
+    "weight": "79",
+    "intelligence": "88",
+    "speed": "33",
+    "power": "36",
+    "combat": "100",
+    "strength": "11"
+  },
+  "imageUrl": "https://www.superherodb.com/pictures2/portraits/10/100/1496.jpg"
+}

@@ -10,10 +10,10 @@ import org.mockito.Mockito.mock
 internal class CardTest {
 
     private val powerstatsMock = mock(Powerstats::class.java)
-    private val card = Card(0L, "cardNameTest", powerstatsMock)
+    private val card = Card(0L, "cardNameTest", powerstatsMock, "cardImageUrl")
 
     private val otherPowerstatsMock = mock(Powerstats::class.java)
-    private val otherCard = Card(1L, "otherCardNameTest", otherPowerstatsMock)
+    private val otherCard = Card(1L, "otherCardNameTest", otherPowerstatsMock, "otherCardImageUrl")
 
     @Test
     fun duelHeight_win() {

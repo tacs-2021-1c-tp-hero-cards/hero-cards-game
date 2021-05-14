@@ -7,7 +7,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 data class Card(
     val id: Long,
     val name: String,
-    val powerstats: Powerstats
+    val powerstats: Powerstats,
+    val imageUrl: String
 ) {
     fun duel(otherCard: Card, duelType: DuelType): DuelResult =
         DuelStrategy().getDuelStrategy(duelType).invoke(this, otherCard)
