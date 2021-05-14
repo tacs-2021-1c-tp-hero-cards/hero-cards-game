@@ -3,10 +3,8 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.RestClient
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.ImageApi
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
-import okhttp3.internal.connection.RealCall
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test

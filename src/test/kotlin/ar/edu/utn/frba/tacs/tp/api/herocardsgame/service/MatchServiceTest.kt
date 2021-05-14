@@ -43,7 +43,7 @@ internal class MatchServiceTest {
     fun createMatch_DeckNotFoundException() {
         `when`(deckServiceMock.searchDeckById(deckId.toString())).thenThrow(ElementNotFoundException::class.java)
 
-        Assertions.assertThrows(ElementNotFoundException::class.java) {
+        assertThrows(ElementNotFoundException::class.java) {
             instance.createMatch(listOf("0", "1"), deckId.toString())
         }
     }
@@ -53,7 +53,7 @@ internal class MatchServiceTest {
         `when`(deckServiceMock.searchDeckById(deckId.toString())).thenReturn(deck)
         `when`(userServiceMock.searchUserById(userId.toString())).thenThrow(ElementNotFoundException::class.java)
 
-        Assertions.assertThrows(ElementNotFoundException::class.java) {
+        assertThrows(ElementNotFoundException::class.java) {
             instance.createMatch(listOf("0", "1"), deckId.toString())
         }
     }
@@ -81,7 +81,7 @@ internal class MatchServiceTest {
         `when`(userServiceMock.searchUserById(userId.toString())).thenReturn(user1)
         `when`(userServiceMock.searchUserById(userId.toString())).thenThrow(ElementNotFoundException::class.java)
 
-        Assertions.assertThrows(ElementNotFoundException::class.java) {
+        assertThrows(ElementNotFoundException::class.java) {
             instance.buildPlayers(listOf("0", "1"), deck)
         }
     }

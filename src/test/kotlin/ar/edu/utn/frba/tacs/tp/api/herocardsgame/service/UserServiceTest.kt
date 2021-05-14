@@ -4,17 +4,13 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundExcept
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
+import org.mockito.Mockito.*
 
 internal class UserServiceTest {
 
-    private val userIntegrationMock = Mockito.mock(UserIntegration::class.java)
+    private val userIntegrationMock = mock(UserIntegration::class.java)
     private val instance = UserService(userIntegrationMock)
 
     private val userId = 0L
@@ -29,7 +25,7 @@ internal class UserServiceTest {
 
         instance.createUser(userName, fullName, password)
 
-        verify(userIntegrationMock, Mockito.times(1))
+        verify(userIntegrationMock, times(1))
             .saveUser(User(userName = userName, fullName = fullName, password = password))
     }
 
@@ -84,7 +80,7 @@ internal class UserServiceTest {
 
         instance.activateUserSession(userName, password)
 
-        verify(userIntegrationMock, Mockito.times(1))
+        verify(userIntegrationMock, times(1))
             .addUserSession(User(userName = userName, fullName = fullName, password = password))
     }
 
@@ -105,7 +101,7 @@ internal class UserServiceTest {
 
         instance.deactivateUserSession(token)
 
-        verify(userIntegrationMock, Mockito.times(1)).deleteUserSession(user)
+        verify(userIntegrationMock, times(1)).deleteUserSession(user)
     }
 
     @Test
