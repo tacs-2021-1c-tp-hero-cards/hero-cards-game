@@ -31,7 +31,6 @@ class UsersController(
                     createUserRequest.fullName,
                     createUserRequest.buildPasswordHash()
                 )
-            println("${newUser.userName}, ${newUser.fullName}, ${newUser.password}, ${newUser.id}")
             ResponseEntity.ok().body(newUser.id!!)
         } catch (e: InvalidUserException) {
             ResponseEntity.badRequest().build()
