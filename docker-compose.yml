@@ -1,6 +1,10 @@
 version: "2.2"
 services:
-  web:
+  frontend:
+    image: fesposta/hero-cards-game-ui:latest
+    ports:
+      - 5000:5000
+  server:
     build: .
     ports:
-      - "8080:8080"
+      - 8080:8080
