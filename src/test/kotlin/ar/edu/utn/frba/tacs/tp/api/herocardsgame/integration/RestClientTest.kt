@@ -5,8 +5,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.ImageApi
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import java.io.File
@@ -40,7 +39,7 @@ internal class RestClientTest {
     @Test
     fun buildResponse() {
         val json =
-            File("src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/image.json")
+            File("src/test/resources/json/api/image.json")
                 .bufferedReader()
                 .use { it.readText() }
 
@@ -56,7 +55,7 @@ internal class RestClientTest {
     @Test
     fun buildResponse_error() {
         val json =
-            File("src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/error.json")
+            File("src/test/resources/json/api/error.json")
                 .bufferedReader()
                 .use { it.readText() }
 

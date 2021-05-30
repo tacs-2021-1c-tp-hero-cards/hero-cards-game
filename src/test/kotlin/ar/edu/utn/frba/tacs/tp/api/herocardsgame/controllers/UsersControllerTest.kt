@@ -2,10 +2,10 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.ActivateUserSessionRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateUserRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.HashService
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.UserService
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -20,8 +20,8 @@ internal class UsersControllerTest {
     fun init() {
         val context = AnnotationConfigWebApplicationContext()
         context.register(UsersController::class.java)
-        context.register(UserService::class.java)
         context.register(UserIntegration::class.java)
+        context.register(Dao::class.java)
 
         context.refresh()
         context.start()
@@ -38,16 +38,15 @@ internal class UsersControllerTest {
             assertEquals(200, response.statusCodeValue)
             assertEquals(response.body!!, 0L)
 
-            val users = instance.getUsers("0")
-            assertTrue(
-                users.body!!.contains(
-                    User(
-                        0L,
-                        "userName",
-                        "fullName",
-                        HashService.calculatePasswordHash("userName", "password")
-                    )
-                )
+            val users = instance.getUser("0")
+            assertEquals(
+                User(
+                    0L,
+                    "userName",
+                    "fullName",
+                    HashService.calculatePasswordHash("userName", "password")
+                ),
+                users.body!!
             )
         }
 
@@ -57,16 +56,15 @@ internal class UsersControllerTest {
             assertEquals(200, response.statusCodeValue)
             assertEquals(response.body!!, 0L)
 
-            val users = instance.getUsers("0")
-            assertTrue(
-                users.body!!.contains(
-                    User(
-                        0L,
-                        "userName",
-                        "fullName",
-                        HashService.calculatePasswordHash("userName", "password")
-                    )
-                )
+            val users = instance.getUser("0")
+            assertEquals(
+                User(
+                    0L,
+                    "userName",
+                    "fullName",
+                    HashService.calculatePasswordHash("userName", "password")
+                ),
+                users.body!!
             )
 
             val otherResponse = instance.signUp(CreateUserRequest("userName", "fullName", "password"))
@@ -88,17 +86,16 @@ internal class UsersControllerTest {
             val token = response.body!!.token
             assertTrue(token.isNotBlank())
 
-            val users = instance.getUsers("0")
-            assertTrue(
-                users.body!!.contains(
-                    User(
-                        0L,
-                        "userName",
-                        "fullName",
-                        HashService.calculatePasswordHash("userName", "password"),
-                        token
-                    )
-                )
+            val users = instance.getUser("0")
+            assertEquals(
+                User(
+                    0L,
+                    "userName",
+                    "fullName",
+                    HashService.calculatePasswordHash("userName", "password"),
+                    token
+                ),
+                users.body!!
             )
         }
 
@@ -121,16 +118,15 @@ internal class UsersControllerTest {
             val response = instance.logOut(hashMapOf("token" to token))
             assertEquals(200, response.statusCodeValue)
 
-            val users = instance.getUsers("0")
-            assertTrue(
-                users.body!!.contains(
-                    User(
-                        0L,
-                        "userName",
-                        "fullName",
-                        HashService.calculatePasswordHash("userName", "password")
-                    )
-                )
+            val users = instance.getUser("0")
+            assertEquals(
+                User(
+                    0L,
+                    "userName",
+                    "fullName",
+                    HashService.calculatePasswordHash("userName", "password")
+                ),
+                users.body!!
             )
         }
 
@@ -150,17 +146,16 @@ internal class UsersControllerTest {
             instance.signUp(CreateUserRequest("userName", "fullName", "password"))
             instance.signUp(CreateUserRequest("userName2", "fullName2", "password2"))
 
-            val response = instance.getUsers("1")
+            val response = instance.getUser("1")
             assertEquals(200, response.statusCodeValue)
-            assertTrue(
-                response.body!!.contains(
-                    User(
-                        1L,
-                        "userName2",
-                        "fullName2",
-                        HashService.calculatePasswordHash("userName2", "password2")
-                    )
-                )
+            assertEquals(
+                User(
+                    1L,
+                    "userName2",
+                    "fullName2",
+                    HashService.calculatePasswordHash("userName2", "password2")
+                ),
+                response.body!!
             )
         }
 
@@ -168,9 +163,9 @@ internal class UsersControllerTest {
         fun `Search by invalid user id, returns NOT_FOUND`() {
             instance.signUp(CreateUserRequest("userName", "fullName", "password"))
 
-            val response = instance.getUsers("1")
-            assertEquals(200, response.statusCodeValue)
-            assertTrue(response.body!!.isEmpty())
+            val response = instance.getUser("1")
+            assertEquals(400, response.statusCodeValue)
+            assertNull(response.body)
         }
     }
 }

@@ -1,40 +1,42 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.HashService
 import org.springframework.stereotype.Component
 
 @Component
-class UserIntegration(
-    private val userMap: HashMap<Long, User> = hashMapOf(),
-    private val userSessionMap: HashMap<String, Long> = hashMapOf()
+class UserIntegration(private val dao: Dao) {
 
-) {
+    fun createUser(userName: String, fullName: String, password: String): User {
+        if (dao.getAllUser().any { it.userName == userName && it.fullName == fullName }) {
+            throw InvalidUserException(fullName, userName)
+        }
 
-    fun getAllUser(): List<User> = userMap.values.toList()
-
-    fun saveUser(user: User): User {
-        val userId = user.id ?: calculateId()
-        val newUser = user.copy(id = userId)
-        userMap[userId] = newUser
-        return newUser
+        return saveUser(User(userName = userName, fullName = fullName, password = password))
     }
 
-    fun calculateId(): Long = userMap.size.toLong()
+    fun activateUserSession(userName: String, password: String): User {
+        val user = dao.getAllUser().find { it.userName == userName && it.password == password }
+            ?: throw ElementNotFoundException("user", userName)
 
-    fun getAllUserSession(): HashMap<String, Long> = userSessionMap
-
-    fun addUserSession(user: User): User {
-        val token = HashService.calculateToken(user)
-        val newUser = user.copy(token = token)
-        userSessionMap[token] = newUser.id!!
-        return saveUser(newUser)
+        return saveUser(user.toModel().copy(token = HashService.calculateToken(user.id, userName, user.fullName)))
     }
 
-    fun deleteUserSession(user: User): User {
-        userSessionMap.remove(user.token)
-        val newUser = user.copy(token = null)
-        userMap[user.id!!] = newUser
-        return saveUser(newUser)
+    fun disableUserSession(token: String) {
+        val user = dao.getAllUser().find { it.token == token }
+            ?: throw ElementNotFoundException("token", token)
+
+        saveUser(user.toModel().copy(token = null))
     }
+
+    fun getUserById(id: Long): User =
+        dao.getUserById(id)?.toModel() ?: throw ElementNotFoundException("id", id.toString())
+
+    fun getAllUser(): List<User> = dao.getAllUser().map { it.toModel() }
+
+    fun saveUser(user: User): User = dao.saveUser(user).toModel()
+
 }

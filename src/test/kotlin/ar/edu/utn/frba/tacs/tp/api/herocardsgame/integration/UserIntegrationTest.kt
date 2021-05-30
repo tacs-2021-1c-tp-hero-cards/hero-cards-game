@@ -1,16 +1,18 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.HashService
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class UserIntegrationTest {
 
-    private val userMapMock: HashMap<Long, User> = hashMapOf()
-    private val userSessionMapMock: HashMap<String, Long> = hashMapOf()
-    private val instance = UserIntegration(userMapMock, userSessionMapMock)
+    lateinit var dao: Dao
+    lateinit var instance: UserIntegration
 
     private val userId = 0L
     private val userName = "userNameTest"
@@ -18,70 +20,211 @@ internal class UserIntegrationTest {
     private val password = "passwordTest"
     private val token = "tokenTest"
 
+    private val user = User(id = userId, userName = userName, fullName = fullName, password = password)
+
+    @BeforeEach
+    fun init() {
+        dao = Dao()
+        instance = UserIntegration(dao)
+    }
+
+    @Nested
+    inner class CreateUser {
+
+        @Test
+        fun `Create new user`() {
+            val user = instance.createUser(userName, fullName, password)
+
+            val allUser = dao.getAllUser().map { it.toModel() }
+            assertEquals(1, allUser.size)
+            assertTrue(allUser.contains(user))
+        }
+
+        @Test
+        fun `Create new user if another user has same userName but different fullName`() {
+            dao.saveUser(user.copy(fullName = "fullNameTest2"))
+
+            val user = instance.createUser(userName, fullName, password)
+
+            val allUser = dao.getAllUser().map { it.toModel() }
+            assertEquals(2, allUser.size)
+            assertTrue(allUser.contains(user))
+        }
+
+        @Test
+        fun `Create new user if another user has same fullName but different userName`() {
+            dao.saveUser(user.copy(userName = "userNameTest2"))
+
+            val user = instance.createUser(userName, fullName, password)
+
+            val allUser = dao.getAllUser().map { it.toModel() }
+            assertEquals(2, allUser.size)
+            assertTrue(allUser.contains(user))
+        }
+
+        @Test
+        fun `Create user and it already exists`() {
+            dao.saveUser(user)
+
+            assertThrows(InvalidUserException::class.java) {
+                instance.createUser(userName, fullName, password)
+            }
+        }
+
+    }
+
+    @Nested
+    inner class ActivateUserSession {
+
+        @Test
+        fun `Activate session of an existing user`() {
+            dao.saveUser(user)
+
+            instance.activateUserSession(userName, password)
+
+            val foundUser = dao.getAllUser().first().toModel()
+            assertEquals(userId, foundUser.id)
+            assertEquals(userName, foundUser.userName)
+            assertEquals(fullName, foundUser.fullName)
+            assertEquals(password, foundUser.password)
+            assertNotNull(foundUser.token)
+
+            val stats = foundUser.stats
+            assertEquals(0, stats.winCount)
+            assertEquals(0, stats.tieCount)
+            assertEquals(0, stats.loseCount)
+            assertEquals(0, stats.inProgressCount)
+        }
+
+        @Test
+        fun `Non activate section if only username matches`() {
+            dao.saveUser(user.copy(password = "passwordTest2"))
+
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.activateUserSession(userName, password)
+            }
+        }
+
+        @Test
+        fun `Non activate section if only password matches`() {
+            dao.saveUser(user.copy(userName = "userNameTest2"))
+
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.activateUserSession(userName, password)
+            }
+        }
+
+        @Test
+        fun `Non activate section if there are no users`() {
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.activateUserSession(userName, password)
+            }
+        }
+
+    }
+
+    @Nested
+    inner class DisableUserSession {
+
+        @Test
+        fun `Disable session of an existing user`() {
+            dao.saveUser(user.copy(token = token))
+
+            instance.disableUserSession(token)
+
+            val allUser = dao.getAllUser()
+            assertEquals(1, allUser.size)
+
+            val foundUser = allUser.first().toModel()
+            assertEquals(userId, foundUser.id)
+            assertEquals(userName, foundUser.userName)
+            assertEquals(fullName, foundUser.fullName)
+            assertEquals(password, foundUser.password)
+            assertNull(foundUser.token)
+
+            val stats = foundUser.stats
+            assertEquals(0, stats.winCount)
+            assertEquals(0, stats.tieCount)
+            assertEquals(0, stats.loseCount)
+            assertEquals(0, stats.inProgressCount)
+        }
+
+        @Test
+        fun `Non disable section if token does not match`() {
+            dao.saveUser(user.copy(token = "tokenTest2"))
+
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.disableUserSession(token)
+            }
+        }
+
+        @Test
+        fun `Non disable section if there are no users`() {
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.disableUserSession(token)
+            }
+        }
+
+    }
+
+    @Nested
+    inner class GetUserById {
+
+        @Test
+        fun `Get user by id`() {
+            dao.saveUser(user)
+
+            val userById = instance.getUserById(userId)
+            assertEquals(user, userById)
+        }
+
+        @Test
+        fun `Get user by id but not exist`() {
+            dao.saveUser(user.copy(id = 1L))
+
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.getUserById(userId)
+            }
+        }
+
+        @Test
+        fun `Get user by id but no user exists in the system`() {
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.getUserById(userId)
+            }
+        }
+
+    }
+
     @Test
     fun getAllUser() {
-        val user = User(userId, userName, fullName, password, token)
-        userMapMock[0L] = user
+        dao.saveUser(user)
+        dao.saveUser(user.copy(id = 1L))
 
         val allUser = instance.getAllUser()
-        assertEquals(1, allUser.size)
-
-        val found = allUser.first()
-        assertEquals(user, found)
+        assertEquals(2, allUser.size)
+        assertTrue(allUser.contains(user))
     }
 
     @Test
     fun saveUser() {
-        instance.saveUser(User(userName = userName, fullName = fullName, password = password, token = token))
+        instance.saveUser(user.copy(token = token))
 
-        val allUsers = userMapMock.values.toList()
-        assertEquals(1, allUsers.size)
+        val allUser = dao.getAllUser()
+        assertEquals(1, dao.getAllUser().size)
 
-        val foundUser = allUsers.first()
+        val foundUser = allUser.first().toModel()
         assertEquals(userId, foundUser.id)
         assertEquals(userName, foundUser.userName)
         assertEquals(fullName, foundUser.fullName)
         assertEquals(password, foundUser.password)
         assertEquals(token, foundUser.token)
+
+        val stats = foundUser.stats
+        assertEquals(0, stats.winCount)
+        assertEquals(0, stats.tieCount)
+        assertEquals(0, stats.loseCount)
+        assertEquals(0, stats.inProgressCount)
     }
 
-    @Test
-    fun getAllUserSession() {
-        userSessionMapMock[token] = userId
-
-        val allUserSession = instance.getAllUserSession()
-        assertEquals(1, allUserSession.size)
-        assertEquals(userId, allUserSession[token])
-    }
-
-    @Test
-    fun addUserSession() {
-        val newUser =
-            instance.addUserSession(User(id = userId, userName = userName, fullName = fullName, password = password))
-
-        assertEquals(1, userSessionMapMock.size)
-
-        assertEquals(newUser.token, userSessionMapMock.keys.first())
-        assertEquals(userId, userSessionMapMock.values.first())
-    }
-
-    @Test
-    fun deleteUserSession() {
-        val token = "token"
-        val user = User(id = userId, userName = userName, fullName = fullName, password = password, token = token)
-        userSessionMapMock[token] = userId
-        userMapMock[userId] = user
-
-        instance.deleteUserSession(user)
-
-        assertEquals(0, userSessionMapMock.size)
-        assertEquals(userId, userMapMock.keys.first())
-
-        val userFound = userMapMock.values.first()
-        assertEquals(userId, userFound.id)
-        assertEquals(userName, userFound.userName)
-        assertEquals(fullName, userFound.fullName)
-        assertEquals(password, userFound.password)
-        assertNull(userFound.token)
-    }
 }

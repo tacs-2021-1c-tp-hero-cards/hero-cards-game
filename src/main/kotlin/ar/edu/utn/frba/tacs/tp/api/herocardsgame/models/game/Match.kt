@@ -12,6 +12,8 @@ data class Match(
 ) {
 
     fun resolveDuel(duelType: DuelType): Match {
+        validateNotFinalizedOrCancelled()
+
         val player = players.first()
         val opponent = players.last()
 
@@ -33,12 +35,18 @@ data class Match(
     fun updateStatusMatch(): Match =
         this.copy(status = if (players.any { it.availableCards.isEmpty() }) MatchStatus.FINALIZED else MatchStatus.IN_PROGRESS)
 
-    fun abortMatch(): Match =
-        this.copy(status = MatchStatus.CANCELLED)
+    fun abortMatch(): Match {
+        this.validateNotFinalizedOrCancelled()
+        return copy(
+            players = listOf(players.first().loseMatch(), players.last().winMatch()),
+            status = MatchStatus.CANCELLED
+        )
+    }
 
     fun validateNotFinalizedOrCancelled() {
         if (this.status == MatchStatus.FINALIZED || this.status == MatchStatus.CANCELLED) {
-            throw InvalidMatchException(this.id!!)
+            throw InvalidMatchException(id!!)
         }
     }
+
 }

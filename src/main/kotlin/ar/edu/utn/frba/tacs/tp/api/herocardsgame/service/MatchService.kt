@@ -3,6 +3,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.service
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import org.springframework.stereotype.Service
@@ -11,20 +12,20 @@ import org.springframework.stereotype.Service
 class MatchService(
     private val matchIntegration: MatchIntegration,
     private val deckService: DeckService,
-    private val userService: UserService
+    private val userIntegration: UserIntegration
 ) {
 
     fun createMatch(usersId: List<String>, deckId: String): Match {
-        val deck = deckService.searchDeckById(deckId)
+        val deck =
+            deckService.searchDeck(deckId = deckId).firstOrNull() ?: throw ElementNotFoundException("deck", deckId)
         val players = buildPlayers(usersId, deck)
         val match = Match(players = players, deck = deck, status = MatchStatus.IN_PROGRESS)
-        return matchIntegration.saveMatch(match = match)
+        return matchIntegration.saveMatch(match)
     }
 
     fun buildPlayers(usersId: List<String>, deck: Deck): List<Player> {
         var players = usersId.map {
-            val searchUser = userService.searchUserById(it)
-            Player(userName = searchUser.userName, id = searchUser.id!!)
+            Player(user = userIntegration.getUserById(it.toLong()))
         }
 
         deck.mixCards().cards.forEach {
@@ -40,33 +41,25 @@ class MatchService(
         return players.drop(1) + player.copy(availableCards = availableCards + card)
     }
 
-    fun searchMatchById(matchId: String): Match {
-        val matches = matchIntegration.getAllMatches().filter { matchId.toLong() == it.id }
-        matches.ifEmpty { throw ElementNotFoundException("match", matchId) }
-        return matches.first()
-    }
+    fun searchMatchById(matchId: String): Match = matchIntegration.getMatchById(matchId.toLong())
 
     fun nextDuel(matchId: String, token: String, duelType: DuelType): Match {
         val match = searchMatchById(matchId)
-
-        match.validateNotFinalizedOrCancelled()
         validateUserDuel(match, token)
-
-        return matchIntegration.saveMatch(match.resolveDuel(duelType).updateTurn().updateStatusMatch())
-    }
-
-    private fun validateUserDuel(match: Match, token: String) {
-        if (userService.searchUser(id = match.players.first().id, token = token).isEmpty()) {
-            throw InvalidTurnException(token)
-        }
+        val newMatch = match.resolveDuel(duelType).updateTurn().updateStatusMatch()
+        return matchIntegration.saveMatch(newMatch)
     }
 
     fun abortMatch(matchId: String, token: String): Match {
         val match = searchMatchById(matchId)
-
-        match.validateNotFinalizedOrCancelled()
         validateUserDuel(match, token)
+        val newMatch = match.abortMatch()
+        return matchIntegration.saveMatch(newMatch)
+    }
 
-        return matchIntegration.saveMatch(match.abortMatch())
+    private fun validateUserDuel(match: Match, token: String) {
+        if (userIntegration.getUserById(match.players.first().user.id!!).token != token) {
+            throw InvalidTurnException(token)
+        }
     }
 }

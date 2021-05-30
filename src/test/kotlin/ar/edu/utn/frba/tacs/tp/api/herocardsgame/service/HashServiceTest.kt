@@ -1,17 +1,15 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.service
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class HashServiceTest {
 
     @Test
     fun calculateToken(){
-        val user = User(id = 0L, userName = "userName", password = "password", fullName = "fullName")
-
-        val calculateToken = HashService.calculateToken(user)
-        val calculateOtherToken = HashService.calculateToken(user)
+        val calculateToken = HashService.calculateToken(0L, "userName", "fullName")
+        val calculateOtherToken = HashService.calculateToken(0L, "userName", "fullName")
 
         assertTrue(calculateToken != calculateOtherToken)
     }

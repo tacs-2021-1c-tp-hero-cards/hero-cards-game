@@ -1,21 +1,20 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
-
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Authentication
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.ActivateUserSessionRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateUserRequest
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
 @Controller
-@CrossOrigin(origins =["*"], allowedHeaders = ["*"])
+@CrossOrigin(origins = ["*"], allowedHeaders = ["*"])
 class UsersController(
-    private val userService: UserService
+    private val userIntegration: UserIntegration
 ) {
 
     /**
@@ -26,7 +25,7 @@ class UsersController(
     fun signUp(@RequestBody createUserRequest: CreateUserRequest): ResponseEntity<Long> =
         try {
             val newUser =
-                userService.createUser(
+                userIntegration.createUser(
                     createUserRequest.userName,
                     createUserRequest.fullName,
                     createUserRequest.buildPasswordHash()
@@ -44,7 +43,7 @@ class UsersController(
     fun logIn(@RequestBody activateUserSessionRequest: ActivateUserSessionRequest): ResponseEntity<Authentication> =
         try {
             val user =
-                userService.activateUserSession(
+                userIntegration.activateUserSession(
                     activateUserSessionRequest.userName,
                     activateUserSessionRequest.buildPasswordHash()
                 )
@@ -60,7 +59,7 @@ class UsersController(
     @PostMapping("/logOut")
     fun logOut(@RequestBody tokenMap: Map<String, String>): ResponseEntity<Void> =
         try {
-            userService.deactivateUserSession(tokenMap["token"]!!)
+            userIntegration.disableUserSession(tokenMap["token"]!!)
             ResponseEntity.ok().build()
         } catch (e: ElementNotFoundException) {
             ResponseEntity.badRequest().build()
@@ -68,10 +67,14 @@ class UsersController(
 
     /**
      * @param userId
-     * @return list of users
+     * @return user
      */
     @GetMapping("/admin/users/{user-id}")
-    fun getUsers(@PathVariable("user-id") userId: String): ResponseEntity<List<User>> =
-        ResponseEntity.ok().body(userService.searchUser(id = userId.toLong()))
+    fun getUser(@PathVariable("user-id") userId: String): ResponseEntity<User> =
+        try {
+            ResponseEntity.ok().body(userIntegration.getUserById(userId.toLong()))
+        } catch (e: ElementNotFoundException) {
+            ResponseEntity.badRequest().build()
+        }
 
 }

@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.CardIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.DeckIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.SuperHeroIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.SuperHeroClient
@@ -8,6 +9,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CardMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateDeckRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.UpdateDeckRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.DeckService
@@ -38,6 +40,8 @@ internal class DecksControllerTest {
         context.register(PowerstatsMapper::class.java)
         context.register(ImageMapper::class.java)
         context.register(SuperHeroIntegration::class.java)
+        context.register(CardIntegration::class.java)
+        context.register(Dao::class.java)
 
         context.refresh()
         context.start()

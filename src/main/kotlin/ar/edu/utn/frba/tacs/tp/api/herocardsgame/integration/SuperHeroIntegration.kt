@@ -11,13 +11,18 @@ class SuperHeroIntegration(
     private val mapper: CardMapper
 ) {
 
+    var totalCard: Int = 731
+
     fun getCard(id: String): Card {
         val character = client.getCharacter(id)
         return mapper.map(character)
     }
 
-    fun searchCardByName(characterName : String): List<Card> {
+    fun searchCardByName(characterName: String): List<Card> {
         val charactersByName = client.getCharacterByName(characterName)
         return mapper.mapCharactersSearch(charactersByName)
     }
+
+    fun getRandomCards(numberCards: Int): List<Card> =
+        (1..totalCard).shuffled().take(numberCards).map { getCard(it.toString()) }
 }

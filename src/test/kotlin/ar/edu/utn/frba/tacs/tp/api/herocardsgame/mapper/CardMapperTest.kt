@@ -1,8 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class CardMapperTest {

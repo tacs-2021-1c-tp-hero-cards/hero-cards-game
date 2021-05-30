@@ -18,43 +18,43 @@ class BuilderContextUtils {
         }
         
         fun buildBatman() = createFromFile<Card>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/card/Batman.json"
+            "src/test/resources/json/card/Batman.json"
         )
 
         fun buildBatmanII() = createFromFile<Card>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/card/BatmanII.json"
+            "src/test/resources/json/card/BatmanII.json"
         )
 
         fun buildBatmanIII() = createFromFile<Card>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/card/BatmanIII.json"
+            "src/test/resources/json/card/BatmanIII.json"
         )
 
         fun buildFlash() = createFromFile<Card>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/card/Flash.json"
+            "src/test/resources/json/card/Flash.json"
         )
 
         fun buildAppearanceApi() = createFromFile<AppearanceApi>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/appearance.json"
+            "src/test/resources/json/api/appearance.json"
         )
 
         fun buildPowerstatsApi() = createFromFile<PowerstatsApi>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/powerstats.json"
+            "src/test/resources/json/api/powerstats.json"
         )
 
         fun buildCharacterApi() = createFromFile<CharacterApi>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/character.json"
+            "src/test/resources/json/api/character.json"
         )
 
         fun buildCharactersSearchApi() = createFromFile<CharactersSearchApi>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/charactersSearch.json"
+            "src/test/resources/json/api/charactersSearch.json"
         )
 
         fun buildImageApi() = createFromFile<ImageApi>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/image.json"
+            "src/test/resources/json/api/image.json"
         )
 
         fun buildErrorApi() = createFromFile<CharacterApi>(
-            "src/test/kotlin/ar/edu/utn/frba/tacs/tp/api/herocardsgame/json/api/error.json"
+            "src/test/resources/json/api/error.json"
         )
     }
 }

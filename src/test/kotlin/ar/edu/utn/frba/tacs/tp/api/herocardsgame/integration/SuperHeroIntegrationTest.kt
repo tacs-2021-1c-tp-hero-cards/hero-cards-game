@@ -5,11 +5,9 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CardMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.*
 
 internal class SuperHeroIntegrationTest {
 
@@ -20,21 +18,41 @@ internal class SuperHeroIntegrationTest {
     private val cardId = "0"
     private val characterName = "characterName"
 
+    private val batman = BuilderContextUtils.buildBatman()
+    private val batmanII = BuilderContextUtils.buildBatmanII()
+    private val batmanIII = BuilderContextUtils.buildBatmanIII()
+
     @Test
-    fun mapCardFromCharacterApi() {
+    fun getCard() {
         `when`(clientMock.getCharacter(cardId)).thenReturn(BuilderContextUtils.buildCharacterApi())
-        assertEquals(BuilderContextUtils.buildBatmanII(), instance.getCard(cardId))
+        val card = instance.getCard(cardId)
+        assertEquals(batmanII, card)
     }
 
     @Test
-    fun mapCardsFromCharactersSearchApi() {
+    fun searchCardByName() {
         `when`(clientMock.getCharacterByName(characterName)).thenReturn(BuilderContextUtils.buildCharactersSearchApi())
 
         val cards = instance.searchCardByName(characterName)
 
         assertEquals(3, cards.size)
-        assertTrue(cards.contains(BuilderContextUtils.buildBatman()))
-        assertTrue(cards.contains(BuilderContextUtils.buildBatmanII()))
-        assertTrue(cards.contains(BuilderContextUtils.buildBatmanIII()))
+        assertTrue(cards.contains(batman))
+        assertTrue(cards.contains(batmanII))
+        assertTrue(cards.contains(batmanIII))
+    }
+
+    @Test
+    fun getRandomCards(){
+        `when`(clientMock.getCharacter(anyString())).thenReturn(BuilderContextUtils.buildCharacterApi())
+        instance.totalCard=3
+
+        val cards = instance.getRandomCards(3)
+
+        assertEquals(3, cards.size)
+        assertTrue(cards.contains(batmanII))
+
+        verify(clientMock, times(1)).getCharacter("1")
+        verify(clientMock, times(1)).getCharacter("2")
+        verify(clientMock, times(1)).getCharacter("3")
     }
 }
