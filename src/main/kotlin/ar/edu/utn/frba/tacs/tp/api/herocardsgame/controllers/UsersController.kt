@@ -13,7 +13,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
 @Controller
-@CrossOrigin(origins =["*"], allowedHeaders = ["*"])
+@CrossOrigin(origins =["http://localhost:3000"], allowedHeaders = ["*"])
 class UsersController(
     private val userService: UserService
 ) {

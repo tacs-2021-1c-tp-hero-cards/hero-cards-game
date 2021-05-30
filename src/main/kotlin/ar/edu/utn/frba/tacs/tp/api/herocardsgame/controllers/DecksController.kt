@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*
  * y ponerles un nombre
  */
 @Controller
+@CrossOrigin(origins =["http://localhost:3000"], allowedHeaders = ["*"])
 class DecksController(
     private val deckService: DeckService
 ) {
