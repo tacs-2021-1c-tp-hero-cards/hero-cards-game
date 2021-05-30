@@ -261,68 +261,6 @@ internal class DecksControllerTest {
     }
 
     @Nested
-    inner class AddCardToDeck {
-
-        @Test
-        fun `Add card in deck`() {
-            `when`(superHeroClientMock.getCharacter("70")).thenReturn(BuilderContextUtils.buildCharacterApi())
-            instance.createDeck(CreateDeckRequest("deckNameTest", emptyList()))
-
-            val response = instance.addCardToDeck("0", hashMapOf("cardId" to "70"))
-            assertEquals(204, response.statusCodeValue)
-            assertEquals(Deck(0L, "deckNameTest", listOf(BuilderContextUtils.buildBatmanII())), response.body!!)
-        }
-
-        @Test
-        fun `Not add card in deck by deck not exist`() {
-            val response = instance.addCardToDeck("0", hashMapOf("cardId" to "70"))
-            assertEquals(400, response.statusCodeValue)
-            assertNull(response.body)
-        }
-
-        @Test
-        fun `Not add card in deck by invalid character id`() {
-            `when`(superHeroClientMock.getCharacter("70")).thenThrow(ElementNotFoundException("character", "70"))
-            instance.createDeck(CreateDeckRequest("deckNameTest", emptyList()))
-
-            val response = instance.addCardToDeck("0", hashMapOf("cardId" to "70"))
-            assertEquals(400, response.statusCodeValue)
-            assertNull(response.body)
-        }
-    }
-
-    @Nested
-    inner class DeleteCardToDeck {
-
-        @Test
-        fun `Delete card in deck`() {
-            `when`(superHeroClientMock.getCharacter("70")).thenReturn(BuilderContextUtils.buildCharacterApi())
-            instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
-
-            val response = instance.deleteCardToDeck("0", "70")
-            assertEquals(204, response.statusCodeValue)
-            assertEquals(Deck(0L, "deckNameTest", emptyList()), response.body!!)
-        }
-
-        @Test
-        fun `Not delete card in deck by deck not exist`() {
-            val response = instance.deleteCardToDeck("0", "70")
-            assertEquals(400, response.statusCodeValue)
-            assertNull(response.body)
-        }
-
-        @Test
-        fun `Not delete card in deck by card not exist in deck`() {
-            `when`(superHeroClientMock.getCharacter("70")).thenReturn(BuilderContextUtils.buildCharacterApi())
-            instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
-
-            val response = instance.deleteCardToDeck("0", "71")
-            assertEquals(204, response.statusCodeValue)
-            assertEquals(Deck(0L, "deckNameTest", listOf(BuilderContextUtils.buildBatmanII())), response.body!!)
-        }
-    }
-
-    @Nested
     inner class DeleteDeck {
 
         @Test

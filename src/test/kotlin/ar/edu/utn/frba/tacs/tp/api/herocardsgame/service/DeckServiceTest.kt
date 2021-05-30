@@ -39,26 +39,6 @@ internal class DeckServiceTest {
         verify(deckIntegrationMock, times(1)).deleteDeck(deckId)
     }
 
-    @Test
-    fun addCardInDeck() {
-        `when`(deckIntegrationMock.getDeckById(deckId)).thenReturn(deck.copy(cards = listOf(batman)))
-        `when`(cardIntegrationMock.getCardById("2")).thenReturn(flash)
-
-        instance.addCardInDeck(deckId.toString(), "2")
-
-        verify(deckIntegrationMock, times(1))
-            .saveDeck(deck.copy(cards = listOf(batman, flash)))
-    }
-
-    @Test
-    fun deleteCardInDeck() {
-        `when`(deckIntegrationMock.getDeckById(deckId)).thenReturn(deck.copy(cards = listOf(batman, flash)))
-
-        instance.deleteCardInDeck(deckId.toString(), "2")
-
-        verify(deckIntegrationMock, times(1)).saveDeck(deck.copy(cards = listOf(batman)))
-    }
-
     @Nested
     inner class SearchDeck {
 

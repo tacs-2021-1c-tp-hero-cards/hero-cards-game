@@ -21,16 +21,6 @@ class DeckService(
         deckIntegration.deleteDeck(deckId.toLong())
     }
 
-    fun addCardInDeck(deckId: String, cardId: String): Deck {
-        val newDeck = deckIntegration.getDeckById(deckId.toLong()).addCard(cardIntegration.getCardById(cardId))
-        return deckIntegration.saveDeck(newDeck)
-    }
-
-    fun deleteCardInDeck(deckId: String, cardId: String): Deck {
-        val newDeck = deckIntegration.getDeckById(deckId.toLong()).removeCard(cardId.toLong())
-        return deckIntegration.saveDeck(newDeck)
-    }
-
     fun searchDeck(deckId: String? = null, deckName: String? = null): List<Deck> =
         deckIntegration.getDeckByIdOrName(deckId?.toLong(), deckName)
 

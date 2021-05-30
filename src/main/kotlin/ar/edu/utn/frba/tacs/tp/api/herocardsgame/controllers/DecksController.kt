@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*
  * y ponerles un nombre
  */
 @Controller
-@CrossOrigin(origins =["http://localhost:3000"], allowedHeaders = ["*"])
+@CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
 class DecksController(
     private val deckService: DeckService
 ) {
@@ -75,34 +75,6 @@ class DecksController(
         }
 
     /**
-     * TODO use the same validation to create the deck
-     * @param deckId, cardId
-     * @return
-     */
-    @PatchMapping("/admin/decks/{deck-id}/card")
-    fun addCardToDeck(
-        @PathVariable("deck-id") deckId: String, @RequestBody cardId: Map<String, String>
-    ): ResponseEntity<Deck> =
-        try {
-            ResponseEntity.status(HttpStatus.NO_CONTENT).body(deckService.addCardInDeck(deckId, cardId["cardId"]!!))
-        } catch (e: ElementNotFoundException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
-        }
-
-    /**
-     * @param deckId, cardId
-     * @return
-     */
-    @DeleteMapping("/admin/decks/{deck-id}/card/{card-id}")
-    fun deleteCardToDeck(
-        @PathVariable("deck-id") deckId: String, @PathVariable("card-id") cardId: String
-    ): ResponseEntity<Deck> = try {
-        ResponseEntity.status(HttpStatus.NO_CONTENT).body(deckService.deleteCardInDeck(deckId, cardId))
-    } catch (e: ElementNotFoundException) {
-        ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
-    }
-
-    /**
      * @param deckId
      * @return
      */
@@ -111,7 +83,7 @@ class DecksController(
         try {
             deckService.deleteDeck(deckId)
             ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-        }catch (e: ElementNotFoundException) {
+        } catch (e: ElementNotFoundException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
         }
 
