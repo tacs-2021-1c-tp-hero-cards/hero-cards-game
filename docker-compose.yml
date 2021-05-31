@@ -3,7 +3,7 @@ services:
   frontend:
     image: fesposta/hero-cards-game-ui:latest
     ports:
-      - 5000:5000
+      - 3000:5000
   server:
     build: .
     ports:
