@@ -8,13 +8,17 @@ import org.springframework.stereotype.Component
 @Component
 class DeckIntegration(private val dao: Dao, private val cardIntegration: CardIntegration) {
 
-    fun getDeckById(id: Long): Deck =
-        getDeckByIdOrName(id = id).firstOrNull() ?: throw ElementNotFoundException("deck", id.toString())
+    fun getDeckById(id: Long): Deck {
+        val deckEntity = dao.getDeckById(id) ?: throw ElementNotFoundException("deck", id.toString())
+        val cards = deckEntity.cardIds.map { cardIntegration.getCardById(it.toString()) }
+        return deckEntity.toModel(cards)
+    }
 
     fun getDeckByIdOrName(id: Long? = null, name: String? = null): List<Deck> {
         val deckEntities = dao.getAllDeck()
             .filter { name == null || name == it.name }
             .filter { id == null || id == it.id }
+            .filter { it.usable }
 
         val allCards = deckEntities
             .flatMap { it.cardIds }

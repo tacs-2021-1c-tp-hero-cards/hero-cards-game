@@ -117,6 +117,14 @@ internal class DeckIntegrationTest {
             assertTrue(decks.contains(deck))
         }
 
+        @Test
+        fun `Deck by name and id and non find by non usable`() {
+            dao.saveDeck(deck.copy(usable = false))
+
+            val decks = instance.getDeckByIdOrName(id = id, name = name)
+            assertTrue(decks.isEmpty())
+        }
+
     }
 
     @Test

@@ -289,6 +289,26 @@ internal class DaoTest {
 
         }
 
+        @Nested
+        inner class GetDeckById{
+
+            @Test
+            fun `Search deck by id and exists`() {
+                val deckEntity = DeckEntity(deck = deck)
+                instance = Dao(deckMap = hashMapOf(0L to deckEntity))
+
+                val found = instance.getDeckById(0L)
+                assertEquals(deckEntity, found)
+            }
+
+            @Test
+            fun `Search deck by id and non exists`() {
+                instance = Dao(deckMap = hashMapOf())
+                assertNull(instance.getDeckById(0L))
+            }
+
+        }
+
         @Test
         fun saveDeck() {
             instance = Dao()

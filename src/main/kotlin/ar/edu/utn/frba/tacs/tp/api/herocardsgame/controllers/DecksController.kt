@@ -48,7 +48,7 @@ class DecksController(
         try {
             ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(deckService.saveDeck(createDeckRequest.deckName, createDeckRequest.cardIds))
+                .body(deckService.createDeck(createDeckRequest.deckName, createDeckRequest.cardIds))
         } catch (e: ElementNotFoundException) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
         }

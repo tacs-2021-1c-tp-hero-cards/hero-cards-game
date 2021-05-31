@@ -56,6 +56,8 @@ class Dao(
     //Decks
     fun getAllDeck(): List<DeckEntity> = deckMap.values.toList()
 
+    fun getDeckById(id: Long): DeckEntity? = deckMap[id]
+
     fun saveDeck(deck: Deck): DeckEntity {
         val deckId = deck.id ?: calculateId(deck)
         val entity = DeckEntity(deckId, deck.copy(id = deckId))

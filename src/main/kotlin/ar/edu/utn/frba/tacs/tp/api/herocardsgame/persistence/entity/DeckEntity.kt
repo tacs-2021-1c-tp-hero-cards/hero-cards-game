@@ -8,8 +8,9 @@ class DeckEntity(id: Long? = null, deck: Deck) {
     val id: Long = id ?: deck.id!!
     val name: String = deck.name
     val cardIds: List<Long> = deck.cards.map { it.id }
+    val usable: Boolean = deck.usable
 
     fun toModel(cardModels: List<Card>): Deck =
-        Deck(id, name, cardModels)
+        Deck(id, name, cardModels, usable)
 
 }

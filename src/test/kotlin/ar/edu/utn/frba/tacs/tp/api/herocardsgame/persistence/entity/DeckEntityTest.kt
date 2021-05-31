@@ -3,8 +3,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class DeckEntityTest {
@@ -18,22 +17,24 @@ internal class DeckEntityTest {
 
     @Test
     fun toEntityWithId() {
-        val model = Deck(id, name, cards)
+        val model = Deck(id, name, cards, false)
 
         val entity = DeckEntity(deck = model)
         assertEquals(id, entity.id)
         assertEquals(name, entity.name)
         assertEquals(cardsId, entity.cardIds)
+        assertFalse(entity.usable)
     }
 
     @Test
     fun toEntityWithOutId() {
-        val model = Deck(null, name, cards)
+        val model = Deck(null, name, cards, true)
 
         val entity = DeckEntity(1L, model)
         assertEquals(1L, entity.id)
         assertEquals(name, entity.name)
         assertEquals(cardsId, entity.cardIds)
+        assertTrue(entity.usable)
     }
 
     @Test
@@ -41,7 +42,7 @@ internal class DeckEntityTest {
         val entity =
             DeckEntity(
                 id,
-                Deck(null, name, cards)
+                Deck(null, name, cards, true)
             )
 
         val model = entity.toModel(listOf(batman, flash))
@@ -49,5 +50,6 @@ internal class DeckEntityTest {
         assertEquals(name, model.name)
         assertTrue(model.cards.contains(batman))
         assertTrue(model.cards.contains(flash))
+        assertTrue(model.usable)
     }
 }

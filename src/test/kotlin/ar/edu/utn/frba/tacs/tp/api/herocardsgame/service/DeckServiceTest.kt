@@ -4,7 +4,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.CardIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.DeckIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
@@ -22,11 +21,11 @@ internal class DeckServiceTest {
     private val flash = BuilderContextUtils.buildFlash()
 
     @Test
-    fun saveDeck() {
+    fun createDeck() {
         `when`(cardIntegrationMock.getCardById("1")).thenReturn(batman)
         `when`(cardIntegrationMock.getCardById("2")).thenReturn(flash)
 
-        instance.saveDeck(deckName, listOf("1", "2"))
+        instance.createDeck(deckName, listOf("1", "2"))
 
         verify(deckIntegrationMock, times(1))
             .saveDeck(deck = Deck(name = deckName, cards = listOf(batman, flash)))
@@ -74,7 +73,8 @@ internal class DeckServiceTest {
 
             instance.updateDeck(deckId.toString(), "deckName2", emptyList())
 
-            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(name = "deckName2"))
+            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(usable = false))
+            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(id = null, name = "deckName2"))
         }
 
         @Test
@@ -84,7 +84,8 @@ internal class DeckServiceTest {
 
             instance.updateDeck(deckId.toString(), null, listOf("2"))
 
-            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(cards = listOf(flash)))
+            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(cards = listOf(batman), usable = false))
+            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(id = null, cards = listOf(flash)))
         }
 
         @Test
@@ -94,8 +95,9 @@ internal class DeckServiceTest {
 
             instance.updateDeck(deckId.toString(), "deckName2", listOf("2"))
 
+            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(cards = listOf(batman), usable = false))
             verify(deckIntegrationMock, times(1))
-                .saveDeck(deck = deck.copy(name = "deckName2", cards = listOf(flash)))
+                .saveDeck(deck = deck.copy(id = null, name = "deckName2", cards = listOf(flash)))
         }
 
     }
