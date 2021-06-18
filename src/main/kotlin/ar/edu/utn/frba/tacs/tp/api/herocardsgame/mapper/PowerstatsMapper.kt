@@ -3,6 +3,8 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.AppearanceApi
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.PowerstatsApi
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Powerstats
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
@@ -10,27 +12,28 @@ class PowerstatsMapper {
 
     fun map(powerstats: PowerstatsApi, appearance: AppearanceApi): Powerstats =
         Powerstats(
-            height = mapHeight(appearance.height),
-            weight = mapWeight(appearance.weight),
-            intelligence = powerstats.intelligence.toInt(),
-            speed = powerstats.speed.toInt(),
-            power = powerstats.power.toInt(),
-            combat = powerstats.combat.toInt(),
-            strength = powerstats.strength.toInt()
+            height = mapAppearance(appearance.height, "cm"),
+            weight = mapAppearance(appearance.weight, "kg"),
+            intelligence = powerstats.intelligence.parseInt(),
+            speed = powerstats.speed.parseInt(),
+            power = powerstats.power.parseInt(),
+            combat = powerstats.combat.parseInt(),
+            strength = powerstats.strength.parseInt()
         )
 
-    private fun mapHeight(height: List<String>): Int =
-        height
-            .filter { it.contains("cm") }
+    private fun mapAppearance(appearance: List<String>, appearanceType: String) =
+        appearance
+            .filter { it.contains(appearanceType) }
             .map { extractInt(it) }
-            .first()
-
-    private fun mapWeight(weight: List<String>): Int =
-        weight
-            .filter { it.contains("kg") }
-            .map { extractInt(it) }
-            .first()
+            .firstOrNull() ?: -1
 
     private fun extractInt(string: String): Int = string.filter { it.isDigit() }.toInt()
+
+    private fun String.parseInt(): Int =
+        try {
+            this.toInt()
+        } catch (e: NumberFormatException) {
+            -1
+        }
 
 }

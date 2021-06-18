@@ -37,8 +37,16 @@ class BuilderContextUtils {
             "src/test/resources/json/api/appearance.json"
         )
 
+        fun buildAppearanceApiWithEmptyField() = createFromFile<AppearanceApi>(
+            "src/test/resources/json/api/appearanceWithEmptyField.json"
+        )
+
         fun buildPowerstatsApi() = createFromFile<PowerstatsApi>(
             "src/test/resources/json/api/powerstats.json"
+        )
+
+        fun buildPowerstatsApiWithEmptyField() = createFromFile<PowerstatsApi>(
+            "src/test/resources/json/api/powerstatsWithEmptyField.json"
         )
 
         fun buildCharacterApi() = createFromFile<CharacterApi>(

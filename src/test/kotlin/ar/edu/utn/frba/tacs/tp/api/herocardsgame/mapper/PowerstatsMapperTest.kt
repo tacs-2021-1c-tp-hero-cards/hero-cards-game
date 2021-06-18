@@ -23,4 +23,20 @@ internal class PowerstatsMapperTest {
         assertEquals(100, powerstats.combat)
         assertEquals(26, powerstats.strength)
     }
+
+    @Test
+    fun mapPowerstatsFromPowerstatsApiAndAppearanceApiWithEmptyField(){
+        val appearanceApi = BuilderContextUtils.buildAppearanceApiWithEmptyField()
+        val powerstatsApi = BuilderContextUtils.buildPowerstatsApiWithEmptyField()
+
+        val powerstats = instance.map(powerstatsApi, appearanceApi)
+
+        assertEquals(-1, powerstats.height)
+        assertEquals(0, powerstats.weight)
+        assertEquals(-1, powerstats.intelligence)
+        assertEquals(-1, powerstats.speed)
+        assertEquals(-1, powerstats.power)
+        assertEquals(-1, powerstats.combat)
+        assertEquals(-1, powerstats.strength)
+    }
 }
