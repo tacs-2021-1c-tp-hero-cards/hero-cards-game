@@ -53,6 +53,10 @@ class BuilderContextUtils {
             "src/test/resources/json/api/character.json"
         )
 
+        fun buildCharacterApiWithInvalidPowerstats() = createFromFile<CharacterApi>(
+            "src/test/resources/json/api/characterWithInvalidPowerstats.json"
+        )
+
         fun buildCharactersSearchApi() = createFromFile<CharactersSearchApi>(
             "src/test/resources/json/api/charactersSearch.json"
         )
