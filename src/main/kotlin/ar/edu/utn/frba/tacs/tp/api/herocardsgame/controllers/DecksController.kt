@@ -80,7 +80,7 @@ class DecksController(
         try {
             log.info("Put /admin/decks/$deckId requestBody: [$updateDeckRequest]")
 
-            ResponseEntity.status(HttpStatus.NO_CONTENT).body(
+            ResponseEntity.status(HttpStatus.OK).body(
                 deckService.updateDeck(
                     deckId,
                     updateDeckRequest.deckName,

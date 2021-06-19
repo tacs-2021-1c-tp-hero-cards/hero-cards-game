@@ -201,7 +201,7 @@ internal class DecksControllerTest {
             instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
 
             val response = instance.updateDeck("0", UpdateDeckRequest("deckNameTest2", null))
-            assertEquals(204, response.statusCodeValue)
+            assertEquals(200, response.statusCodeValue)
             assertEquals(Deck(1L, "deckNameTest2", listOf(BuilderContextUtils.buildBatmanII())), response.body!!)
         }
 
@@ -212,7 +212,7 @@ internal class DecksControllerTest {
             instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
 
             val response = instance.updateDeck("0", UpdateDeckRequest(null, listOf("71")))
-            assertEquals(204, response.statusCodeValue)
+            assertEquals(200, response.statusCodeValue)
             assertEquals(Deck(1L, "deckNameTest", listOf(BuilderContextUtils.buildBatmanII())), response.body!!)
         }
 
@@ -223,7 +223,7 @@ internal class DecksControllerTest {
             instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
 
             val response = instance.updateDeck("0", UpdateDeckRequest("deckNameTest2", listOf("71")))
-            assertEquals(204, response.statusCodeValue)
+            assertEquals(200, response.statusCodeValue)
             assertEquals(Deck(1L, "deckNameTest2", listOf(BuilderContextUtils.buildBatmanII())), response.body!!)
         }
 
