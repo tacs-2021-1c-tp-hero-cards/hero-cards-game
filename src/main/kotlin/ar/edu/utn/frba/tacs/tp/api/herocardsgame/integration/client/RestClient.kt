@@ -4,6 +4,8 @@ import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.IOException
 
 abstract class RestClient(
@@ -15,10 +17,15 @@ abstract class RestClient(
     private var accessToken: String = "10225693555586194"
 ) {
 
+    val log: Logger = LoggerFactory.getLogger(RestClient::class.java)
+
     inline fun <reified T> doGet(serviceUrl: String, vararg uriParams: String): T {
         val fullUrl = buildUrl(serviceUrl, *uriParams)
         val response = run(fullUrl)
-        return buildResponse(response)
+        val buildResponse: T = buildResponse(response)
+        log.info("Get $fullUrl code: ${response.code} responseBody: [$buildResponse]")
+
+        return buildResponse
     }
 
     fun buildUrl(serviceUrl: String, vararg uriParams: String): String {

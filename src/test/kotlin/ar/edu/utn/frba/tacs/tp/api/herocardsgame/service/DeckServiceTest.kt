@@ -1,9 +1,13 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.service
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidPowerstatsException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.CardIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.DeckIntegration
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Powerstats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
@@ -19,16 +23,32 @@ internal class DeckServiceTest {
     private val deck = Deck(deckId, deckName)
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
+    private val invalidCard = Card(2L, "cardNameTest", Powerstats(-1, 2, 3, -1, 5, 6, 7), "cardImageUrl")
 
-    @Test
-    fun createDeck() {
-        `when`(cardIntegrationMock.getCardById("1")).thenReturn(batman)
-        `when`(cardIntegrationMock.getCardById("2")).thenReturn(flash)
+    @Nested
+    inner class CreateDeck {
+        @Test
+        fun `Create deck with all valid cards`() {
+            `when`(cardIntegrationMock.getCardById("1")).thenReturn(batman)
+            `when`(cardIntegrationMock.getCardById("2")).thenReturn(flash)
 
-        instance.createDeck(deckName, listOf("1", "2"))
+            instance.createDeck(deckName, listOf("1", "2"))
 
-        verify(deckIntegrationMock, times(1))
-            .saveDeck(deck = Deck(name = deckName, cards = listOf(batman, flash)))
+            verify(deckIntegrationMock, times(1))
+                .saveDeck(deck = Deck(name = deckName, cards = listOf(batman, flash)))
+        }
+
+        @Test
+        fun `Create deck with invalid cards`() {
+            `when`(cardIntegrationMock.getCardById("1")).thenReturn(batman)
+            `when`(cardIntegrationMock.getCardById("2")).thenReturn(invalidCard)
+
+            Assertions.assertThrows(InvalidPowerstatsException::class.java) {
+                instance.createDeck(deckName, listOf("1", "2"))
+            }
+
+            verifyNoInteractions(deckIntegrationMock)
+        }
     }
 
     @Test
@@ -86,6 +106,18 @@ internal class DeckServiceTest {
 
             verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(cards = listOf(batman), usable = false))
             verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(id = null, cards = listOf(flash)))
+        }
+
+        @Test
+        fun `Update cards in the deck with invalid card`() {
+            `when`(deckIntegrationMock.getDeckById(deckId)).thenReturn(deck.copy(cards = listOf(batman)))
+            `when`(cardIntegrationMock.getCardById("2")).thenReturn(invalidCard)
+
+            Assertions.assertThrows(InvalidPowerstatsException::class.java) {
+                instance.updateDeck(deckId.toString(), null, listOf("2"))
+            }
+
+            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(cards = listOf(batman), usable = false))
         }
 
         @Test

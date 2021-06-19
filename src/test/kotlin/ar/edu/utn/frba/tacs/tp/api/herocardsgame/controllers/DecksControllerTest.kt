@@ -8,7 +8,9 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.SuperHeroCli
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CardMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Powerstats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateDeckRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.UpdateDeckRequest
@@ -179,6 +181,15 @@ internal class DecksControllerTest {
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }
+
+        @Test
+        fun `Not create deck by invalid powerstats card`() {
+            `when`(superHeroClientMock.getCharacter("124")).thenReturn(BuilderContextUtils.buildCharacterApiWithInvalidPowerstats())
+
+            val response = instance.createDeck(CreateDeckRequest("deckNameTest", listOf("124")))
+            assertEquals(400, response.statusCodeValue)
+            assertNull(response.body)
+        }
     }
 
     @Nested
@@ -222,6 +233,18 @@ internal class DecksControllerTest {
             instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
 
             val response = instance.updateDeck("1", UpdateDeckRequest("deckNameTest2", null))
+            assertEquals(400, response.statusCodeValue)
+            assertNull(response.body)
+        }
+
+        @Test
+        fun `Not update deck cards by invalid powerstats card`() {
+            `when`(superHeroClientMock.getCharacter("70")).thenReturn(BuilderContextUtils.buildCharacterApi())
+            `when`(superHeroClientMock.getCharacter("71")).thenReturn(BuilderContextUtils.buildCharacterApi())
+            `when`(superHeroClientMock.getCharacter("124")).thenReturn(BuilderContextUtils.buildCharacterApiWithInvalidPowerstats())
+            instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
+
+            val response = instance.updateDeck("1", UpdateDeckRequest(null, listOf("124")))
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }

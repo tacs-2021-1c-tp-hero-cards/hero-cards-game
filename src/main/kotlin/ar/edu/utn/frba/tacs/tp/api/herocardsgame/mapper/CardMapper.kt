@@ -8,18 +8,13 @@ import org.springframework.stereotype.Component
 @Component
 class CardMapper(val powerstatsMapper: PowerstatsMapper, val imageMapper: ImageMapper) {
 
-    fun map(characterApi: CharacterApi): Card {
-        val card = Card(
+    fun map(characterApi: CharacterApi): Card =
+        Card(
             id = characterApi.id!!.toLong(),
             name = characterApi.name!!,
             powerstats = powerstatsMapper.map(characterApi.powerstats!!, characterApi.appearance!!),
             imageUrl = imageMapper.map(characterApi.image!!)
         )
-
-        card.isInvalidPowerstats()
-
-        return card
-    }
 
     fun mapCharactersSearch(charactersSearchApi: CharactersSearchApi): List<Card> =
         charactersSearchApi.results.map { map(it) }
