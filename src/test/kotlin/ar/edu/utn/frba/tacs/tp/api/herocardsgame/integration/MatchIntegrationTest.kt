@@ -2,7 +2,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 
 internal class MatchIntegrationTest {
@@ -32,7 +31,7 @@ internal class MatchIntegrationTest {
     private val userOpponent = User(1L, "userNameOpponent", "fullName", "password")
     private val opponent = Player(1L, userOpponent, listOf(batmanII))
 
-    private val deck = Deck(0L, "deckNameTest", listOf(batman, batmanII))
+    private val deck = Deck(0L, 0L, "deckNameTest", listOf(batman, batmanII))
     private val match = Match(0L, listOf(player, opponent), deck, MatchStatus.IN_PROGRESS)
 
     @BeforeEach

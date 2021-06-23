@@ -1,7 +1,8 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.*
@@ -20,9 +21,11 @@ internal class DeckIntegrationTest {
     private val flash = BuilderContextUtils.buildFlash()
 
     private val id = 0L
+    private val version = 0L
     private val name = "deckName"
 
-    private val deck = Deck(id, name, listOf(batman, flash))
+    private val deck = Deck(id, version, name, listOf(batman, flash))
+    private val deckHistory = DeckHistory(deck)
 
     @BeforeEach
     fun init() {
@@ -54,7 +57,7 @@ internal class DeckIntegrationTest {
         }
 
         @Test
-        fun `Get deck by id but no user exists in the system`() {
+        fun `Get deck by id but no deck exists in the system`() {
             Assertions.assertThrows(ElementNotFoundException::class.java) {
                 instance.getDeckById(id)
             }
@@ -117,12 +120,36 @@ internal class DeckIntegrationTest {
             assertTrue(decks.contains(deck))
         }
 
-        @Test
-        fun `Deck by name and id and non find by non usable`() {
-            dao.saveDeck(deck.copy(usable = false))
+    }
 
-            val decks = instance.getDeckByIdOrName(id = id, name = name)
-            assertTrue(decks.isEmpty())
+    @Nested
+    inner class GetDeckHistoryById {
+
+        @Test
+        fun `Get deck history by id`() {
+            dao.saveDeckHistory(deckHistory)
+            val otherDeckHistory = DeckHistory(id, 1L, name, listOf(batman))
+            dao.saveDeckHistory(otherDeckHistory)
+
+            `when`(cardIntegrationMock.getCardById("69")).thenReturn(batman)
+            `when`(cardIntegrationMock.getCardById("2")).thenReturn(flash)
+
+            val deckHistoryList = instance.getDeckHistoryById(id)
+
+            assertEquals(2, deckHistoryList.size)
+            assertTrue(deckHistoryList.contains(otherDeckHistory))
+            assertTrue(deckHistoryList.contains(otherDeckHistory))
+        }
+
+        @Test
+        fun `Get deck history by id but not exist`() {
+            dao.saveDeckHistory(deckHistory.copy(id = 1L))
+            assertTrue(instance.getDeckHistoryById(id).isEmpty())
+        }
+
+        @Test
+        fun `Get deck history by id but no deck history exists in the system`() {
+            assertTrue(instance.getDeckHistoryById(id).isEmpty())
         }
 
     }
@@ -134,16 +161,25 @@ internal class DeckIntegrationTest {
         `when`(cardIntegrationMock.getCardById(flash.id.toString())).thenReturn(flash)
         `when`(cardIntegrationMock.saveCard(flash)).thenReturn(flash)
 
-        instance.saveDeck(deck)
+        instance.saveDeck(Deck(id, 1L, name, listOf(batman, flash), listOf(deckHistory)))
 
         val allDeck = dao.getAllDeck()
         assertEquals(1, allDeck.size)
 
-        val foundDeck = allDeck.first().toModel(listOf(batman, flash))
+        val foundDeck = allDeck.first().toModel(listOf(batman, flash), listOf(deckHistory))
         assertEquals(id, foundDeck.id)
+        assertEquals(1L, foundDeck.version)
         assertEquals(name, foundDeck.name)
         assertTrue(foundDeck.cards.contains(batman))
         assertTrue(foundDeck.cards.contains(flash))
+
+        val deckHistory = foundDeck.deckHistoryList.first()
+        assertEquals(id, deckHistory.id)
+        assertEquals(0L, deckHistory.version)
+        assertEquals(name, deckHistory.name)
+        assertTrue(deckHistory.cards.contains(batman))
+        assertTrue(deckHistory.cards.contains(flash))
+
     }
 
     @Nested

@@ -3,6 +3,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -33,7 +34,7 @@ internal class MatchEntityTest {
 
     private val opponent = Player(1L, userOpponent, listOf(flash), emptyList())
 
-    val deck = Deck(0L, "deckName", listOf(batman, flash))
+    val deck = Deck(0L, 0L, "deckName", listOf(batman, flash))
 
     @Test
     fun toEntityWithId() {

@@ -5,7 +5,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CardMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateMatchRequest
@@ -33,7 +33,7 @@ internal class MatchesControllerTest {
     private val batmanII = BuilderContextUtils.buildBatmanII()
 
     private val deck =
-        Deck(id = 0L, name = "name", cards = listOf(batman, batmanII))
+        Deck(id = 0L, version = 0L, name = "name", cards = listOf(batman, batmanII))
 
     private val user =
         User(0L, "userName", "fullName", HashService.calculatePasswordHash("userName", "password"), "token")

@@ -4,7 +4,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidPowerstatsExce
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.CardIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.DeckIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Powerstats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions
@@ -19,8 +20,9 @@ internal class DeckServiceTest {
     private val instance = DeckService(cardIntegrationMock, deckIntegrationMock)
 
     private val deckId = 0L
+    private val deckVersion = 0L
     private val deckName = "testDeck"
-    private val deck = Deck(deckId, deckName)
+    private val deck = Deck(deckId, deckVersion, deckName)
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
     private val invalidCard = Card(2L, "cardNameTest", Powerstats(-1, 2, 3, -1, 5, 6, 7), "cardImageUrl")
@@ -93,8 +95,13 @@ internal class DeckServiceTest {
 
             instance.updateDeck(deckId.toString(), "deckName2", emptyList())
 
-            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(usable = false))
-            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(id = null, name = "deckName2"))
+            verify(deckIntegrationMock, times(1)).saveDeck(
+                deck = deck.copy(
+                    version = null,
+                    name = "deckName2",
+                    deckHistoryList = listOf(DeckHistory(deck))
+                )
+            )
         }
 
         @Test
@@ -104,8 +111,13 @@ internal class DeckServiceTest {
 
             instance.updateDeck(deckId.toString(), null, listOf("2"))
 
-            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(cards = listOf(batman), usable = false))
-            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(id = null, cards = listOf(flash)))
+            verify(deckIntegrationMock, times(1)).saveDeck(
+                deck = deck.copy(
+                    version = null,
+                    cards = listOf(flash),
+                    deckHistoryList = listOf(DeckHistory(deck.copy(cards = listOf(batman))))
+                )
+            )
         }
 
         @Test
@@ -116,8 +128,6 @@ internal class DeckServiceTest {
             Assertions.assertThrows(InvalidPowerstatsException::class.java) {
                 instance.updateDeck(deckId.toString(), null, listOf("2"))
             }
-
-            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(cards = listOf(batman), usable = false))
         }
 
         @Test
@@ -127,9 +137,15 @@ internal class DeckServiceTest {
 
             instance.updateDeck(deckId.toString(), "deckName2", listOf("2"))
 
-            verify(deckIntegrationMock, times(1)).saveDeck(deck = deck.copy(cards = listOf(batman), usable = false))
             verify(deckIntegrationMock, times(1))
-                .saveDeck(deck = deck.copy(id = null, name = "deckName2", cards = listOf(flash)))
+                .saveDeck(
+                    deck = deck.copy(
+                        version = null,
+                        name = "deckName2",
+                        cards = listOf(flash),
+                        deckHistoryList = listOf(DeckHistory(deck.copy(cards = listOf(batman))))
+                    )
+                )
         }
 
     }

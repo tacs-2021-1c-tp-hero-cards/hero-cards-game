@@ -1,11 +1,12 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.*
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckHistoryEntity
 import org.springframework.stereotype.Component
 
 @Component
@@ -15,6 +16,10 @@ class Dao(
     private val deckMap: HashMap<Long, DeckEntity> = hashMapOf(),
     private val playerMap: HashMap<Long, PlayerEntity> = hashMapOf(),
     private val matchMap: HashMap<Long, MatchEntity> = hashMapOf(),
+
+    private val deckHistoryMap: HashMap<Long, DeckHistoryEntity> = hashMapOf(),
+    private val playerHistoryMap: HashMap<Long, DeckHistoryEntity> = hashMapOf(),
+    private val matchHistoryMap: HashMap<Long, DeckHistoryEntity> = hashMapOf()
 ) {
 
     fun <T> calculateId(entity: T): Long =
@@ -24,6 +29,13 @@ class Dao(
             is Player -> playerMap
             is Match -> matchMap
             else -> cardMap
+        }.size.toLong()
+
+    fun <T> calculateVersion(entity: T): Long =
+        when (entity) {
+            is Deck -> deckHistoryMap
+            is Player -> playerHistoryMap
+            else -> matchHistoryMap
         }.size.toLong()
 
     //Users
@@ -56,15 +68,33 @@ class Dao(
     //Decks
     fun getAllDeck(): List<DeckEntity> = deckMap.values.toList()
 
+    fun getAllDeckHistory(): List<DeckHistoryEntity> = deckHistoryMap.values.toList()
+
     fun getDeckById(id: Long): DeckEntity? = deckMap[id]
+
+    fun getDeckHistoryById(id: Long): List<DeckHistoryEntity> = deckHistoryMap.values.filter { it.id == id }
+
+    fun getDeckHistoryByVersion(version: Long): DeckHistoryEntity? =
+        deckHistoryMap.values.firstOrNull { it.version == version }
 
     fun saveDeck(deck: Deck): DeckEntity {
         val deckId = deck.id ?: calculateId(deck)
-        val entity = DeckEntity(deckId, deck.copy(id = deckId))
+        val deckVersion = deck.version ?: calculateVersion(deck)
+        val entity = DeckEntity(deckId, deckVersion, deck.copy(id = deckId, version = deckVersion))
 
         deckMap[deckId] = entity
 
         return entity
+    }
+
+    fun saveDeckHistory(deckHistory: DeckHistory): DeckHistoryEntity {
+        val deckHistoryEntity = DeckHistoryEntity(deckHistory)
+
+        if (!deckHistoryMap.containsKey(deckHistory.version)) {
+            deckHistoryMap[deckHistory.version] = deckHistoryEntity
+        }
+
+        return deckHistoryEntity
     }
 
     fun deleteDeck(id: Long) = deckMap.remove(id)

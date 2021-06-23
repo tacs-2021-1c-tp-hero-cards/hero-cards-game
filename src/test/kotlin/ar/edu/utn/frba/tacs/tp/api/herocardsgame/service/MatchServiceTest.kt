@@ -6,7 +6,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
@@ -32,7 +32,7 @@ internal class MatchServiceTest {
 
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
-    private val deck = Deck(0L, "nameDeck", listOf(batman, batman))
+    private val deck = Deck(0L, 0L, "nameDeck", listOf(batman, batman))
 
     @Nested
     inner class CreateMatch {
@@ -58,11 +58,12 @@ internal class MatchServiceTest {
 
         @Test
         fun `Create match`() {
-            val match = Match(deck = deck, status = MatchStatus.IN_PROGRESS, players = listOf(player, opponentPlayer).map {
-                it.copy(
-                    availableCards = listOf(batman)
-                )
-            })
+            val match =
+                Match(deck = deck, status = MatchStatus.IN_PROGRESS, players = listOf(player, opponentPlayer).map {
+                    it.copy(
+                        availableCards = listOf(batman)
+                    )
+                })
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
             `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
