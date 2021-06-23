@@ -4,6 +4,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -34,11 +35,12 @@ internal class MatchEntityTest {
 
     private val opponent = Player(1L, userOpponent, listOf(flash), emptyList())
 
-    val deck = Deck(0L, 0L, "deckName", listOf(batman, flash))
+    private val deck = Deck(0L, 0L, "deckName", listOf(batman, flash))
+    private val deckHistory = DeckHistory(deck)
 
     @Test
     fun toEntityWithId() {
-        val model = Match(id, listOf(player, opponent), deck, MatchStatus.IN_PROGRESS)
+        val model = Match(id, listOf(player, opponent), deckHistory, MatchStatus.IN_PROGRESS)
 
         val entity = MatchEntity(match = model)
         assertEquals(id, entity.id)
@@ -50,7 +52,7 @@ internal class MatchEntityTest {
 
     @Test
     fun toEntityWithOutId() {
-        val model = Match(null, listOf(player, opponent), deck, MatchStatus.IN_PROGRESS)
+        val model = Match(null, listOf(player, opponent), deckHistory, MatchStatus.IN_PROGRESS)
 
         val entity = MatchEntity(1L, model)
         assertEquals(1L, entity.id)
@@ -65,12 +67,12 @@ internal class MatchEntityTest {
         val entity =
             MatchEntity(
                 id,
-                Match(null, listOf(player, opponent), deck, MatchStatus.IN_PROGRESS)
+                Match(null, listOf(player, opponent), deckHistory, MatchStatus.IN_PROGRESS)
             )
 
-        val model = entity.toModel(listOf(player, opponent), deck)
+        val model = entity.toModel(listOf(player, opponent), deckHistory)
         assertEquals(id, model.id)
-        assertEquals(deck, model.deck)
+        assertEquals(deckHistory, model.deck)
         assertEquals(MatchStatus.IN_PROGRESS, model.status)
         assertTrue(model.players.contains(player))
         assertTrue(model.players.contains(opponent))

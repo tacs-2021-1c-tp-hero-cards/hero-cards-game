@@ -3,6 +3,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
@@ -13,7 +14,7 @@ import org.mockito.Mockito.mock
 
 internal class MatchTest {
 
-    private val deckMock = mock(Deck::class.java)
+    private val deckMock = mock(DeckHistory::class.java)
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
 

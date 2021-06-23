@@ -6,6 +6,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import org.springframework.stereotype.Service
 
@@ -20,7 +21,7 @@ class MatchService(
         val deck =
             deckService.searchDeck(deckId = deckId).firstOrNull() ?: throw ElementNotFoundException("deck", deckId)
         val players = buildPlayers(usersId, deck)
-        val match = Match(players = players, deck = deck, status = MatchStatus.IN_PROGRESS)
+        val match = Match(players = players, deck = DeckHistory(deck), status = MatchStatus.IN_PROGRESS)
         return matchIntegration.saveMatch(match)
     }
 

@@ -26,7 +26,7 @@ internal class DaoTest {
 
     private val user = User(0L, "userName", "fullName", "password", "token", Stats())
     private val player = Player(0L, user, listOf(batman), listOf(flash))
-    val match = Match(0L, listOf(player), deck, MatchStatus.IN_PROGRESS)
+    private val match = Match(0L, listOf(player), deckHistory, MatchStatus.IN_PROGRESS)
 
     @Nested
     inner class CalculateId {

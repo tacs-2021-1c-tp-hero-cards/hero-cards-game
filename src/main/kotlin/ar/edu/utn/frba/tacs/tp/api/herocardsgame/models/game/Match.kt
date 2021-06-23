@@ -2,13 +2,14 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 
 data class Match(
     val id: Long? = null,
     val players: List<Player>,
-    val deck: Deck,
+    val deck: DeckHistory,
     val status: MatchStatus
 ) {
 

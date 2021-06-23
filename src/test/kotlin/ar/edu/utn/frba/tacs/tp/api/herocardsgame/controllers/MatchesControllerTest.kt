@@ -7,6 +7,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateMatchRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NextDuelRequest
@@ -34,6 +35,8 @@ internal class MatchesControllerTest {
 
     private val deck =
         Deck(id = 0L, version = 0L, name = "name", cards = listOf(batman, batmanII))
+
+    private val deckHistory = DeckHistory(deck)
 
     private val user =
         User(0L, "userName", "fullName", HashService.calculatePasswordHash("userName", "password"), "token")
@@ -89,7 +92,7 @@ internal class MatchesControllerTest {
             assertEquals(201, response.statusCodeValue)
             val match = response.body!!
             assertEquals(0L, match.id)
-            assertEquals(deck, match.deck)
+            assertEquals(DeckHistory(deck), match.deck)
             assertEquals(MatchStatus.IN_PROGRESS, match.status)
 
             val players = match.players
@@ -153,7 +156,7 @@ internal class MatchesControllerTest {
 
             val match = response.body!!
             assertEquals(0L, match.id)
-            assertEquals(deck, match.deck)
+            assertEquals(DeckHistory(deck), match.deck)
             assertEquals(MatchStatus.FINALIZED, match.status)
 
             val players = match.players
@@ -228,7 +231,7 @@ internal class MatchesControllerTest {
             assertEquals(200, response.statusCodeValue)
             val match = response.body!!
             assertEquals(0L, match.id)
-            assertEquals(deck, match.deck)
+            assertEquals(deckHistory, match.deck)
             assertEquals(MatchStatus.IN_PROGRESS, match.status)
 
             val players = match.players
@@ -277,7 +280,7 @@ internal class MatchesControllerTest {
             assertEquals(200, response.statusCodeValue)
             val match = response.body!!
             assertEquals(0L, match.id)
-            assertEquals(deck, match.deck)
+            assertEquals(deckHistory, match.deck)
             assertEquals(MatchStatus.CANCELLED, match.status)
 
             val players = match.players

@@ -10,6 +10,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
@@ -33,6 +34,7 @@ internal class MatchServiceTest {
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
     private val deck = Deck(0L, 0L, "nameDeck", listOf(batman, batman))
+    private val deckHistory = DeckHistory(deck)
 
     @Nested
     inner class CreateMatch {
@@ -59,7 +61,7 @@ internal class MatchServiceTest {
         @Test
         fun `Create match`() {
             val match =
-                Match(deck = deck, status = MatchStatus.IN_PROGRESS, players = listOf(player, opponentPlayer).map {
+                Match(deck = deckHistory, status = MatchStatus.IN_PROGRESS, players = listOf(player, opponentPlayer).map {
                     it.copy(
                         availableCards = listOf(batman)
                     )
@@ -75,7 +77,7 @@ internal class MatchServiceTest {
             assertEquals(0L, result.id)
             assertTrue(result.players.contains(player.copy(availableCards = listOf(batman))))
             assertTrue(result.players.contains(opponentPlayer.copy(availableCards = listOf(batman))))
-            assertEquals(deck, result.deck)
+            assertEquals(deckHistory, result.deck)
             assertEquals(MatchStatus.IN_PROGRESS, result.status)
         }
 
@@ -160,7 +162,7 @@ internal class MatchServiceTest {
                     player.copy(availableCards = listOf(flash)),
                     opponentPlayer.copy(availableCards = listOf(batman))
                 ),
-                deck = deck,
+                deck = deckHistory,
                 status = MatchStatus.IN_PROGRESS
             )
 
@@ -177,7 +179,7 @@ internal class MatchServiceTest {
 
             val resultNextDuel = instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
             assertEquals(MatchStatus.FINALIZED, resultNextDuel.status)
-            assertEquals(deck, resultNextDuel.deck)
+            assertEquals(deckHistory, resultNextDuel.deck)
             assertEquals(0L, resultNextDuel.id)
 
             val players = resultNextDuel.players
@@ -203,7 +205,7 @@ internal class MatchServiceTest {
                     player.copy(availableCards = listOf(flash)),
                     opponentPlayer.copy(availableCards = listOf(batman))
                 ),
-                deck = deck,
+                deck = deckHistory,
                 status = MatchStatus.IN_PROGRESS
             )
 
@@ -228,7 +230,7 @@ internal class MatchServiceTest {
                     player.copy(availableCards = listOf(flash)),
                     opponentPlayer.copy(availableCards = listOf(batman))
                 ),
-                deck = deck,
+                deck = deckHistory,
                 status = MatchStatus.IN_PROGRESS
             )
 
@@ -250,7 +252,7 @@ internal class MatchServiceTest {
             val abortMatch = instance.abortMatch(0L.toString(), "tokenTest")
 
             assertEquals(MatchStatus.CANCELLED, abortMatch.status)
-            assertEquals(deck, abortMatch.deck)
+            assertEquals(deckHistory, abortMatch.deck)
             assertEquals(0L, abortMatch.id)
 
             val players = abortMatch.players
@@ -274,7 +276,7 @@ internal class MatchServiceTest {
                     player.copy(availableCards = listOf(flash)),
                     opponentPlayer.copy(availableCards = listOf(batman))
                 ),
-                deck = deck,
+                deck = deckHistory,
                 status = MatchStatus.IN_PROGRESS
             )
 

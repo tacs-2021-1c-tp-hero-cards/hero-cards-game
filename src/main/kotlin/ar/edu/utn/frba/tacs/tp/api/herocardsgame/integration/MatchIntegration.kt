@@ -15,17 +15,16 @@ class MatchIntegration(
     fun getMatchById(id: Long): Match {
         val matchEntity = dao.getMatchById(id)?: throw ElementNotFoundException("match", id.toString())
         val players = matchEntity.playerIds.map { playerIntegration.getPlayerById(it) }
-        val deck = deckIntegration.getDeckById(matchEntity.deckId)
+        val deck = deckIntegration.getDeckById(id).searchDeckVersion(matchEntity.deckVersion)
 
         return matchEntity.toModel(players, deck)
     }
 
     fun saveMatch(match: Match): Match {
         val savedPlayers = match.players.map { playerIntegration.savePlayer(it) }
-        val savedDeck = deckIntegration.saveDeck(match.deck)
-        val savedMatch = match.copy(players = savedPlayers, deck = savedDeck)
+        val savedMatch = match.copy(players = savedPlayers)
 
-        return dao.saveMatch(savedMatch).toModel(savedPlayers, savedDeck)
+        return dao.saveMatch(savedMatch).toModel(savedPlayers, match.deck)
     }
 
 }
