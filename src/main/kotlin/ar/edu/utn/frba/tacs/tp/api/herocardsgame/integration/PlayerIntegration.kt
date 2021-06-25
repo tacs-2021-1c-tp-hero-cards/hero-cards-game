@@ -21,8 +21,8 @@ class PlayerIntegration(
         return playerEntity.toModel(user, availableCards, prizeCards)
     }
 
-    fun getPlayerHistoryById(id: Long): PlayerHistory {
-        val entity = dao.getPlayerHistoryById(id) ?: throw ElementNotFoundException("playerHistory", id.toString())
+    fun getPlayerHistoryByVersion(version: Long): PlayerHistory {
+        val entity = dao.getPlayerHistoryByVersion(version) ?: throw ElementNotFoundException("playerHistory", version.toString())
         val availableCards = entity.availableCardIds.map { cardIntegration.getCardById(it.toString()) }
         val prizeCards = entity.prizeCardIds.map { cardIntegration.getCardById(it.toString()) }
 

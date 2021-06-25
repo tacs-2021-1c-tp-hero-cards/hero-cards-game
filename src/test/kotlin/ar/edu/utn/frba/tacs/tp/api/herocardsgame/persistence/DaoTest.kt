@@ -36,9 +36,10 @@ internal class DaoTest {
 
     private val user = User(0L, "userName", "fullName", "password", "token", Stats())
     private val player = Player(0L, user, listOf(batman), listOf(flash))
-    private val playerHistory = PlayerHistory(0L, batman, listOf(batman), listOf(flash))
+    private val playerHistory = PlayerHistory(0L, 0L, batman, listOf(batman), listOf(flash))
     private val match = Match(0L, listOf(player), deckHistory, MatchStatus.IN_PROGRESS)
-    private val duelHistory = DuelHistory(0L, playerHistory, playerHistory.copy(id = 1), DuelType.SPEED, DuelResult.WIN)
+    private val duelHistory =
+        DuelHistory(0L, playerHistory, playerHistory.copy(id = 1L, version = 1), DuelType.SPEED, DuelResult.WIN)
 
     @Nested
     inner class CalculateId {
@@ -534,14 +535,14 @@ internal class DaoTest {
                 val playerHistoryEntity = PlayerHistoryEntity(playerHistory = playerHistory)
                 instance = Dao(playerHistoryMap = hashMapOf(0L to playerHistoryEntity))
 
-                val found = instance.getPlayerHistoryById(0L)
+                val found = instance.getPlayerHistoryByVersion(0L)
                 assertEquals(playerHistoryEntity, found)
             }
 
             @Test
             fun `Search player history by id and non exists`() {
                 instance = Dao(playerHistoryMap = hashMapOf())
-                assertNull(instance.getPlayerHistoryById(0L))
+                assertNull(instance.getPlayerHistoryByVersion(0L))
             }
 
         }
@@ -551,7 +552,7 @@ internal class DaoTest {
             instance = Dao()
             instance.savePlayerHistory(playerHistory)
 
-            val foundPlayerHistory = instance.getPlayerHistoryById(playerHistory.id!!)!!
+            val foundPlayerHistory = instance.getPlayerHistoryByVersion(playerHistory.id!!)!!
             assertEquals(playerHistory.id, foundPlayerHistory.id)
             assertTrue(foundPlayerHistory.availableCardIds.contains(batman.id))
             assertTrue(foundPlayerHistory.prizeCardIds.contains(flash.id))
@@ -623,8 +624,8 @@ internal class DaoTest {
 
             val foundDuelHistory = instance.getDuelHistoryById(duelHistory.id!!)!!
             assertEquals(duelHistory.id, foundDuelHistory.id)
-            assertEquals(0L, foundDuelHistory.playerId)
-            assertEquals(1L, foundDuelHistory.opponentId)
+            assertEquals(0L, foundDuelHistory.playerVersion)
+            assertEquals(1L, foundDuelHistory.opponentVersion)
             assertEquals(duelHistory.duelType.name, foundDuelHistory.duelType)
             assertEquals(duelHistory.duelResult.name, foundDuelHistory.duelResult)
         }

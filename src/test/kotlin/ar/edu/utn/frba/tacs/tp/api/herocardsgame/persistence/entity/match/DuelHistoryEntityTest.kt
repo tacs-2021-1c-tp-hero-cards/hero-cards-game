@@ -1,7 +1,5 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
@@ -17,8 +15,8 @@ internal class DuelHistoryEntityTest {
     private val batman = BuilderContextUtils.buildBatman()
 
     private val id: Long = 0L
-    private val player = PlayerHistory(0L, flash, listOf(flash))
-    private val opponent = PlayerHistory(1L, batman, listOf(batman))
+    private val player = PlayerHistory(0L, 0L, flash, listOf(flash))
+    private val opponent = PlayerHistory(1L, 1L, batman, listOf(batman))
     private val duelType = DuelType.SPEED
     private val duelResult = DuelResult.WIN
 
@@ -31,8 +29,8 @@ internal class DuelHistoryEntityTest {
 
             val entity = DuelHistoryEntity(duelHistory = model)
             assertEquals(id, entity.id)
-            assertEquals(0L, entity.playerId)
-            assertEquals(1L, entity.opponentId)
+            assertEquals(0L, entity.playerVersion)
+            assertEquals(1L, entity.opponentVersion)
             assertEquals("SPEED", entity.duelType)
             assertEquals("WIN", entity.duelResult)
         }
@@ -43,8 +41,8 @@ internal class DuelHistoryEntityTest {
 
             val entity = DuelHistoryEntity(1L, model)
             assertEquals(1L, entity.id)
-            assertEquals(0L, entity.playerId)
-            assertEquals(1L, entity.opponentId)
+            assertEquals(0L, entity.playerVersion)
+            assertEquals(1L, entity.opponentVersion)
             assertEquals("SPEED", entity.duelType)
             assertEquals("WIN", entity.duelResult)
         }

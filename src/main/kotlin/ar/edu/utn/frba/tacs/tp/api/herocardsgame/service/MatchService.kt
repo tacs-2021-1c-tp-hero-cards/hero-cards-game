@@ -23,8 +23,8 @@ class MatchService(
         val deck =
             deckService.searchDeck(deckId = deckId).firstOrNull() ?: throw ElementNotFoundException("deck", deckId)
         val players = buildPlayers(usersId, deck)
-        val match = Match(players = players, deck = DeckHistory(deck), status = MatchStatus.IN_PROGRESS)
-        return matchIntegration.saveMatch(match)
+        val newMatch = Match(players = players, deck = DeckHistory(deck), status = MatchStatus.IN_PROGRESS)
+        return matchIntegration.saveMatch(newMatch)
     }
 
     fun buildPlayers(usersId: List<String>, deck: Deck): List<Player> {

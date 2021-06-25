@@ -188,13 +188,15 @@ internal class MatchTest {
             assertEquals(DuelType.SPEED, duelHistory.duelType)
 
             val duelHistoryPlayer = duelHistory.player
-            assertNull(duelHistoryPlayer.id)
+            assertEquals(0L, duelHistoryPlayer.id)
+            assertNull(duelHistoryPlayer.version)
             assertEquals(flash, duelHistoryPlayer.cardPlayed)
             assertTrue(duelHistoryPlayer.availableCards.contains(flash))
             assertTrue(duelHistoryPlayer.prizeCards.isEmpty())
 
             val duelHistoryOpponent = duelHistory.opponent
-            assertNull(duelHistoryOpponent.id)
+            assertEquals(1L, duelHistoryOpponent.id)
+            assertNull(duelHistoryOpponent.version)
             assertEquals(batman, duelHistoryOpponent.cardPlayed)
             assertTrue(duelHistoryOpponent.availableCards.contains(batman))
             assertTrue(duelHistoryOpponent.prizeCards.isEmpty())
@@ -231,13 +233,15 @@ internal class MatchTest {
             assertEquals(DuelType.WEIGHT, duelHistory.duelType)
 
             val duelHistoryPlayer = duelHistory.player
-            assertNull(duelHistoryPlayer.id)
+            assertEquals(0L, duelHistoryPlayer.id)
+            assertNull(duelHistoryPlayer.version)
             assertEquals(flash, duelHistoryPlayer.cardPlayed)
             assertTrue(duelHistoryPlayer.availableCards.contains(flash))
             assertTrue(duelHistoryPlayer.prizeCards.isEmpty())
 
             val duelHistoryOpponent = duelHistory.opponent
-            assertNull(duelHistoryOpponent.id)
+            assertEquals(1L, duelHistoryOpponent.id)
+            assertNull(duelHistoryOpponent.version)
             assertEquals(batman, duelHistoryOpponent.cardPlayed)
             assertTrue(duelHistoryOpponent.availableCards.contains(batman))
             assertTrue(duelHistoryOpponent.prizeCards.isEmpty())
@@ -273,13 +277,15 @@ internal class MatchTest {
             assertEquals(DuelType.COMBAT, duelHistory.duelType)
 
             val duelHistoryPlayer = duelHistory.player
-            assertNull(duelHistoryPlayer.id)
+            assertEquals(0L, duelHistoryPlayer.id)
+            assertNull(duelHistoryPlayer.version)
             assertEquals(flash, duelHistoryPlayer.cardPlayed)
             assertTrue(duelHistoryPlayer.availableCards.contains(flash))
             assertTrue(duelHistoryPlayer.prizeCards.isEmpty())
 
             val duelHistoryOpponent = duelHistory.opponent
-            assertNull(duelHistoryOpponent.id)
+            assertEquals(1L, duelHistoryOpponent.id)
+            assertNull(duelHistoryOpponent.version)
             assertEquals(batman, duelHistoryOpponent.cardPlayed)
             assertTrue(duelHistoryOpponent.availableCards.contains(batman))
             assertTrue(duelHistoryOpponent.prizeCards.isEmpty())

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 
-internal class PlayerIntegrationTest{
+internal class PlayerIntegrationTest {
 
     private lateinit var dao: Dao
     private lateinit var instance: PlayerIntegration
@@ -26,7 +26,7 @@ internal class PlayerIntegrationTest{
 
     private val user = User(0L, "userName", "fullName", "password")
     private val player = Player(0L, user, listOf(batman), listOf(batmanII))
-    private val playerHistory = PlayerHistory(0L, batman, listOf(batman, batmanII))
+    private val playerHistory = PlayerHistory(0L, 0L, batman, listOf(batman, batmanII))
 
 
     @BeforeEach
@@ -90,30 +90,30 @@ internal class PlayerIntegrationTest{
     inner class GetPlayerHistoryById {
 
         @Test
-        fun `Get player history by id`() {
+        fun `Get player history by version`() {
             dao.savePlayerHistory(playerHistory)
 
             `when`(cardIntegrationMock.getCardById(batman.id.toString())).thenReturn(batman)
             `when`(cardIntegrationMock.getCardById(batmanII.id.toString())).thenReturn(batmanII)
 
-            val found = instance.getPlayerHistoryById(0L)
+            val found = instance.getPlayerHistoryByVersion(0L)
 
             assertEquals(playerHistory, found)
         }
 
         @Test
-        fun `Get player history by id but not exist`() {
+        fun `Get player history by version but not exist`() {
             dao.savePlayerHistory(playerHistory)
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getPlayerHistoryById(1L)
+                instance.getPlayerHistoryByVersion(1L)
             }
         }
 
         @Test
-        fun `Get player history by id but no user exists in the system`() {
+        fun `Get player history by version but no user exists in the system`() {
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getPlayerHistoryById(0L)
+                instance.getPlayerHistoryByVersion(0L)
             }
         }
 
@@ -124,7 +124,7 @@ internal class PlayerIntegrationTest{
         val savePlayerHistory = instance.savePlayerHistory(playerHistory)
         assertEquals(playerHistory, savePlayerHistory)
 
-        val found = dao.getPlayerHistoryById(playerHistory.id!!)!!
+        val found = dao.getPlayerHistoryByVersion(playerHistory.id!!)!!
         assertEquals(playerHistory.id, found.id)
         assertTrue(found.availableCardIds.contains(batman.id))
         assertTrue(found.availableCardIds.contains(batmanII.id))

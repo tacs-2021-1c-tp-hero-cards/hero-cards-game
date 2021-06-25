@@ -25,8 +25,8 @@ class MatchIntegration(
     private fun getDuelHistoryById(id: Long): DuelHistory {
         val duelHistoryEntity =
             dao.getDuelHistoryById(id) ?: throw ElementNotFoundException("duelHistory", id.toString())
-        val playerHistory = playerIntegration.getPlayerHistoryById(duelHistoryEntity.playerId)
-        val opponentHistory = playerIntegration.getPlayerHistoryById(duelHistoryEntity.opponentId)
+        val playerHistory = playerIntegration.getPlayerHistoryByVersion(duelHistoryEntity.playerVersion)
+        val opponentHistory = playerIntegration.getPlayerHistoryByVersion(duelHistoryEntity.opponentVersion)
 
         return duelHistoryEntity.toModel(playerHistory, opponentHistory)
     }

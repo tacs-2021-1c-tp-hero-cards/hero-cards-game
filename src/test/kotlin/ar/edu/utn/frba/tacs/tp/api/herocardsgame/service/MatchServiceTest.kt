@@ -28,10 +28,10 @@ internal class MatchServiceTest {
     private val instance = MatchService(matchIntegrationMock, deckServiceMock, userIntegrationMock)
 
     private val user = User(0L, "userName", "fullName", "password", token = "tokenTest")
-    private val player = Player(user = user)
+    private val player = Player(0L, user = user)
 
     private val opponentUser = User(1L, "userOpponentName", "opponentFullName", "opponentPassword")
-    private val opponentPlayer = Player(user = opponentUser)
+    private val opponentPlayer = Player(1L, user = opponentUser)
 
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
@@ -68,6 +68,7 @@ internal class MatchServiceTest {
                     status = MatchStatus.IN_PROGRESS,
                     players = listOf(player, opponentPlayer).map {
                         it.copy(
+                            id = null,
                             availableCards = listOf(batman)
                         ).startMatch()
                     })
@@ -80,8 +81,12 @@ internal class MatchServiceTest {
             val result = instance.createMatch(listOf(0L.toString(), 1L.toString()), 0L.toString())
 
             assertEquals(0L, result.id)
-            assertTrue(result.players.contains(player.copy(availableCards = listOf(batman)).startMatch()))
-            assertTrue(result.players.contains(opponentPlayer.copy(availableCards = listOf(batman)).startMatch()))
+            assertTrue(result.players.contains(player.copy(id = null, availableCards = listOf(batman)).startMatch()))
+            assertTrue(
+                result.players.contains(
+                    opponentPlayer.copy(id = null, availableCards = listOf(batman)).startMatch()
+                )
+            )
             assertEquals(deckHistory, result.deck)
             assertEquals(MatchStatus.IN_PROGRESS, result.status)
         }
@@ -173,8 +178,10 @@ internal class MatchServiceTest {
 
             val matchResult = match.copy(
                 players = listOf(
-                    opponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch().loseMatch(),
-                    player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch().winMatch()
+                    opponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch()
+                        .loseMatch(),
+                    player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch()
+                        .winMatch()
                 ),
                 status = MatchStatus.FINALIZED,
                 duelHistoryList = listOf(

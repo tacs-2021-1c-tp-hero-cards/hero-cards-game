@@ -119,13 +119,13 @@ class Dao(
         return entity
     }
 
-    fun getPlayerHistoryById(id: Long): PlayerHistoryEntity? = playerHistoryMap[id]
+    fun getPlayerHistoryByVersion(id: Long): PlayerHistoryEntity? = playerHistoryMap[id]
 
     fun savePlayerHistory(playerHistory: PlayerHistory): PlayerHistoryEntity {
-        val playerHistoryId = calculateVersion(playerHistory)
-        val entity = PlayerHistoryEntity(playerHistoryId, playerHistory)
+        val playerHistoryVersion = calculateVersion(playerHistory)
+        val entity = PlayerHistoryEntity(playerHistoryVersion, playerHistory)
 
-        playerHistoryMap[playerHistoryId] = entity
+        playerHistoryMap[playerHistoryVersion] = entity
 
         return entity
     }

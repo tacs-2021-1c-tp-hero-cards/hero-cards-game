@@ -8,8 +8,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 class DuelHistoryEntity(id: Long? = null, duelHistory: DuelHistory) {
 
     val id: Long = id ?: duelHistory.id!!
-    val playerId: Long = duelHistory.player.id!!
-    val opponentId: Long = duelHistory.opponent.id!!
+    val playerVersion: Long = duelHistory.player.version!!
+    val opponentVersion: Long = duelHistory.opponent.version!!
     val duelType: String = duelHistory.duelType.name
     val duelResult: String = duelHistory.duelResult.name
 
