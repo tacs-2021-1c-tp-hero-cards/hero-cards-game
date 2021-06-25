@@ -48,10 +48,9 @@ class DeckIntegration(private val dao: Dao, private val cardIntegration: CardInt
 
     fun saveDeck(deck: Deck): Deck {
         val savedCards = deck.cards.map { cardIntegration.saveCard(it) }
-        val savedDeck = deck.copy(cards = savedCards)
         val savedDeckHistory = deck.deckHistoryList.map { dao.saveDeckHistory(it).toModel(it.cards) }
 
-        return dao.saveDeck(savedDeck).toModel(savedCards, savedDeckHistory)
+        return dao.saveDeck(deck).toModel(savedCards, savedDeckHistory)
     }
 
     fun deleteDeck(id: Long) {

@@ -1,11 +1,12 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class PlayerEntityTest {
@@ -26,27 +27,30 @@ internal class PlayerEntityTest {
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
 
+    @Nested
+    inner class ToEntity {
 
-    @Test
-    fun toEntityWithId() {
-        val model = Player(id, user, listOf(batman), listOf(flash))
+        @Test
+        fun `Build entity with id`() {
+            val model = Player(id, user, listOf(batman), listOf(flash))
 
-        val entity = PlayerEntity(player = model)
-        assertEquals(id, entity.id)
-        assertEquals(id, entity.userId)
-        assertTrue(entity.availableCardIds.first() == batman.id)
-        assertTrue(entity.prizeCardIds.first() == flash.id)
-    }
+            val entity = PlayerEntity(player = model)
+            assertEquals(id, entity.id)
+            assertEquals(id, entity.userId)
+            assertTrue(entity.availableCardIds.first() == batman.id)
+            assertTrue(entity.prizeCardIds.first() == flash.id)
+        }
 
-    @Test
-    fun toEntityWithOutId() {
-        val model = Player(null, user, listOf(batman), listOf(flash))
+        @Test
+        fun `Build entity without id`() {
+            val model = Player(null, user, listOf(batman), listOf(flash))
 
-        val entity = PlayerEntity(1L, model)
-        assertEquals(1L, entity.id)
-        assertEquals(id, entity.userId)
-        assertTrue(entity.availableCardIds.first() == batman.id)
-        assertTrue(entity.prizeCardIds.first() == flash.id)
+            val entity = PlayerEntity(1L, model)
+            assertEquals(1L, entity.id)
+            assertEquals(id, entity.userId)
+            assertTrue(entity.availableCardIds.first() == batman.id)
+            assertTrue(entity.prizeCardIds.first() == flash.id)
+        }
     }
 
     @Test

@@ -2,8 +2,10 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
@@ -24,7 +26,7 @@ internal class MatchTest {
     @BeforeEach
     fun init() {
         player = Player(0L, User(0L, "player", "fullName", "password"))
-        opponent = Player(0L, User(1L, "opponent", "fullName", "password"))
+        opponent = Player(1L, User(1L, "opponent", "fullName", "password"))
     }
 
     @Nested
@@ -33,23 +35,59 @@ internal class MatchTest {
         @Test
         fun `If player has no cards available then match is finalized`() {
             val match = Match(
-                players = listOf(player.copy(availableCards = listOf(batman)), opponent),
+                players = listOf(
+                    player.copy(availableCards = listOf(batman), prizeCards = listOf(batman)).startMatch(),
+                    opponent.startMatch()
+                ),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).updateStatusMatch()
 
             assertEquals(MatchStatus.FINALIZED, match.status)
+
+            val resultPlayers = match.players
+
+            val win = resultPlayers.first()
+            assertEquals(0L, win.id)
+            assertEquals(0, win.user.stats.inProgressCount)
+            assertEquals(1, win.user.stats.winCount)
+            assertEquals(0, win.user.stats.loseCount)
+            assertEquals(0, win.user.stats.tieCount)
+
+            val lose = resultPlayers.last()
+            assertEquals(1L, lose.id)
+            assertEquals(0, lose.user.stats.inProgressCount)
+            assertEquals(0, lose.user.stats.winCount)
+            assertEquals(1, lose.user.stats.loseCount)
+            assertEquals(0, lose.user.stats.tieCount)
+
         }
 
         @Test
         fun `If all players have no cards available then match is finalized`() {
             val match = Match(
-                players = listOf(player, opponent),
+                players = listOf(player.startMatch(), opponent.startMatch()),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).updateStatusMatch()
 
             assertEquals(MatchStatus.FINALIZED, match.status)
+
+            val resultPlayers = match.players
+
+            val tie = resultPlayers.first()
+            assertEquals(0L, tie.id)
+            assertEquals(0, tie.user.stats.inProgressCount)
+            assertEquals(0, tie.user.stats.winCount)
+            assertEquals(0, tie.user.stats.loseCount)
+            assertEquals(1, tie.user.stats.tieCount)
+
+            val otherTie = resultPlayers.last()
+            assertEquals(1L, otherTie.id)
+            assertEquals(0, otherTie.user.stats.inProgressCount)
+            assertEquals(0, otherTie.user.stats.winCount)
+            assertEquals(0, otherTie.user.stats.loseCount)
+            assertEquals(1, otherTie.user.stats.tieCount)
         }
 
 
@@ -143,6 +181,23 @@ internal class MatchTest {
             val losePlayer = players.last()
             assertTrue(losePlayer.availableCards.isEmpty())
             assertTrue(losePlayer.prizeCards.isEmpty())
+
+            val duelHistory = match.duelHistoryList.first()
+            assertNull(duelHistory.id)
+            assertEquals(DuelResult.WIN, duelHistory.duelResult)
+            assertEquals(DuelType.SPEED, duelHistory.duelType)
+
+            val duelHistoryPlayer = duelHistory.player
+            assertNull(duelHistoryPlayer.id)
+            assertEquals(flash, duelHistoryPlayer.cardPlayed)
+            assertTrue(duelHistoryPlayer.availableCards.contains(flash))
+            assertTrue(duelHistoryPlayer.prizeCards.isEmpty())
+
+            val duelHistoryOpponent = duelHistory.opponent
+            assertNull(duelHistoryOpponent.id)
+            assertEquals(batman, duelHistoryOpponent.cardPlayed)
+            assertTrue(duelHistoryOpponent.availableCards.contains(batman))
+            assertTrue(duelHistoryOpponent.prizeCards.isEmpty())
         }
 
         @Test
@@ -169,6 +224,23 @@ internal class MatchTest {
             assertTrue(winPlayer.availableCards.isEmpty())
             assertTrue(winPlayer.prizeCards.contains(batman))
             assertTrue(winPlayer.prizeCards.contains(flash))
+
+            val duelHistory = match.duelHistoryList.first()
+            assertNull(duelHistory.id)
+            assertEquals(DuelResult.LOSE, duelHistory.duelResult)
+            assertEquals(DuelType.WEIGHT, duelHistory.duelType)
+
+            val duelHistoryPlayer = duelHistory.player
+            assertNull(duelHistoryPlayer.id)
+            assertEquals(flash, duelHistoryPlayer.cardPlayed)
+            assertTrue(duelHistoryPlayer.availableCards.contains(flash))
+            assertTrue(duelHistoryPlayer.prizeCards.isEmpty())
+
+            val duelHistoryOpponent = duelHistory.opponent
+            assertNull(duelHistoryOpponent.id)
+            assertEquals(batman, duelHistoryOpponent.cardPlayed)
+            assertTrue(duelHistoryOpponent.availableCards.contains(batman))
+            assertTrue(duelHistoryOpponent.prizeCards.isEmpty())
         }
 
         @Test
@@ -194,6 +266,23 @@ internal class MatchTest {
             val otherTiePlayer = players.last()
             assertTrue(otherTiePlayer.availableCards.isEmpty())
             assertTrue(otherTiePlayer.prizeCards.contains(batman))
+
+            val duelHistory = match.duelHistoryList.first()
+            assertNull(duelHistory.id)
+            assertEquals(DuelResult.TIE, duelHistory.duelResult)
+            assertEquals(DuelType.COMBAT, duelHistory.duelType)
+
+            val duelHistoryPlayer = duelHistory.player
+            assertNull(duelHistoryPlayer.id)
+            assertEquals(flash, duelHistoryPlayer.cardPlayed)
+            assertTrue(duelHistoryPlayer.availableCards.contains(flash))
+            assertTrue(duelHistoryPlayer.prizeCards.isEmpty())
+
+            val duelHistoryOpponent = duelHistory.opponent
+            assertNull(duelHistoryOpponent.id)
+            assertEquals(batman, duelHistoryOpponent.cardPlayed)
+            assertTrue(duelHistoryOpponent.availableCards.contains(batman))
+            assertTrue(duelHistoryOpponent.prizeCards.isEmpty())
         }
 
     }

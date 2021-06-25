@@ -15,4 +15,6 @@ data class User(
     fun loseMatch(): User = copy(stats = stats.addLoseMatch())
 
     fun startMatch(): User = copy(stats = stats.addInProgressMatch())
+
+    fun endMatch(): User = copy(stats = stats.decInProgressMatch())
 }

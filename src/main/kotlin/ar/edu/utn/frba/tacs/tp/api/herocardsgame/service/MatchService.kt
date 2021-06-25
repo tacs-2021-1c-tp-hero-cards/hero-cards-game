@@ -7,6 +7,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import org.springframework.stereotype.Service
 
@@ -27,7 +29,7 @@ class MatchService(
 
     fun buildPlayers(usersId: List<String>, deck: Deck): List<Player> {
         var players = usersId.map {
-            Player(user = userIntegration.getUserById(it.toLong()))
+            Player(user = userIntegration.getUserById(it.toLong())).startMatch()
         }
 
         deck.mixCards().cards.forEach {

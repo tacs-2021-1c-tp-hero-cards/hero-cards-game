@@ -4,9 +4,17 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckHistoryEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.DuelHistoryEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.MatchEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player.PlayerEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player.PlayerHistoryEntity
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,8 +26,8 @@ class Dao(
     private val matchMap: HashMap<Long, MatchEntity> = hashMapOf(),
 
     private val deckHistoryMap: HashMap<Long, DeckHistoryEntity> = hashMapOf(),
-    private val playerHistoryMap: HashMap<Long, DeckHistoryEntity> = hashMapOf(),
-    private val matchHistoryMap: HashMap<Long, DeckHistoryEntity> = hashMapOf()
+    private val duelHistoryMap: HashMap<Long, DuelHistoryEntity> = hashMapOf(),
+    private val playerHistoryMap: HashMap<Long, PlayerHistoryEntity> = hashMapOf()
 ) {
 
     fun <T> calculateId(entity: T): Long =
@@ -28,14 +36,14 @@ class Dao(
             is Deck -> deckMap
             is Player -> playerMap
             is Match -> matchMap
+            is DuelHistory -> duelHistoryMap
             else -> cardMap
         }.size.toLong()
 
     fun <T> calculateVersion(entity: T): Long =
         when (entity) {
-            is Deck -> deckHistoryMap
-            is Player -> playerHistoryMap
-            else -> matchHistoryMap
+            is PlayerHistory -> playerHistoryMap
+            else -> deckHistoryMap
         }.size.toLong()
 
     //Users
@@ -80,7 +88,7 @@ class Dao(
     fun saveDeck(deck: Deck): DeckEntity {
         val deckId = deck.id ?: calculateId(deck)
         val deckVersion = deck.version ?: calculateVersion(deck)
-        val entity = DeckEntity(deckId, deckVersion, deck.copy(id = deckId, version = deckVersion))
+        val entity = DeckEntity(deckId, deckVersion, deck)
 
         deckMap[deckId] = entity
 
@@ -111,6 +119,17 @@ class Dao(
         return entity
     }
 
+    fun getPlayerHistoryById(id: Long): PlayerHistoryEntity? = playerHistoryMap[id]
+
+    fun savePlayerHistory(playerHistory: PlayerHistory): PlayerHistoryEntity {
+        val playerHistoryId = calculateVersion(playerHistory)
+        val entity = PlayerHistoryEntity(playerHistoryId, playerHistory)
+
+        playerHistoryMap[playerHistoryId] = entity
+
+        return entity
+    }
+
     //Matches
     fun getMatchById(id: Long): MatchEntity? = matchMap[id]
 
@@ -119,6 +138,17 @@ class Dao(
         val entity = MatchEntity(matchId, match)
 
         matchMap[matchId] = entity
+
+        return entity
+    }
+
+    fun getDuelHistoryById(id: Long): DuelHistoryEntity? = duelHistoryMap[id]
+
+    fun saveDuelHistory(duelHistory: DuelHistory): DuelHistoryEntity {
+        val duelHistoryId = calculateId(duelHistory)
+        val entity = DuelHistoryEntity(duelHistoryId, duelHistory)
+
+        duelHistoryMap[duelHistoryId] = entity
 
         return entity
     }

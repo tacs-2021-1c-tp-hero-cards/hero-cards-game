@@ -10,7 +10,7 @@ class DeckEntity(id: Long? = null, version: Long? = null, deck: Deck) {
     val version: Long = version ?: deck.version!!
     val name: String = deck.name
     val cardIds: List<Long> = deck.cards.map { it.id }
-    val deckHistoryIds: List<Long> = deck.deckHistoryList.map { it.version!! }
+    val deckHistoryIds: List<Long> = deck.deckHistoryList.map { it.version }
 
     fun toModel(cardModels: List<Card>, deckHistoryModels: List<DeckHistory>): Deck =
         Deck(id, version, name, cardModels, deckHistoryModels)

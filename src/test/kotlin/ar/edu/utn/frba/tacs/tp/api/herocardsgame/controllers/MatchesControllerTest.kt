@@ -14,6 +14,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NextDuelRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.DeckService
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.HashService
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.MatchService
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
@@ -165,6 +166,10 @@ internal class MatchesControllerTest {
             assertTrue(players.any { it.user.userName == "userName2" && it.user.id == 1L })
             assertTrue(players.any { it.prizeCards.isEmpty() })
             assertTrue(players.any { it.prizeCards.isNotEmpty() })
+
+            val duelHistory = match.duelHistoryList.first()
+            assertEquals(0L, duelHistory.id)
+            assertEquals(DuelType.COMBAT, duelHistory.duelType)
         }
 
         @Test

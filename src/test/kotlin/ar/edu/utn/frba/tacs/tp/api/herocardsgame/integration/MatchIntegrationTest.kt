@@ -3,9 +3,9 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils

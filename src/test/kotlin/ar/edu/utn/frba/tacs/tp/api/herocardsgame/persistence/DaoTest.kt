@@ -5,9 +5,19 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckHistoryEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.DuelHistoryEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.MatchEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player.PlayerEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player.PlayerHistoryEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -26,7 +36,9 @@ internal class DaoTest {
 
     private val user = User(0L, "userName", "fullName", "password", "token", Stats())
     private val player = Player(0L, user, listOf(batman), listOf(flash))
+    private val playerHistory = PlayerHistory(0L, batman, listOf(batman), listOf(flash))
     private val match = Match(0L, listOf(player), deckHistory, MatchStatus.IN_PROGRESS)
+    private val duelHistory = DuelHistory(0L, playerHistory, playerHistory.copy(id = 1), DuelType.SPEED, DuelResult.WIN)
 
     @Nested
     inner class CalculateId {
@@ -93,8 +105,22 @@ internal class DaoTest {
         fun calculateVersionToDeck() {
             instance = Dao(deckHistoryMap = hashMapOf(0L to DeckHistoryEntity(deckHistory)))
 
-            val calculateId = instance.calculateVersion(deck)
+            val calculateId = instance.calculateVersion(deckHistory)
             assertEquals(1, calculateId)
+        }
+
+        @Test
+        fun calculateVersionToPlayerHistory() {
+            instance = Dao(
+                playerHistoryMap = hashMapOf(
+                    0L to PlayerHistoryEntity(0L, playerHistory),
+                    1L to PlayerHistoryEntity(1L, playerHistory),
+                    2L to PlayerHistoryEntity(2L, playerHistory)
+                )
+            )
+
+            val calculateId = instance.calculateVersion(playerHistory)
+            assertEquals(3, calculateId)
         }
 
     }
@@ -414,7 +440,7 @@ internal class DaoTest {
         }
 
         @Nested
-        inner class SaveDeckHistory{
+        inner class SaveDeckHistory {
 
             @Test
             fun `Save history and it already exists`() {
@@ -500,6 +526,37 @@ internal class DaoTest {
             assertTrue(foundPlayer.prizeCardIds.contains(flash.id))
         }
 
+        @Nested
+        inner class GetPlayerHistoryById {
+
+            @Test
+            fun `Search player history by id and exists`() {
+                val playerHistoryEntity = PlayerHistoryEntity(playerHistory = playerHistory)
+                instance = Dao(playerHistoryMap = hashMapOf(0L to playerHistoryEntity))
+
+                val found = instance.getPlayerHistoryById(0L)
+                assertEquals(playerHistoryEntity, found)
+            }
+
+            @Test
+            fun `Search player history by id and non exists`() {
+                instance = Dao(playerHistoryMap = hashMapOf())
+                assertNull(instance.getPlayerHistoryById(0L))
+            }
+
+        }
+
+        @Test
+        fun savePlayerHistory() {
+            instance = Dao()
+            instance.savePlayerHistory(playerHistory)
+
+            val foundPlayerHistory = instance.getPlayerHistoryById(playerHistory.id!!)!!
+            assertEquals(playerHistory.id, foundPlayerHistory.id)
+            assertTrue(foundPlayerHistory.availableCardIds.contains(batman.id))
+            assertTrue(foundPlayerHistory.prizeCardIds.contains(flash.id))
+        }
+
     }
 
     @Nested
@@ -537,6 +594,39 @@ internal class DaoTest {
 
             val players = foundMatch.playerIds
             assertTrue(players.contains(player.id))
+        }
+
+        @Nested
+        inner class GetDuelHistoryById {
+
+            @Test
+            fun `Search duel history by id and exists`() {
+                val duelHistoryEntity = DuelHistoryEntity(duelHistory = duelHistory)
+                instance = Dao(duelHistoryMap = hashMapOf(0L to duelHistoryEntity))
+
+                val found = instance.getDuelHistoryById(0L)
+                assertEquals(duelHistoryEntity, found)
+            }
+
+            @Test
+            fun `Search duel history by id and non exists`() {
+                instance = Dao(duelHistoryMap = hashMapOf())
+                assertNull(instance.getDuelHistoryById(0L))
+            }
+
+        }
+
+        @Test
+        fun saveDuelHistory() {
+            instance = Dao()
+            instance.saveDuelHistory(duelHistory)
+
+            val foundDuelHistory = instance.getDuelHistoryById(duelHistory.id!!)!!
+            assertEquals(duelHistory.id, foundDuelHistory.id)
+            assertEquals(0L, foundDuelHistory.playerId)
+            assertEquals(1L, foundDuelHistory.opponentId)
+            assertEquals(duelHistory.duelType.name, foundDuelHistory.duelType)
+            assertEquals(duelHistory.duelResult.name, foundDuelHistory.duelResult)
         }
     }
 }

@@ -14,5 +14,7 @@ data class Stats(
 
     fun addInProgressMatch(): Stats = copy(inProgressCount = inProgressCount + 1)
 
+    fun decInProgressMatch(): Stats = copy(inProgressCount = inProgressCount - 1)
+
     fun calculateTotalPoint(): Int = winCount * 3 + tieCount
 }

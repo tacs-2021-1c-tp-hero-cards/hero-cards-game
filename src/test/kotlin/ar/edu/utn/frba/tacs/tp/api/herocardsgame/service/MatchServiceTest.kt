@@ -7,10 +7,12 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
@@ -61,11 +63,14 @@ internal class MatchServiceTest {
         @Test
         fun `Create match`() {
             val match =
-                Match(deck = deckHistory, status = MatchStatus.IN_PROGRESS, players = listOf(player, opponentPlayer).map {
-                    it.copy(
-                        availableCards = listOf(batman)
-                    )
-                })
+                Match(
+                    deck = deckHistory,
+                    status = MatchStatus.IN_PROGRESS,
+                    players = listOf(player, opponentPlayer).map {
+                        it.copy(
+                            availableCards = listOf(batman)
+                        ).startMatch()
+                    })
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
             `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
@@ -75,8 +80,8 @@ internal class MatchServiceTest {
             val result = instance.createMatch(listOf(0L.toString(), 1L.toString()), 0L.toString())
 
             assertEquals(0L, result.id)
-            assertTrue(result.players.contains(player.copy(availableCards = listOf(batman))))
-            assertTrue(result.players.contains(opponentPlayer.copy(availableCards = listOf(batman))))
+            assertTrue(result.players.contains(player.copy(availableCards = listOf(batman)).startMatch()))
+            assertTrue(result.players.contains(opponentPlayer.copy(availableCards = listOf(batman)).startMatch()))
             assertEquals(deckHistory, result.deck)
             assertEquals(MatchStatus.IN_PROGRESS, result.status)
         }
@@ -95,11 +100,11 @@ internal class MatchServiceTest {
 
             assertEquals(2, players.size)
 
-            val player1 = players.first { it.user == user }
+            val player1 = players.first { it.user == user.startMatch() }
             val availableCards1 = player1.availableCards
             assertEquals(1, availableCards1.size)
 
-            val player2 = players.first { it.user == opponentUser }
+            val player2 = players.first { it.user == opponentUser.startMatch() }
             val availableCards2 = player2.availableCards
             assertEquals(1, availableCards2.size)
         }
@@ -159,8 +164,8 @@ internal class MatchServiceTest {
             val match = Match(
                 id = 0L,
                 players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    opponentPlayer.copy(availableCards = listOf(batman))
+                    player.copy(availableCards = listOf(flash)).startMatch(),
+                    opponentPlayer.copy(availableCards = listOf(batman)).startMatch()
                 ),
                 deck = deckHistory,
                 status = MatchStatus.IN_PROGRESS
@@ -168,9 +173,18 @@ internal class MatchServiceTest {
 
             val matchResult = match.copy(
                 players = listOf(
-                    opponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()),
-                    player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash))
-                ), status = MatchStatus.FINALIZED
+                    opponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch().loseMatch(),
+                    player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch().winMatch()
+                ),
+                status = MatchStatus.FINALIZED,
+                duelHistoryList = listOf(
+                    DuelHistory(
+                        player.copy(availableCards = listOf(flash)),
+                        opponentPlayer.copy(availableCards = listOf(batman)),
+                        DuelType.SPEED,
+                        DuelResult.WIN
+                    )
+                )
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
@@ -227,8 +241,8 @@ internal class MatchServiceTest {
             val match = Match(
                 id = 0L,
                 players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    opponentPlayer.copy(availableCards = listOf(batman))
+                    player.copy(availableCards = listOf(flash)).startMatch(),
+                    opponentPlayer.copy(availableCards = listOf(batman)).startMatch()
                 ),
                 deck = deckHistory,
                 status = MatchStatus.IN_PROGRESS
@@ -237,11 +251,11 @@ internal class MatchServiceTest {
             val matchResult = match.copy(
                 status = MatchStatus.CANCELLED,
                 players = listOf(
-                    player.copy(availableCards = listOf(flash), user = user.copy(stats = Stats().addLoseMatch())),
+                    player.copy(availableCards = listOf(flash)).startMatch().loseMatch(),
                     opponentPlayer.copy(
                         availableCards = listOf(batman),
-                        user = opponentUser.copy(stats = Stats().addWinMatch())
-                    )
+                        user = opponentUser.copy(stats = Stats())
+                    ).startMatch().winMatch()
                 )
             )
 
