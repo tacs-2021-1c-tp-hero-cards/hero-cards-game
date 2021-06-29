@@ -1,6 +1,7 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 
 data class Player(
     val id: Long? = null,
@@ -24,11 +25,20 @@ data class Player(
             availableCards = availableCards.drop(1)
         )
 
-    fun winMatch(): Player = copy(user = user.winMatch())
+    fun winMatch(): Player = copy(user = user.winMatch().endMatch())
 
-    fun tieMatch(): Player = copy(user = user.tieMatch())
+    fun tieMatch(): Player = copy(user = user.tieMatch().endMatch())
 
-    fun loseMatch(): Player = copy(user = user.loseMatch())
+    fun loseMatch(): Player = copy(user = user.loseMatch().endMatch())
 
     fun startMatch(): Player = copy(user = user.startMatch())
+
+    fun endMatch(): Player = copy(user = user.endMatch())
+
+    fun calculateWinPlayer(opponent: Player): List<Player> =
+        when (prizeCards.size.compareTo(opponent.prizeCards.size)) {
+            1 -> listOf(this.winMatch(), opponent.loseMatch())
+            -1 -> listOf(this.loseMatch(), opponent.winMatch())
+            else -> listOf(this.tieMatch(), opponent.tieMatch())
+        }
 }

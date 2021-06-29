@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -14,15 +15,19 @@ internal class PlayerTest {
 
     lateinit var user: User
     lateinit var player: Player
+    lateinit var userOpponent: User
+    lateinit var opponent: Player
 
     @BeforeEach
     fun init() {
         user = User(0L, "userName", "fullName", "password")
-        player = Player(user = user, availableCards = listOf(batman))
+        player = Player(id = 0L, user = user, availableCards = listOf(batman))
+        userOpponent = User(1L, "userName2", "fullName2", "password2")
+        opponent = Player(id = 1L, user = user)
     }
 
     @Nested
-    inner class ResolveDuel{
+    inner class ResolveDuel {
 
         @Test
         fun winDuel() {
@@ -59,7 +64,7 @@ internal class PlayerTest {
 
         @Test
         fun `User win match and add a victory`() {
-            val stats = player.winMatch().user.stats
+            val stats = player.startMatch().winMatch().user.stats
             assertEquals(1, stats.winCount)
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.loseCount)
@@ -68,7 +73,7 @@ internal class PlayerTest {
 
         @Test
         fun `User tied game and add a tie`() {
-            val stats = player.tieMatch().user.stats
+            val stats = player.startMatch().tieMatch().user.stats
             assertEquals(0, stats.winCount)
             assertEquals(1, stats.tieCount)
             assertEquals(0, stats.loseCount)
@@ -77,7 +82,7 @@ internal class PlayerTest {
 
         @Test
         fun `User loses match and add a loss`() {
-            val stats = player.loseMatch().user.stats
+            val stats = player.startMatch().loseMatch().user.stats
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.tieCount)
             assertEquals(1, stats.loseCount)
@@ -91,6 +96,86 @@ internal class PlayerTest {
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.loseCount)
             assertEquals(1, stats.inProgressCount)
+        }
+
+        @Test
+        fun `User ended game and dec a in progress match`() {
+            val stats = player.startMatch().endMatch().user.stats
+            assertEquals(0, stats.winCount)
+            assertEquals(0, stats.tieCount)
+            assertEquals(0, stats.loseCount)
+            assertEquals(0, stats.inProgressCount)
+        }
+
+    }
+
+    @Nested
+    inner class CalculateWinPlayer {
+
+        @Test
+        fun `Player win match`() {
+            val winPlayer = player.copy(prizeCards = listOf(batman)).startMatch()
+            val loseOpponent = opponent.copy(prizeCards = emptyList()).startMatch()
+
+            val resultPlayers = winPlayer.calculateWinPlayer(loseOpponent)
+
+            val win = resultPlayers.first()
+            assertEquals(0L, win.id)
+            assertEquals(0, win.user.stats.inProgressCount)
+            assertEquals(1, win.user.stats.winCount)
+            assertEquals(0, win.user.stats.loseCount)
+            assertEquals(0, win.user.stats.tieCount)
+
+            val lose = resultPlayers.last()
+            assertEquals(1L, lose.id)
+            assertEquals(0, lose.user.stats.inProgressCount)
+            assertEquals(0, lose.user.stats.winCount)
+            assertEquals(1, lose.user.stats.loseCount)
+            assertEquals(0, lose.user.stats.tieCount)
+        }
+
+        @Test
+        fun `Player lose match`() {
+            val loseOpponent = player.copy(prizeCards = emptyList()).startMatch()
+            val winPlayer = opponent.copy(prizeCards = listOf(batman)).startMatch()
+
+            val resultPlayers = loseOpponent.calculateWinPlayer(winPlayer)
+
+            val lose = resultPlayers.first()
+            assertEquals(0L, lose.id)
+            assertEquals(0, lose.user.stats.inProgressCount)
+            assertEquals(0, lose.user.stats.winCount)
+            assertEquals(1, lose.user.stats.loseCount)
+            assertEquals(0, lose.user.stats.tieCount)
+
+            val win = resultPlayers.last()
+            assertEquals(1L, win.id)
+            assertEquals(0, win.user.stats.inProgressCount)
+            assertEquals(1, win.user.stats.winCount)
+            assertEquals(0, win.user.stats.loseCount)
+            assertEquals(0, win.user.stats.tieCount)
+        }
+
+        @Test
+        fun `Player tie match`() {
+            val tiePlayer = player.copy(prizeCards = listOf(batman)).startMatch()
+            val tieOpponent = opponent.copy(prizeCards = listOf(batman)).startMatch()
+
+            val resultPlayers = tiePlayer.calculateWinPlayer(tieOpponent)
+
+            val tie = resultPlayers.first()
+            assertEquals(0L, tie.id)
+            assertEquals(0, tie.user.stats.inProgressCount)
+            assertEquals(0, tie.user.stats.winCount)
+            assertEquals(0, tie.user.stats.loseCount)
+            assertEquals(1, tie.user.stats.tieCount)
+
+            val otherTie = resultPlayers.last()
+            assertEquals(1L, otherTie.id)
+            assertEquals(0, otherTie.user.stats.inProgressCount)
+            assertEquals(0, otherTie.user.stats.winCount)
+            assertEquals(0, otherTie.user.stats.loseCount)
+            assertEquals(1, otherTie.user.stats.tieCount)
         }
 
     }

@@ -65,5 +65,15 @@ internal class StatsTest {
             assertEquals(1, stats.inProgressCount)
         }
 
+        @Test
+        fun `User end game and dec a in progress match`() {
+            val stats = Stats().addInProgressMatch().decInProgressMatch()
+
+            assertEquals(0, stats.winCount)
+            assertEquals(0, stats.tieCount)
+            assertEquals(0, stats.loseCount)
+            assertEquals(0, stats.inProgressCount)
+        }
+
     }
 }

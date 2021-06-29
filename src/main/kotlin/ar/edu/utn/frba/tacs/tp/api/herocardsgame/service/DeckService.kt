@@ -4,7 +4,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidPowerstatsExce
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.CardIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.DeckIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -40,7 +40,6 @@ class DeckService(
 
         val deck = deckIntegration.getDeckById(deckId.toLong())
         log.info("Deck to update its oldName: ${deck.name} and oldCardIds: [${deck.cards.map { it.id }.joinToString(",")}]")
-        deckIntegration.saveDeck(deck.copy(usable = false))
 
         val cards = searchCards(cardIds)
         val newDeck = deck.updateDeck(name, cards)

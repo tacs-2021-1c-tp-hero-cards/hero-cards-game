@@ -2,7 +2,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidPowerstatsException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateDeckRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.UpdateDeckRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.DeckService

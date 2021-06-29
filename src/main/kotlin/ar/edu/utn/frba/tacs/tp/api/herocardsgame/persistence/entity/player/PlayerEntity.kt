@@ -1,8 +1,8 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 
 class PlayerEntity(id: Long? = null, player: Player) {
 

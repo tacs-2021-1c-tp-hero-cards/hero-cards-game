@@ -2,17 +2,17 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Deck
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 
 internal class MatchIntegrationTest {
@@ -32,8 +32,10 @@ internal class MatchIntegrationTest {
     private val userOpponent = User(1L, "userNameOpponent", "fullName", "password")
     private val opponent = Player(1L, userOpponent, listOf(batmanII))
 
-    private val deck = Deck(0L, "deckNameTest", listOf(batman, batmanII))
-    private val match = Match(0L, listOf(player, opponent), deck, MatchStatus.IN_PROGRESS)
+    private val deck = Deck(0L, 1L, "deckNameTest", listOf(batman, batmanII))
+    private val deckHistory = DeckHistory(deck.copy(version = 0L))
+
+    private val match = Match(0L, listOf(player, opponent), deckHistory, MatchStatus.IN_PROGRESS)
 
     @BeforeEach
     fun init() {
@@ -50,7 +52,7 @@ internal class MatchIntegrationTest {
 
             `when`(playerIntegrationMock.getPlayerById(0L)).thenReturn(player)
             `when`(playerIntegrationMock.getPlayerById(1L)).thenReturn(opponent)
-            `when`(deckIntegrationMock.getDeckById(0L)).thenReturn(deck)
+            `when`(deckIntegrationMock.getDeckById(0L)).thenReturn(deck.copy(deckHistoryList = listOf(deckHistory)))
 
             val found = instance.getMatchById(0L)
 

@@ -1,7 +1,8 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import org.springframework.stereotype.Component
 
@@ -20,11 +21,22 @@ class PlayerIntegration(
         return playerEntity.toModel(user, availableCards, prizeCards)
     }
 
+    fun getPlayerHistoryByVersion(version: Long): PlayerHistory {
+        val entity = dao.getPlayerHistoryByVersion(version) ?: throw ElementNotFoundException("playerHistory", version.toString())
+        val availableCards = entity.availableCardIds.map { cardIntegration.getCardById(it.toString()) }
+        val prizeCards = entity.prizeCardIds.map { cardIntegration.getCardById(it.toString()) }
+
+        return entity.toModel(availableCards, prizeCards)
+    }
+
     fun savePlayer(player: Player): Player {
         val savedUser = userIntegration.saveUser(player.user)
         val savedPrizeCards = player.prizeCards.map { cardIntegration.saveCard(it) }
         val savedAvailableCards = player.availableCards.map { cardIntegration.saveCard(it) }
         return dao.savePLayer(player).toModel(savedUser, savedAvailableCards, savedPrizeCards)
     }
+
+    fun savePlayerHistory(playerHistory: PlayerHistory): PlayerHistory =
+        dao.savePlayerHistory(playerHistory).toModel(playerHistory.availableCards, playerHistory.prizeCards)
 
 }

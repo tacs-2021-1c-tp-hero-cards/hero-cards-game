@@ -3,7 +3,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateMatchRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NextDuelRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.MatchService

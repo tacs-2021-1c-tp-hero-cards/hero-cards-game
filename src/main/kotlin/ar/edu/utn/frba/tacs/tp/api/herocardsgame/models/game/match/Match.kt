@@ -1,14 +1,18 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 
 data class Match(
     val id: Long? = null,
     val players: List<Player>,
-    val deck: Deck,
-    val status: MatchStatus
+    val deck: DeckHistory,
+    val status: MatchStatus,
+    val duelHistoryList: List<DuelHistory> = emptyList()
 ) {
 
     fun resolveDuel(duelType: DuelType): Match {
@@ -20,20 +24,29 @@ data class Match(
         val playerCard = player.availableCards.first()
         val opponentCard = opponent.availableCards.first()
 
-        val playerList = when (playerCard.duel(opponentCard, duelType)) {
+        val duelResult = playerCard.duel(opponentCard, duelType)
+
+        val playerList = when (duelResult) {
             DuelResult.WIN -> listOf(player.winDuel(opponentCard), opponent.loseDuel())
             DuelResult.LOSE -> listOf(player.loseDuel(), opponent.winDuel(playerCard))
             else -> listOf(player.tieDuel(), opponent.tieDuel())
         }
 
-        return this.copy(players = playerList)
+        return this.copy(
+            players = playerList,
+            duelHistoryList = duelHistoryList.plus(DuelHistory(player, opponent, duelType, duelResult))
+        )
     }
 
     fun updateTurn(): Match =
         this.copy(players = players.reversed())
 
     fun updateStatusMatch(): Match =
-        this.copy(status = if (players.any { it.availableCards.isEmpty() }) MatchStatus.FINALIZED else MatchStatus.IN_PROGRESS)
+        if (players.any { it.availableCards.isEmpty() }) {
+            this.copy(status = MatchStatus.FINALIZED, players = players.first().calculateWinPlayer(players.last()))
+        } else {
+            this
+        }
 
     fun abortMatch(): Match {
         this.validateNotFinalizedOrCancelled()
