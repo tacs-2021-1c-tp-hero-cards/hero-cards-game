@@ -38,15 +38,16 @@ internal class UsersControllerTest {
             assertEquals(200, response.statusCodeValue)
             assertEquals(response.body!!, 0L)
 
-            val users = instance.getUser("0")
-            assertEquals(
-                User(
-                    0L,
-                    "userName",
-                    "fullName",
-                    HashService.calculatePasswordHash("userName", "password")
-                ),
-                users.body!!
+            val users = instance.getUserByIdUserNameOrFullName(userId = "0")
+            assertTrue(
+                users.body!!.contains(
+                    User(
+                        0L,
+                        "userName",
+                        "fullName",
+                        HashService.calculatePasswordHash("userName", "password")
+                    )
+                )
             )
         }
 
@@ -56,15 +57,16 @@ internal class UsersControllerTest {
             assertEquals(200, response.statusCodeValue)
             assertEquals(response.body!!, 0L)
 
-            val users = instance.getUser("0")
-            assertEquals(
-                User(
-                    0L,
-                    "userName",
-                    "fullName",
-                    HashService.calculatePasswordHash("userName", "password")
-                ),
-                users.body!!
+            val users = instance.getUserByIdUserNameOrFullName(userId = "0")
+            assertTrue(
+                users.body!!.contains(
+                    User(
+                        0L,
+                        "userName",
+                        "fullName",
+                        HashService.calculatePasswordHash("userName", "password")
+                    )
+                )
             )
 
             val otherResponse = instance.signUp(CreateUserRequest("userName", "fullName", "password"))
@@ -86,16 +88,17 @@ internal class UsersControllerTest {
             val token = response.body!!.token
             assertTrue(token.isNotBlank())
 
-            val users = instance.getUser("0")
-            assertEquals(
-                User(
-                    0L,
-                    "userName",
-                    "fullName",
-                    HashService.calculatePasswordHash("userName", "password"),
-                    token
-                ),
-                users.body!!
+            val users = instance.getUserByIdUserNameOrFullName(userId = "0")
+            assertTrue(
+                users.body!!.contains(
+                    User(
+                        0L,
+                        "userName",
+                        "fullName",
+                        HashService.calculatePasswordHash("userName", "password"),
+                        token
+                    )
+                )
             )
         }
 
@@ -118,15 +121,16 @@ internal class UsersControllerTest {
             val response = instance.logOut(hashMapOf("token" to token))
             assertEquals(200, response.statusCodeValue)
 
-            val users = instance.getUser("0")
-            assertEquals(
-                User(
-                    0L,
-                    "userName",
-                    "fullName",
-                    HashService.calculatePasswordHash("userName", "password")
-                ),
-                users.body!!
+            val users = instance.getUserByIdUserNameOrFullName(userId = "0")
+            assertTrue(
+                users.body!!.contains(
+                    User(
+                        0L,
+                        "userName",
+                        "fullName",
+                        HashService.calculatePasswordHash("userName", "password")
+                    )
+                )
             )
         }
 
@@ -139,33 +143,26 @@ internal class UsersControllerTest {
     }
 
     @Nested
-    inner class GetUsers {
+    inner class GetUserByIdUserNameOrFullName {
 
         @Test
-        fun `Search by user id`() {
+        fun `Search by user userName and fullName`() {
             instance.signUp(CreateUserRequest("userName", "fullName", "password"))
-            instance.signUp(CreateUserRequest("userName2", "fullName2", "password2"))
+            instance.signUp(CreateUserRequest("userName", "fullName2", "password2"))
+            instance.signUp(CreateUserRequest("userName2", "fullName2", "password3"))
 
-            val response = instance.getUser("1")
+            val response = instance.getUserByIdUserNameOrFullName(userName = "userName", fullName = "fullName")
             assertEquals(200, response.statusCodeValue)
-            assertEquals(
-                User(
-                    1L,
-                    "userName2",
-                    "fullName2",
-                    HashService.calculatePasswordHash("userName2", "password2")
-                ),
-                response.body!!
+            assertTrue(
+                response.body!!.contains(
+                    User(
+                        0L,
+                        "userName",
+                        "fullName",
+                        HashService.calculatePasswordHash("userName", "password")
+                    )
+                )
             )
-        }
-
-        @Test
-        fun `Search by invalid user id, returns NOT_FOUND`() {
-            instance.signUp(CreateUserRequest("userName", "fullName", "password"))
-
-            val response = instance.getUser("1")
-            assertEquals(400, response.statusCodeValue)
-            assertNull(response.body)
         }
     }
 }
