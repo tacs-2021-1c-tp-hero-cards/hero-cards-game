@@ -5,7 +5,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Authentication
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.ActivateUserSessionRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateUserRequest
 import org.slf4j.Logger
@@ -82,10 +81,11 @@ class UsersController(
     fun getUserByIdUserNameOrFullName(
         @RequestParam(value = "user-id") userId: String? = null,
         @RequestParam(value = "user-name") userName: String? = null,
-        @RequestParam(value = "full-name") fullName: String? = null
-    ): ResponseEntity<List<User>> {
-        log.info("Get /users/search requestParam: [user-id=$userId | user-name=$userName | full-name=$fullName]")
+        @RequestParam(value = "full-name") fullName: String? = null,
+        @RequestParam(value = "token") token: String? = null
+        ): ResponseEntity<List<User>> {
+        log.info("Get /users/search requestParam: [user-id=$userId | user-name=$userName | full-name=$fullName | token=$token]")
         return ResponseEntity.status(HttpStatus.OK)
-            .body(userIntegration.searchUserByIdUserNameOrFullName(userId, userName, fullName))
+            .body(userIntegration.searchUserByIdUserNameFullNameOrToken(userId, userName, fullName, token))
     }
 }
