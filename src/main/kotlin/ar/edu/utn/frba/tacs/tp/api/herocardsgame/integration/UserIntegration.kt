@@ -39,15 +39,17 @@ class UserIntegration(private val dao: Dao) {
 
     fun saveUser(user: User): User = dao.saveUser(user).toModel()
 
-    fun searchUserByIdUserNameOrFullName(
+    fun searchUserByIdUserNameFullNameOrToken(
         id: String? = null,
         userName: String? = null,
-        fullName: String? = null
+        fullName: String? = null,
+        token: String? = null
     ): List<User> =
         dao.getAllUser()
             .filter { userName == null || userName == it.userName }
             .filter { fullName == null || fullName == it.fullName }
             .filter { id == null || id.toLong() == it.id }
+            .filter { token == null || token == it.token }
             .map { it.toModel() }
 
 }
