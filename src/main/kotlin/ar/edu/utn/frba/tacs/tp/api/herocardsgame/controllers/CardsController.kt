@@ -9,10 +9,12 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMethod
 
 @Controller
-@CrossOrigin(origins =["http://localhost:3000"], allowedHeaders = ["*"])
-class CardsController(val cardIntegration: CardIntegration) {
+@CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
+class CardsController(val cardIntegration: CardIntegration) :
+    AbstractController<CardsController>(CardsController::class.java) {
 
     /**
      * @param cardId
@@ -21,9 +23,16 @@ class CardsController(val cardIntegration: CardIntegration) {
     @GetMapping("/cards/{card-id}")
     fun getCard(@PathVariable("card-id") cardId: String): ResponseEntity<Card> =
         try {
-            ResponseEntity.status(HttpStatus.OK).body(cardIntegration.getCardById(cardId))
+            reportRequest(
+                method = RequestMethod.GET,
+                path = "/cards/{card-id}",
+                body = null,
+                pathVariables = hashMapOf("card-id" to cardId)
+            )
+            val response = cardIntegration.getCardById(cardId)
+            reportResponse(HttpStatus.OK, response)
         } catch (e: ElementNotFoundException) {
-            ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+            reportError(e, HttpStatus.NOT_FOUND)
         }
 
     /**
@@ -33,16 +42,30 @@ class CardsController(val cardIntegration: CardIntegration) {
     @GetMapping("/cards/search/{card-name}")
     fun getCardByName(@PathVariable("card-name") cardName: String): ResponseEntity<List<Card>> =
         try {
-            ResponseEntity.status(HttpStatus.OK).body(cardIntegration.searchCardByName(cardName))
+            reportRequest(
+                method = RequestMethod.GET,
+                path = "/cards/search/{card-name}",
+                body = null,
+                pathVariables = hashMapOf("card-name" to cardName)
+            )
+            val response = cardIntegration.searchCardByName(cardName)
+            reportResponse(HttpStatus.OK, response)
         } catch (e: ElementNotFoundException) {
-            ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+            reportError(e, HttpStatus.NOT_FOUND)
         }
 
     /**
      * @return list of saved cards
      */
     @GetMapping("/cards")
-    fun getSavedCards(): ResponseEntity<List<Card>> =
-        ResponseEntity.status(HttpStatus.OK).body(cardIntegration.getSavedCards())
+    fun getSavedCards(): ResponseEntity<List<Card>> {
+        reportRequest(
+            method = RequestMethod.GET,
+            path = "/cards",
+            body = null
+        )
+        val response = cardIntegration.getSavedCards()
+        return reportResponse(HttpStatus.OK, response)
+    }
 
 }

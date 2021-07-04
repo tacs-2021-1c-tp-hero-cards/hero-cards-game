@@ -77,6 +77,8 @@ internal class MatchServiceTest {
             `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
             `when`(userIntegrationMock.getUserById(1L)).thenReturn(opponentUser)
             `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id = 0L))
+            val randomMatch = match.updateTurn()
+            `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id = 0L))
 
             val result = instance.createMatch(listOf(0L.toString(), 1L.toString()), 0L.toString())
 

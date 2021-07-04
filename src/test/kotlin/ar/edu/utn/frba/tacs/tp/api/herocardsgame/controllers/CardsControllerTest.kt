@@ -78,7 +78,7 @@ internal class CardsControllerTest {
 
         @Test
         fun `Search by invalid character id, returns NOT_FOUND`() {
-            `when`(superHeroClientMock.getCharacter("0")).thenThrow(ElementNotFoundException("character", "0"))
+            `when`(superHeroClientMock.getCharacter("0")).thenThrow(ElementNotFoundException("character", "id", "0"))
 
             val response = instance.getCard("0")
             assertEquals(404, response.statusCodeValue)
@@ -106,7 +106,7 @@ internal class CardsControllerTest {
         @Test
         fun `Search character by invalid name, returns NOT_FOUND`() {
             `when`(superHeroClientMock.getCharacterByName("zzz"))
-                .thenThrow(ElementNotFoundException("character", "zzz"))
+                .thenThrow(ElementNotFoundException("character", "characterName", "zzz"))
 
             val response = instance.getCardByName("zzz")
             assertEquals(404, response.statusCodeValue)
@@ -115,10 +115,10 @@ internal class CardsControllerTest {
     }
 
     @Nested
-    inner class GetSavedCards{
+    inner class GetSavedCards {
 
         @Test
-        fun `Exist saved cards in database`(){
+        fun `Exist saved cards in database`() {
             dao.saveCard(batman)
             dao.saveCard(batmanII)
             dao.saveCard(batmanIII)
@@ -134,7 +134,7 @@ internal class CardsControllerTest {
         }
 
         @Test
-        fun `No saved cards and generate list of random cards`(){
+        fun `No saved cards and generate list of random cards`() {
             `when`(superHeroClientMock.getCharacter(anyString())).thenReturn(BuilderContextUtils.buildCharacterApi())
 
             cardIntegration.limitCard = 3

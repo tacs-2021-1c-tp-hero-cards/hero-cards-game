@@ -21,7 +21,7 @@ class MatchService(
 
     fun createMatch(usersId: List<String>, deckId: String): Match {
         val deck =
-            deckService.searchDeck(deckId = deckId).firstOrNull() ?: throw ElementNotFoundException("deck", deckId)
+            deckService.searchDeck(deckId = deckId).firstOrNull() ?: throw ElementNotFoundException("deck", "id", deckId)
         val players = buildPlayers(usersId, deck)
         val newMatch = Match(players = players, deck = DeckHistory(deck), status = MatchStatus.IN_PROGRESS)
         return matchIntegration.saveMatch(newMatch)
@@ -36,7 +36,7 @@ class MatchService(
             players = dealCards(players, it)
         }
 
-        return players
+        return players.shuffled()
     }
 
     fun dealCards(players: List<Player>, card: Card): List<Player> {

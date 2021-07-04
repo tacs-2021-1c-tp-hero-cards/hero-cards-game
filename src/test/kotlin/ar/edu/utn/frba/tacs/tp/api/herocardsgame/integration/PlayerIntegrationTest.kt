@@ -124,7 +124,7 @@ internal class PlayerIntegrationTest {
         val savePlayerHistory = instance.savePlayerHistory(playerHistory)
         assertEquals(playerHistory, savePlayerHistory)
 
-        val found = dao.getPlayerHistoryByVersion(playerHistory.id!!)!!
+        val found = dao.getPlayerHistoryByVersion(playerHistory.id)!!
         assertEquals(playerHistory.id, found.id)
         assertTrue(found.availableCardIds.contains(batman.id))
         assertTrue(found.availableCardIds.contains(batmanII.id))

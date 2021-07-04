@@ -12,7 +12,7 @@ class UserIntegration(private val dao: Dao) {
 
     fun createUser(userName: String, fullName: String, password: String): User {
         if (dao.getAllUser().any { it.userName == userName && it.fullName == fullName }) {
-            throw InvalidUserException(fullName, userName)
+            throw InvalidUserException(userName, fullName)
         }
 
         return saveUser(User(userName = userName, fullName = fullName, password = password))
@@ -20,20 +20,20 @@ class UserIntegration(private val dao: Dao) {
 
     fun activateUserSession(userName: String, password: String): User {
         val user = dao.getAllUser().find { it.userName == userName && it.password == password }
-            ?: throw ElementNotFoundException("user", userName)
+            ?: throw ElementNotFoundException("user", "userName", userName)
 
         return saveUser(user.toModel().copy(token = HashService.calculateToken(user.id, userName, user.fullName)))
     }
 
     fun disableUserSession(token: String) {
         val user = dao.getAllUser().find { it.token == token }
-            ?: throw ElementNotFoundException("token", token)
+            ?: throw ElementNotFoundException("user", "token", token)
 
         saveUser(user.toModel().copy(token = null))
     }
 
     fun getUserById(id: Long): User =
-        dao.getUserById(id)?.toModel() ?: throw ElementNotFoundException("id", id.toString())
+        dao.getUserById(id)?.toModel() ?: throw ElementNotFoundException("user", "id", id.toString())
 
     fun getAllUser(): List<User> = dao.getAllUser().map { it.toModel() }
 
@@ -45,9 +45,9 @@ class UserIntegration(private val dao: Dao) {
         fullName: String? = null
     ): List<User> =
         dao.getAllUser()
-            .filter { userName == null || userName == it.userName }
-            .filter { fullName == null || fullName == it.fullName }
-            .filter { id == null || id.toLong() == it.id }
+            .filter { userName.isNullOrBlank() || it.userName.equals(userName, true) }
+            .filter { fullName.isNullOrBlank() || it.fullName.equals(fullName, true) }
+            .filter { id.isNullOrBlank() || id.toLong() == it.id }
             .map { it.toModel() }
 
 }

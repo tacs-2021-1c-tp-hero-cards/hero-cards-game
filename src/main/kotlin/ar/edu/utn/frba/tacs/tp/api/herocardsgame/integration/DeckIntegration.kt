@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 class DeckIntegration(private val dao: Dao, private val cardIntegration: CardIntegration) {
 
     fun getDeckById(id: Long): Deck {
-        val deckEntity = dao.getDeckById(id) ?: throw ElementNotFoundException("deck", id.toString())
+        val deckEntity = dao.getDeckById(id) ?: throw ElementNotFoundException("deck", "id", id.toString())
         val cards = deckEntity.cardIds.map { cardIntegration.getCardById(it.toString()) }
 
         return deckEntity.toModel(cards, getDeckHistoryById(id))

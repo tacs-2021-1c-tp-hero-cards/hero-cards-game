@@ -6,8 +6,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateDeckRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.UpdateDeckRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.DeckService
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -19,21 +17,22 @@ import org.springframework.web.bind.annotation.*
  */
 @Controller
 @CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
-class DecksController(
-    private val deckService: DeckService
-) {
-
-    private val log: Logger = LoggerFactory.getLogger(DecksController::class.java)
+class DecksController(private val deckService: DeckService) :
+    AbstractController<DecksController>(DecksController::class.java) {
 
     /**
      * @return list of deck
      */
     @GetMapping("/decks")
     fun getDecks(): ResponseEntity<List<Deck>> {
-        log.info("Get /decks")
-        return ResponseEntity.status(HttpStatus.OK).body(deckService.searchDeck())
+        reportRequest(
+            method = RequestMethod.GET,
+            path = "/decks",
+            body = null
+        )
+        val response = deckService.searchDeck()
+        return reportResponse(HttpStatus.OK, response)
     }
-
 
     /**
      * @param deckId, deckName
@@ -44,32 +43,37 @@ class DecksController(
         @RequestParam(value = "deck-id") deckId: String?,
         @RequestParam(value = "deck-name") deckName: String?
     ): ResponseEntity<List<Deck>> {
-        log.info("Get /decks/search requestParam: [deck-id=$deckId | deck-name=$deckName]")
-        return ResponseEntity.status(HttpStatus.OK).body(deckService.searchDeck(deckId, deckName))
+        reportRequest(
+            method = RequestMethod.GET,
+            path = "/decks/search",
+            body = null,
+            requestParams = hashMapOf("deck-id" to deckId, "deck-name" to deckName)
+        )
+        val response = deckService.searchDeck(deckId, deckName)
+        return reportResponse(HttpStatus.OK, response)
     }
 
-
     /**
-     *  TODO we should validate all the cards added has attributes needed for the game.
      * @param createDeckRequest
      * @return deck
      */
     @PostMapping("/admin/decks")
     fun createDeck(@RequestBody createDeckRequest: CreateDeckRequest): ResponseEntity<Deck> =
         try {
-            log.info("Post /admin/decks requestBody: [$createDeckRequest]")
-
-            ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(deckService.createDeck(createDeckRequest.deckName, createDeckRequest.cardIds))
+            reportRequest(
+                method = RequestMethod.POST,
+                path = "/admin/decks",
+                body = createDeckRequest
+            )
+            val response = deckService.createDeck(createDeckRequest.deckName, createDeckRequest.cardIds)
+            reportResponse(HttpStatus.CREATED, response)
         } catch (e: ElementNotFoundException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+            reportError(e, HttpStatus.BAD_REQUEST)
         }catch (e: InvalidPowerstatsException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+            reportError(e, HttpStatus.BAD_REQUEST)
         }
 
     /**
-     * TODO use the same validation to create the deck
      * @param deckId, updateDeckRequest
      * @return
      */
@@ -78,19 +82,22 @@ class DecksController(
         @PathVariable("deck-id") deckId: String, @RequestBody updateDeckRequest: UpdateDeckRequest
     ): ResponseEntity<Deck> =
         try {
-            log.info("Put /admin/decks/$deckId requestBody: [$updateDeckRequest]")
-
-            ResponseEntity.status(HttpStatus.OK).body(
-                deckService.updateDeck(
-                    deckId,
-                    updateDeckRequest.deckName,
-                    updateDeckRequest.deckCards ?: emptyList()
-                )
+            reportRequest(
+                method = RequestMethod.PUT,
+                path = "//admin/decks/{deck-id}",
+                pathVariables = hashMapOf("deck-id" to deckId),
+                body = updateDeckRequest
             )
+            val response = deckService.updateDeck(
+                deckId,
+                updateDeckRequest.deckName,
+                updateDeckRequest.deckCards ?: emptyList()
+            )
+            reportResponse(HttpStatus.OK, response)
         } catch (e: ElementNotFoundException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+            reportError(e, HttpStatus.BAD_REQUEST)
         }catch (e: InvalidPowerstatsException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+            reportError(e, HttpStatus.BAD_REQUEST)
         }
 
     /**
@@ -100,12 +107,16 @@ class DecksController(
     @DeleteMapping("/admin/decks/{deck-id}")
     fun deleteDeck(@PathVariable("deck-id") deckId: String): ResponseEntity<Void> =
         try {
-            log.info("Delete /admin/decks/$deckId")
-
+            reportRequest(
+                method = RequestMethod.DELETE,
+                path = "//admin/decks/{deck-id}",
+                pathVariables = hashMapOf("deck-id" to deckId),
+                body = null
+            )
             deckService.deleteDeck(deckId)
-            ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+            reportResponse(HttpStatus.NO_CONTENT)
         } catch (e: ElementNotFoundException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+            reportError(e, HttpStatus.BAD_REQUEST)
         }
 
 }

@@ -5,11 +5,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Authentication
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.ActivateUserSessionRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateUserRequest
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -17,11 +14,8 @@ import org.springframework.web.bind.annotation.*
 
 @Controller
 @CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
-class UsersController(
-    private val userIntegration: UserIntegration
-) {
-
-    private val log: Logger = LoggerFactory.getLogger(UsersController::class.java)
+class UsersController(private val userIntegration: UserIntegration) :
+    AbstractController<UsersController>(UsersController::class.java) {
 
     /**
      * @param createUserRequest
@@ -30,16 +24,13 @@ class UsersController(
     @PostMapping("/signUp")
     fun signUp(@RequestBody createUserRequest: CreateUserRequest): ResponseEntity<Long> =
         try {
-            log.info("Post /signUp requestBody: [$createUserRequest]")
-            val newUser =
-                userIntegration.createUser(
-                    createUserRequest.userName,
-                    createUserRequest.fullName,
-                    createUserRequest.buildPasswordHash()
-                )
-            ResponseEntity.ok().body(newUser.id!!)
+            reportRequest(method = RequestMethod.POST, path = "/signUp", body = createUserRequest)
+            val response = userIntegration.createUser(
+                createUserRequest.userName, createUserRequest.fullName, createUserRequest.buildPasswordHash()
+            )
+            reportResponse(HttpStatus.OK, response.id!!)
         } catch (e: InvalidUserException) {
-            ResponseEntity.badRequest().build()
+            reportError(e, HttpStatus.BAD_REQUEST)
         }
 
     /**
@@ -49,15 +40,15 @@ class UsersController(
     @PostMapping("/logIn")
     fun logIn(@RequestBody activateUserSessionRequest: ActivateUserSessionRequest): ResponseEntity<Authentication> =
         try {
-            log.info("Post /logIn requestBody: [$activateUserSessionRequest]")
-            val user =
+            reportRequest(method = RequestMethod.POST, path = "/logIn", body = activateUserSessionRequest)
+            val response =
                 userIntegration.activateUserSession(
                     activateUserSessionRequest.userName,
                     activateUserSessionRequest.buildPasswordHash()
                 )
-            ResponseEntity.ok().body(Authentication(user.token!!))
+            reportResponse(HttpStatus.OK, Authentication(response.token!!))
         } catch (e: ElementNotFoundException) {
-            ResponseEntity.badRequest().build()
+            reportError(e, HttpStatus.BAD_REQUEST)
         }
 
     /**
@@ -65,13 +56,13 @@ class UsersController(
      * @return
      */
     @PostMapping("/logOut")
-    fun logOut(@RequestBody tokenMap: Map<String, String>): ResponseEntity<Void> =
+    fun logOut(@RequestBody tokenMap: HashMap<String, String>): ResponseEntity<Void> =
         try {
-            log.info("Post /logOut requestBody: [$tokenMap]")
+            reportRequest(method = RequestMethod.POST, path = "/logOut", body = tokenMap)
             userIntegration.disableUserSession(tokenMap["token"]!!)
-            ResponseEntity.ok().build()
+            reportResponse(HttpStatus.OK)
         } catch (e: ElementNotFoundException) {
-            ResponseEntity.badRequest().build()
+            reportError(e, HttpStatus.BAD_REQUEST)
         }
 
     /**
@@ -84,8 +75,13 @@ class UsersController(
         @RequestParam(value = "user-name") userName: String? = null,
         @RequestParam(value = "full-name") fullName: String? = null
     ): ResponseEntity<List<User>> {
-        log.info("Get /users/search requestParam: [user-id=$userId | user-name=$userName | full-name=$fullName]")
-        return ResponseEntity.status(HttpStatus.OK)
-            .body(userIntegration.searchUserByIdUserNameOrFullName(userId, userName, fullName))
+        reportRequest(
+            method = RequestMethod.GET,
+            path = "/users/search",
+            body = null,
+            requestParams = hashMapOf("user-id" to userId, "user-name" to userName, "full-name" to fullName)
+        )
+        val response = userIntegration.searchUserByIdUserNameOrFullName(userId, userName, fullName)
+        return reportResponse(HttpStatus.OK, response)
     }
 }

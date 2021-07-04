@@ -267,6 +267,16 @@ internal class UserIntegrationTest {
         }
 
         @Test
+        fun `Search user by userName ignoreCase and find one`() {
+            dao.saveUser(user)
+
+            val usersFound = instance.searchUserByIdUserNameOrFullName(userName = "USERNAMETEST")
+
+            assertEquals(1, usersFound.size)
+            assertTrue(usersFound.contains(user))
+        }
+
+        @Test
         fun `Search user by userName and can't find any`() {
             dao.saveUser(user)
 
@@ -287,6 +297,16 @@ internal class UserIntegrationTest {
             dao.saveUser(user)
 
             val usersFound = instance.searchUserByIdUserNameOrFullName(fullName = "fullNameTest")
+
+            assertEquals(1, usersFound.size)
+            assertTrue(usersFound.contains(user))
+        }
+
+        @Test
+        fun `Search user by fullName ignoreCase and find one`() {
+            dao.saveUser(user)
+
+            val usersFound = instance.searchUserByIdUserNameOrFullName(fullName = "FULLNAMETEST")
 
             assertEquals(1, usersFound.size)
             assertTrue(usersFound.contains(user))

@@ -189,7 +189,7 @@ internal class DecksControllerTest {
 
         @Test
         fun `Not create deck by invalid card id`() {
-            `when`(superHeroClientMock.getCharacter("70")).thenThrow(ElementNotFoundException("character", "70"))
+            `when`(superHeroClientMock.getCharacter("70")).thenThrow(ElementNotFoundException("character", "id", "70"))
 
             val response = instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
             assertEquals(400, response.statusCodeValue)
@@ -312,7 +312,7 @@ internal class DecksControllerTest {
         @Test
         fun `Not update deck cards by invalid character id`() {
             `when`(superHeroClientMock.getCharacter("70")).thenReturn(characterApi)
-            `when`(superHeroClientMock.getCharacter("0")).thenThrow(ElementNotFoundException("character", "0"))
+            `when`(superHeroClientMock.getCharacter("0")).thenThrow(ElementNotFoundException("character", "id", "0"))
             instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
 
             val response = instance.updateDeck("1", UpdateDeckRequest(null, listOf("0")))

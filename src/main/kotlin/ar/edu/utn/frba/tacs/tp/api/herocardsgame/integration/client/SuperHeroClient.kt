@@ -15,7 +15,7 @@ class SuperHeroClient : RestClient() {
         val response = doGet<CharacterApi>(pathGetCharacter, id)
 
         if (response.error != null) {
-            throw ElementNotFoundException("character", id)
+            throw ElementNotFoundException("character", "id", id)
         }
         return response
     }
@@ -23,7 +23,7 @@ class SuperHeroClient : RestClient() {
     fun getCharacterByName(characterName: String): CharactersSearchApi {
         val response = doGet<CharactersSearchApi>(pathGetSearchName, characterName)
         if (response.error != null) {
-            throw ElementNotFoundException("character", characterName)
+            throw ElementNotFoundException("character", "characterName", characterName)
         }
         return response
     }

@@ -552,7 +552,7 @@ internal class DaoTest {
             instance = Dao()
             instance.savePlayerHistory(playerHistory)
 
-            val foundPlayerHistory = instance.getPlayerHistoryByVersion(playerHistory.id!!)!!
+            val foundPlayerHistory = instance.getPlayerHistoryByVersion(playerHistory.id)!!
             assertEquals(playerHistory.id, foundPlayerHistory.id)
             assertTrue(foundPlayerHistory.availableCardIds.contains(batman.id))
             assertTrue(foundPlayerHistory.prizeCardIds.contains(flash.id))

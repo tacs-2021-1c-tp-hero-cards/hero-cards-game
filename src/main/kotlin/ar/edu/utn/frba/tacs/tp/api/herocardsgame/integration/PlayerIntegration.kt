@@ -14,7 +14,7 @@ class PlayerIntegration(
 ) {
 
     fun getPlayerById(id: Long): Player {
-        val playerEntity = dao.getPlayerById(id) ?: throw ElementNotFoundException("player", id.toString())
+        val playerEntity = dao.getPlayerById(id) ?: throw ElementNotFoundException("player", "id", id.toString())
         val user = userIntegration.getUserById(playerEntity.userId)
         val prizeCards = playerEntity.prizeCardIds.map { cardIntegration.getCardById(it.toString()) }
         val availableCards = playerEntity.availableCardIds.map { cardIntegration.getCardById(it.toString()) }
@@ -22,7 +22,7 @@ class PlayerIntegration(
     }
 
     fun getPlayerHistoryByVersion(version: Long): PlayerHistory {
-        val entity = dao.getPlayerHistoryByVersion(version) ?: throw ElementNotFoundException("playerHistory", version.toString())
+        val entity = dao.getPlayerHistoryByVersion(version) ?: throw ElementNotFoundException("playerHistory", "version", version.toString())
         val availableCards = entity.availableCardIds.map { cardIntegration.getCardById(it.toString()) }
         val prizeCards = entity.prizeCardIds.map { cardIntegration.getCardById(it.toString()) }
 

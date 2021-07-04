@@ -13,16 +13,22 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
 @Controller
-@CrossOrigin(origins =["http://localhost:3000"], allowedHeaders = ["*"])
-class MatchesController(private val matchService: MatchService) {
+@CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
+class MatchesController(private val matchService: MatchService) :
+    AbstractController<StatsController>(StatsController::class.java) {
 
     @PostMapping("/users/matches")
     fun createMatch(@RequestBody createMatchRequest: CreateMatchRequest): ResponseEntity<Match> =
         try {
-            ResponseEntity.status(HttpStatus.CREATED)
-                .body(matchService.createMatch(createMatchRequest.userIds, createMatchRequest.deckId))
+            reportRequest(
+                method = RequestMethod.POST,
+                path = "/users/matches",
+                body = createMatchRequest
+            )
+            val response = matchService.createMatch(createMatchRequest.userIds, createMatchRequest.deckId)
+            reportResponse(HttpStatus.CREATED, response)
         } catch (e: ElementNotFoundException) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+            reportError(e, HttpStatus.BAD_REQUEST)
         }
 
     @PostMapping("/users/matches/{match-id}/nextDuel")
@@ -30,21 +36,35 @@ class MatchesController(private val matchService: MatchService) {
         @PathVariable("match-id") matchId: String,
         @RequestBody nextDuelRequest: NextDuelRequest
     ): ResponseEntity<Match> = try {
-        ResponseEntity.status(HttpStatus.OK)
-            .body(matchService.nextDuel(matchId, nextDuelRequest.token, nextDuelRequest.duelType))
-    } catch (e: Exception) {
-        when (e) {
-            is InvalidMatchException, is InvalidTurnException -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
-            else -> ResponseEntity.status(HttpStatus.NOT_FOUND).build()
-        }
+        reportRequest(
+            method = RequestMethod.POST,
+            path = "/users/matches/{match-id}/nextDuel",
+            pathVariables = hashMapOf("match-id" to matchId),
+            body = nextDuelRequest
+        )
+        val response = matchService.nextDuel(matchId, nextDuelRequest.token, nextDuelRequest.duelType)
+        reportResponse(HttpStatus.OK, response)
+    } catch (e: InvalidMatchException) {
+        reportError(e, HttpStatus.BAD_REQUEST)
+    } catch (e: InvalidTurnException) {
+        reportError(e, HttpStatus.BAD_REQUEST)
+    } catch (e: ElementNotFoundException) {
+        reportError(e, HttpStatus.NOT_FOUND)
     }
 
     @GetMapping("/users/matches/{match-id}")
     fun getMatch(@PathVariable("match-id") matchId: String): ResponseEntity<Match> =
         try {
-            ResponseEntity.status(HttpStatus.OK).body(matchService.searchMatchById(matchId))
+            reportRequest(
+                method = RequestMethod.GET,
+                path = "/users/matches/{match-id}",
+                pathVariables = hashMapOf("match-id" to matchId),
+                body = null
+            )
+            val response = matchService.searchMatchById(matchId)
+            reportResponse(HttpStatus.OK, response)
         } catch (e: ElementNotFoundException) {
-            ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+            reportError(e, HttpStatus.NOT_FOUND)
         }
 
     @PostMapping("/users/matches/{match-id}/abortMatch")
@@ -52,11 +72,19 @@ class MatchesController(private val matchService: MatchService) {
         @PathVariable("match-id") matchId: String,
         @RequestBody tokenMap: Map<String, String>
     ): ResponseEntity<Match> = try {
-        ResponseEntity.status(HttpStatus.OK).body(matchService.abortMatch(matchId, tokenMap["token"]!!))
-    } catch (e: Exception) {
-        when (e) {
-            is InvalidMatchException, is InvalidTurnException -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
-            else -> ResponseEntity.status(HttpStatus.NOT_FOUND).build()
-        }
+        reportRequest(
+            method = RequestMethod.POST,
+            path = "/users/matches/{match-id}/abortMatch",
+            pathVariables = hashMapOf("match-id" to matchId),
+            body = tokenMap
+        )
+        val response = matchService.abortMatch(matchId, tokenMap["token"]!!)
+        reportResponse(HttpStatus.OK, response)
+    } catch (e: InvalidMatchException) {
+        reportError(e, HttpStatus.BAD_REQUEST)
+    } catch (e: InvalidTurnException) {
+        reportError(e, HttpStatus.BAD_REQUEST)
+    } catch (e: ElementNotFoundException) {
+        reportError(e, HttpStatus.NOT_FOUND)
     }
 }

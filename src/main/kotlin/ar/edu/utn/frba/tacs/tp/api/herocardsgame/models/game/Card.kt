@@ -13,6 +13,7 @@ data class Card(
     val imageUrl: String
 ) {
 
+    @Transient
     private val log: Logger = LoggerFactory.getLogger(Card::class.java)
 
     fun duel(otherCard: Card, duelType: DuelType): DuelResult =
