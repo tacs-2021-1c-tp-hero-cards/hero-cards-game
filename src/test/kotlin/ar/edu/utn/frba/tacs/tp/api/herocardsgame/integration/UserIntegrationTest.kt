@@ -20,7 +20,7 @@ internal class UserIntegrationTest {
     private val password = "passwordTest"
     private val token = "tokenTest"
 
-    private val user = User(id = userId, userName = userName, fullName = fullName, password = password)
+    private val user = User(id = userId, userName = userName, fullName = fullName, password = password, token = token)
 
     @BeforeEach
     fun init() {
@@ -234,7 +234,7 @@ internal class UserIntegrationTest {
         fun `Search user by id and find one`() {
             dao.saveUser(user)
 
-            val usersFound = instance.searchUserByIdUserNameOrFullName(id = userId.toString())
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(id = userId.toString())
 
             assertEquals(1, usersFound.size)
             assertTrue(usersFound.contains(user))
@@ -244,14 +244,14 @@ internal class UserIntegrationTest {
         fun `Search user by id and can't find any`() {
             dao.saveUser(user)
 
-            val usersFound = instance.searchUserByIdUserNameOrFullName(id = "1")
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(id = "1")
 
             assertTrue(usersFound.isEmpty())
         }
 
         @Test
         fun `Search user by id and not users in system`() {
-            val usersFound = instance.searchUserByIdUserNameOrFullName(id = "1")
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(id = "1")
 
             assertTrue(usersFound.isEmpty())
         }
@@ -260,7 +260,7 @@ internal class UserIntegrationTest {
         fun `Search user by userName and find one`() {
             dao.saveUser(user)
 
-            val usersFound = instance.searchUserByIdUserNameOrFullName(userName = "userNameTest")
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(userName = "userNameTest")
 
             assertEquals(1, usersFound.size)
             assertTrue(usersFound.contains(user))
@@ -280,14 +280,14 @@ internal class UserIntegrationTest {
         fun `Search user by userName and can't find any`() {
             dao.saveUser(user)
 
-            val usersFound = instance.searchUserByIdUserNameOrFullName(userName = "userNameTest2")
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
 
             assertTrue(usersFound.isEmpty())
         }
 
         @Test
         fun `Search user by userName and not users in system`() {
-            val usersFound = instance.searchUserByIdUserNameOrFullName(userName = "userNameTest2")
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
 
             assertTrue(usersFound.isEmpty())
         }
@@ -296,7 +296,7 @@ internal class UserIntegrationTest {
         fun `Search user by fullName and find one`() {
             dao.saveUser(user)
 
-            val usersFound = instance.searchUserByIdUserNameOrFullName(fullName = "fullNameTest")
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(fullName = "fullNameTest")
 
             assertEquals(1, usersFound.size)
             assertTrue(usersFound.contains(user))
@@ -316,14 +316,33 @@ internal class UserIntegrationTest {
         fun `Search user by fullName and can't find any`() {
             dao.saveUser(user)
 
-            val usersFound = instance.searchUserByIdUserNameOrFullName(fullName = "fullNameTest2")
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(fullName = "fullNameTest2")
 
             assertTrue(usersFound.isEmpty())
         }
 
         @Test
         fun `Search user by fullName and not users in system`() {
-            val usersFound = instance.searchUserByIdUserNameOrFullName(fullName = "fullNameTest2")
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(fullName = "fullNameTest2")
+
+            assertTrue(usersFound.isEmpty())
+        }
+
+        @Test
+        fun `Search user by token and find one`() {
+            dao.saveUser(user)
+
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(token = token.toString())
+
+            assertEquals(1, usersFound.size)
+            assertTrue(usersFound.contains(user))
+        }
+
+        @Test
+        fun `Search user by token and can't find any`() {
+            dao.saveUser(user)
+
+            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(token = "token-test")
 
             assertTrue(usersFound.isEmpty())
         }

@@ -73,15 +73,21 @@ class UsersController(private val userIntegration: UserIntegration) :
     fun getUserByIdUserNameOrFullName(
         @RequestParam(value = "user-id") userId: String? = null,
         @RequestParam(value = "user-name") userName: String? = null,
-        @RequestParam(value = "full-name") fullName: String? = null
+        @RequestParam(value = "full-name") fullName: String? = null,
+        @RequestParam(value = "token") token: String? = null
     ): ResponseEntity<List<User>> {
         reportRequest(
             method = RequestMethod.GET,
             path = "/users/search",
             body = null,
-            requestParams = hashMapOf("user-id" to userId, "user-name" to userName, "full-name" to fullName)
+            requestParams = hashMapOf(
+                "user-id" to userId,
+                "user-name" to userName,
+                "full-name" to fullName,
+                "token" to token
+            )
         )
-        val response = userIntegration.searchUserByIdUserNameOrFullName(userId, userName, fullName)
+        val response = userIntegration.searchUserByIdUserNameFullNameOrToken(userId, userName, fullName)
         return reportResponse(HttpStatus.OK, response)
     }
 }
