@@ -5,6 +5,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.CardIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.SuperHeroIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.SuperHeroClient
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CardMapper
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CharacterMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
@@ -38,6 +39,7 @@ internal class CardsControllerTest {
         context.register(Dao::class.java)
         context.register(SuperHeroIntegration::class.java)
         context.register(CardMapper::class.java)
+        context.register(CharacterMapper::class.java)
         context.register(PowerstatsMapper::class.java)
         context.register(ImageMapper::class.java)
         context.refresh()

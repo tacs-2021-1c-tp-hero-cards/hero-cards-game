@@ -2,6 +2,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CardMapper
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CharacterMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
@@ -57,6 +58,7 @@ internal class MatchesControllerTest {
         context.register(PlayerIntegration::class.java)
         context.register(CardIntegration::class.java)
         context.register(CardMapper::class.java)
+        context.register(CharacterMapper::class.java)
         context.register(PowerstatsMapper::class.java)
         context.register(ImageMapper::class.java)
         context.register(DeckService::class.java)

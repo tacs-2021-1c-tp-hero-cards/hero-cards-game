@@ -2,6 +2,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils;
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.character.Character
 import com.google.gson.Gson
 import java.io.File
 import java.io.IOException
@@ -17,6 +18,10 @@ class BuilderContextUtils {
             }
         }
         
+        fun buildBatmanCharacter() = createFromFile<Character>(
+            "src/test/resources/json/character/BatmanCharacter.json"
+        )
+
         fun buildBatman() = createFromFile<Card>(
             "src/test/resources/json/card/Batman.json"
         )

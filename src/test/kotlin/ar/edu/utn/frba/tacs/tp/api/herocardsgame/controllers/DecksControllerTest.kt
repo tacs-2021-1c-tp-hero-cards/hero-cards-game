@@ -6,6 +6,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.DeckIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.SuperHeroIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.SuperHeroClient
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CardMapper
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CharacterMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
@@ -41,6 +42,7 @@ internal class DecksControllerTest {
         context.register(SuperHeroIntegration::class.java)
         context.register(DeckIntegration::class.java)
         context.register(CardMapper::class.java)
+        context.register(CharacterMapper::class.java)
         context.register(PowerstatsMapper::class.java)
         context.register(ImageMapper::class.java)
         context.register(SuperHeroIntegration::class.java)
