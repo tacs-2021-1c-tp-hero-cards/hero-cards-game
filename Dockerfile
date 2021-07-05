@@ -1,8 +1,10 @@
-FROM openjdk:11-jre-slim-buster
+FROM gradle:7-jdk11
 
 COPY . /workspace/
 
 WORKDIR /workspace
+
+RUN gradle build
 
 RUN cp build/libs/hero-cards-game-0.0.1-SNAPSHOT.jar /opt/hero-cards-api.jar
 
