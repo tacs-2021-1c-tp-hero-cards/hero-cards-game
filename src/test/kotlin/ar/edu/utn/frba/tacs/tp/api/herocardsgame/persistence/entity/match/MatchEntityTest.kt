@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
@@ -9,7 +9,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.MatchEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
@@ -33,12 +32,12 @@ internal class MatchEntityTest {
     private val inProgressCount: Int = 4
 
     private val user =
-        User(0L, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
+        Human(0L, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
 
     private val player = Player(0L, user, listOf(batman), emptyList())
 
     private val userOpponent =
-        User(1L, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
+        Human(1L, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
 
     private val opponent = Player(1L, userOpponent, listOf(flash), emptyList())
 

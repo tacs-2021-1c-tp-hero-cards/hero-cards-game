@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
@@ -25,8 +25,8 @@ internal class MatchTest {
 
     @BeforeEach
     fun init() {
-        player = Player(0L, User(0L, "player", "fullName", "password"))
-        opponent = Player(1L, User(1L, "opponent", "fullName", "password"))
+        player = Player(0L, Human(0L, "player", "fullName", "password"))
+        opponent = Player(1L, Human(1L, "opponent", "fullName", "password"))
     }
 
     @Nested
@@ -49,17 +49,17 @@ internal class MatchTest {
 
             val win = resultPlayers.first()
             assertEquals(0L, win.id)
-            assertEquals(0, win.user.stats.inProgressCount)
-            assertEquals(1, win.user.stats.winCount)
-            assertEquals(0, win.user.stats.loseCount)
-            assertEquals(0, win.user.stats.tieCount)
+            assertEquals(0, win.human.stats.inProgressCount)
+            assertEquals(1, win.human.stats.winCount)
+            assertEquals(0, win.human.stats.loseCount)
+            assertEquals(0, win.human.stats.tieCount)
 
             val lose = resultPlayers.last()
             assertEquals(1L, lose.id)
-            assertEquals(0, lose.user.stats.inProgressCount)
-            assertEquals(0, lose.user.stats.winCount)
-            assertEquals(1, lose.user.stats.loseCount)
-            assertEquals(0, lose.user.stats.tieCount)
+            assertEquals(0, lose.human.stats.inProgressCount)
+            assertEquals(0, lose.human.stats.winCount)
+            assertEquals(1, lose.human.stats.loseCount)
+            assertEquals(0, lose.human.stats.tieCount)
 
         }
 
@@ -77,17 +77,17 @@ internal class MatchTest {
 
             val tie = resultPlayers.first()
             assertEquals(0L, tie.id)
-            assertEquals(0, tie.user.stats.inProgressCount)
-            assertEquals(0, tie.user.stats.winCount)
-            assertEquals(0, tie.user.stats.loseCount)
-            assertEquals(1, tie.user.stats.tieCount)
+            assertEquals(0, tie.human.stats.inProgressCount)
+            assertEquals(0, tie.human.stats.winCount)
+            assertEquals(0, tie.human.stats.loseCount)
+            assertEquals(1, tie.human.stats.tieCount)
 
             val otherTie = resultPlayers.last()
             assertEquals(1L, otherTie.id)
-            assertEquals(0, otherTie.user.stats.inProgressCount)
-            assertEquals(0, otherTie.user.stats.winCount)
-            assertEquals(0, otherTie.user.stats.loseCount)
-            assertEquals(1, otherTie.user.stats.tieCount)
+            assertEquals(0, otherTie.human.stats.inProgressCount)
+            assertEquals(0, otherTie.human.stats.winCount)
+            assertEquals(0, otherTie.human.stats.loseCount)
+            assertEquals(1, otherTie.human.stats.tieCount)
         }
 
 
@@ -342,8 +342,8 @@ internal class MatchTest {
             assertEquals(MatchStatus.CANCELLED, abortMatch.status)
 
             val players = abortMatch.players
-            assertEquals(1, players.first().user.stats.loseCount)
-            assertEquals(1, players.last().user.stats.winCount)
+            assertEquals(1, players.first().human.stats.loseCount)
+            assertEquals(1, players.last().human.stats.winCount)
         }
 
     }

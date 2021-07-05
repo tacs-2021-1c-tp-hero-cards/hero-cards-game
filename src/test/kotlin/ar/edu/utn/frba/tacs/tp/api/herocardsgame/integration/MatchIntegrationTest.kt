@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
@@ -26,10 +26,10 @@ internal class MatchIntegrationTest {
     private val batman = BuilderContextUtils.buildBatman()
     private val batmanII = BuilderContextUtils.buildBatmanII()
 
-    private val userPlayer = User(0L, "userName", "fullName", "password")
+    private val userPlayer = Human(0L, "userName", "fullName", "password")
     private val player = Player(0L, userPlayer, listOf(batman))
 
-    private val userOpponent = User(1L, "userNameOpponent", "fullName", "password")
+    private val userOpponent = Human(1L, "userNameOpponent", "fullName", "password")
     private val opponent = Player(1L, userOpponent, listOf(batmanII))
 
     private val deck = Deck(0L, 1L, "deckNameTest", listOf(batman, batmanII))

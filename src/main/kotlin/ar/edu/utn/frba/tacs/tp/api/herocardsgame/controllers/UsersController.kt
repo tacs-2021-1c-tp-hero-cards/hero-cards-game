@@ -1,11 +1,12 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers;
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Authentication
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.ActivateUserSessionRequest
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateIARequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateUserRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -29,7 +30,7 @@ class UsersController(private val userIntegration: UserIntegration) :
                 createUserRequest.userName, createUserRequest.fullName, createUserRequest.buildPasswordHash()
             )
             reportResponse(HttpStatus.OK, response.id!!)
-        } catch (e: InvalidUserException) {
+        } catch (e: InvalidHumanUserException) {
             reportError(e, HttpStatus.BAD_REQUEST)
         }
 
@@ -69,16 +70,16 @@ class UsersController(private val userIntegration: UserIntegration) :
      * @param userId, userName, fullName
      * @return list of user
      */
-    @GetMapping("/users/search")
-    fun getUserByIdUserNameOrFullName(
+    @GetMapping("/users/human/search")
+    fun getHumanUserByIdUserNameFullNameOrToken(
         @RequestParam(value = "user-id") userId: String? = null,
         @RequestParam(value = "user-name") userName: String? = null,
         @RequestParam(value = "full-name") fullName: String? = null,
         @RequestParam(value = "token") token: String? = null
-    ): ResponseEntity<List<User>> {
+    ): ResponseEntity<List<Human>> {
         reportRequest(
             method = RequestMethod.GET,
-            path = "/users/search",
+            path = "/users/human/search",
             body = null,
             requestParams = hashMapOf(
                 "user-id" to userId,
@@ -87,7 +88,51 @@ class UsersController(private val userIntegration: UserIntegration) :
                 "token" to token
             )
         )
-        val response = userIntegration.searchUserByIdUserNameFullNameOrToken(userId, userName, fullName)
+        val response = userIntegration.searchHumanUserByIdUserNameFullNameOrToken(userId, userName, fullName)
+        return reportResponse(HttpStatus.OK, response)
+    }
+
+    /**
+     * @param createIARequest
+     * @return IA
+     */
+    @PostMapping("/admin/users/ia")
+    fun createIA(@RequestBody createIARequest: CreateIARequest): ResponseEntity<Long> =
+        try {
+            reportRequest(
+                method = RequestMethod.POST,
+                path = "/admin/users/ia",
+                body = createIARequest
+            )
+            val response = userIntegration.createUser(createIARequest.userName, createIARequest.difficulty)
+            reportResponse(HttpStatus.OK, response.id!!)
+        } catch (e: InvalidIAUserException) {
+            reportError(e, HttpStatus.BAD_REQUEST)
+        } catch (e: InvalidDifficultyException){
+            reportError(e, HttpStatus.BAD_REQUEST)
+        }
+
+    /**
+     * @param userId, userName, difficulty
+     * @return list of user
+     */
+    @GetMapping("/users/ia/search")
+    fun getIAUserByIdUserNameFullNameOrToken(
+        @RequestParam(value = "user-id") userId: String? = null,
+        @RequestParam(value = "user-name") userName: String? = null,
+        @RequestParam(value = "difficulty") difficulty: String? = null
+    ): ResponseEntity<List<IA>> {
+        reportRequest(
+            method = RequestMethod.GET,
+            path = "/users/ia/search",
+            body = null,
+            requestParams = hashMapOf(
+                "user-id" to userId,
+                "user-name" to userName,
+                "difficulty" to difficulty
+            )
+        )
+        val response = userIntegration.searchIAUserByIdUserNameFullNameOrToken(userId, userName, difficulty)
         return reportResponse(HttpStatus.OK, response)
     }
 }

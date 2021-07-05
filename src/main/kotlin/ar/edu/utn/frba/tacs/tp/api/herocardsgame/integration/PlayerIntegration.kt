@@ -15,7 +15,7 @@ class PlayerIntegration(
 
     fun getPlayerById(id: Long): Player {
         val playerEntity = dao.getPlayerById(id) ?: throw ElementNotFoundException("player", "id", id.toString())
-        val user = userIntegration.getUserById(playerEntity.userId)
+        val user = userIntegration.getHumanUserById(playerEntity.userId)
         val prizeCards = playerEntity.prizeCardIds.map { cardIntegration.getCardById(it.toString()) }
         val availableCards = playerEntity.availableCardIds.map { cardIntegration.getCardById(it.toString()) }
         return playerEntity.toModel(user, availableCards, prizeCards)
@@ -30,7 +30,7 @@ class PlayerIntegration(
     }
 
     fun savePlayer(player: Player): Player {
-        val savedUser = userIntegration.saveUser(player.user)
+        val savedUser = userIntegration.saveUser(player.human)
         val savedPrizeCards = player.prizeCards.map { cardIntegration.saveCard(it) }
         val savedAvailableCards = player.availableCards.map { cardIntegration.saveCard(it) }
         return dao.savePLayer(player).toModel(savedUser, savedAvailableCards, savedPrizeCards)

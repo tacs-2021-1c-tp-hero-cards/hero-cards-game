@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
@@ -15,15 +16,18 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.DuelHi
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.MatchEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player.PlayerEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player.PlayerHistoryEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.HumanEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.IAEntity
 import org.springframework.stereotype.Component
 
 @Component
 class Dao(
-    private val userMap: HashMap<Long, UserEntity> = hashMapOf(),
+    private val humanMap: HashMap<Long, HumanEntity> = hashMapOf(),
     private val cardMap: HashMap<Long, CardEntity> = hashMapOf(),
     private val deckMap: HashMap<Long, DeckEntity> = hashMapOf(),
     private val playerMap: HashMap<Long, PlayerEntity> = hashMapOf(),
     private val matchMap: HashMap<Long, MatchEntity> = hashMapOf(),
+    private val iaMap: HashMap<Long, IAEntity> = hashMapOf(),
 
     private val deckHistoryMap: HashMap<Long, DeckHistoryEntity> = hashMapOf(),
     private val duelHistoryMap: HashMap<Long, DuelHistoryEntity> = hashMapOf(),
@@ -32,11 +36,12 @@ class Dao(
 
     fun <T> calculateId(entity: T): Long =
         when (entity) {
-            is User -> userMap
+            is Human -> humanMap
             is Deck -> deckMap
             is Player -> playerMap
             is Match -> matchMap
             is DuelHistory -> duelHistoryMap
+            is IA -> iaMap
             else -> cardMap
         }.size.toLong()
 
@@ -46,16 +51,30 @@ class Dao(
             else -> deckHistoryMap
         }.size.toLong()
 
-    //Users
-    fun getAllUser(): List<UserEntity> = userMap.values.toList()
+    //Humans
+    fun getAllHuman(): List<HumanEntity> = humanMap.values.toList()
 
-    fun getUserById(id: Long): UserEntity? = userMap[id]
+    fun getHumanById(id: Long): HumanEntity? = humanMap[id]
 
-    fun saveUser(user: User): UserEntity {
-        val userId = user.id ?: calculateId(user)
-        val entity = UserEntity(userId, user.copy(id = userId))
+    fun saveHuman(human: Human): HumanEntity {
+        val userId = human.id ?: calculateId(human)
+        val entity = HumanEntity(userId, human.copy(id = userId))
 
-        userMap[userId] = entity
+        humanMap[userId] = entity
+
+        return entity
+    }
+
+    //IAs
+    fun getAllIA(): List<IAEntity> = iaMap.values.toList()
+
+    fun getIAById(id: Long): IAEntity? = iaMap[id]
+
+    fun saveIA(ia: IA): IAEntity {
+        val userId = ia.id ?: calculateId(ia)
+        val entity = IAEntity(userId, ia.copy(id = userId))
+
+        iaMap[userId] = entity
 
         return entity
     }

@@ -5,7 +5,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CardMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CharacterMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
@@ -16,7 +16,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NextDuelRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.DeckService
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.HashService
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.MatchService
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
@@ -43,10 +42,10 @@ internal class MatchesControllerTest {
     private val deckHistory = DeckHistory(deck)
 
     private val user =
-        User(0L, "userName", "fullName", HashService.calculatePasswordHash("userName", "password"), "token")
+        Human(0L, "userName", "fullName", HashService.calculatePasswordHash("userName", "password"), "token")
 
     private val otherUser =
-        User(1L, "userName2", "fullName2", HashService.calculatePasswordHash("userName2", "password2"), "token2")
+        Human(1L, "userName2", "fullName2", HashService.calculatePasswordHash("userName2", "password2"), "token2")
 
     @BeforeEach
     fun init() {
@@ -89,8 +88,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Create match with 2 users and 2 cards`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             val response = instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -102,8 +101,8 @@ internal class MatchesControllerTest {
 
             val players = match.players
             assertEquals(2, players.size)
-            assertTrue(players.any { it.user.userName == "userName" && it.user.id == 0L })
-            assertTrue(players.any { it.user.userName == "userName2" && it.user.id == 1L })
+            assertTrue(players.any { it.human.userName == "userName" && it.human.id == 0L })
+            assertTrue(players.any { it.human.userName == "userName2" && it.human.id == 1L })
             assertTrue(players.all { it.availableCards.isNotEmpty() })
             assertTrue(players.all { it.prizeCards.isEmpty() })
         }
@@ -117,7 +116,7 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Not create match by invalid deck id`() {
-            dao.saveUser(user)
+            dao.saveHuman(user)
 
             val response = instance.createMatch(CreateMatchRequest(listOf("0", "1"), "1"))
             assertEquals(400, response.statusCodeValue)
@@ -135,8 +134,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Not create match by invalid user id`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             val response = instance.createMatch(CreateMatchRequest(listOf("0", "2"), "0"))
@@ -150,8 +149,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Play next duel with type COMBAT`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             val matchResult = instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -183,8 +182,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Not play next duel by invalid match id`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -196,8 +195,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Not play next duel by match is CANCELLED`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -210,8 +209,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Not play next duel by not is user turn`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             val matchResult = instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -228,8 +227,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Search match by valid match id`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -243,16 +242,16 @@ internal class MatchesControllerTest {
 
             val players = match.players
             assertEquals(2, players.size)
-            assertTrue(players.any { it.user.userName == "userName" && it.user.id == 0L })
-            assertTrue(players.any { it.user.userName == "userName2" && it.user.id == 1L })
+            assertTrue(players.any { it.human.userName == "userName" && it.human.id == 0L })
+            assertTrue(players.any { it.human.userName == "userName2" && it.human.id == 1L })
             assertTrue(players.all { it.availableCards.isNotEmpty() })
             assertTrue(players.all { it.prizeCards.isEmpty() })
         }
 
         @Test
         fun `Not search match by invalid match id`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -277,8 +276,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Abort match by match id`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             val matchResponse = instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -294,9 +293,9 @@ internal class MatchesControllerTest {
             assertEquals(2, players.size)
 
             val userTurn = getUserTurn(response)
-            assertTrue(players.any { it.user.userName == userTurn.userName && it.user.id == userTurn.id && it.user.stats.loseCount == 1 })
+            assertTrue(players.any { it.human.userName == userTurn.userName && it.human.id == userTurn.id && it.human.stats.loseCount == 1 })
             val userNotTurn = getUserNotTurn(response)
-            assertTrue(players.any { it.user.userName == userNotTurn.userName && it.user.id == userNotTurn.id && it.user.stats.winCount == 1 })
+            assertTrue(players.any { it.human.userName == userNotTurn.userName && it.human.id == userNotTurn.id && it.human.stats.winCount == 1 })
             assertTrue(players.all { it.availableCards.isNotEmpty() })
             assertTrue(players.all { it.prizeCards.isEmpty() })
         }
@@ -310,8 +309,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Not abort match by invalid match id`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -323,8 +322,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Not abort match by match is CANCELLED`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -337,8 +336,8 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Not abort match by not is user turn`() {
-            dao.saveUser(user)
-            dao.saveUser(otherUser)
+            dao.saveHuman(user)
+            dao.saveHuman(otherUser)
             dao.saveDeck(deck)
 
             val matchResponse = instance.createMatch(CreateMatchRequest(listOf("0", "1"), "0"))
@@ -352,9 +351,9 @@ internal class MatchesControllerTest {
     }
 
     private fun getUserTurn(matchResponse: ResponseEntity<Match>) =
-        matchResponse.body!!.players.first().user
+        matchResponse.body!!.players.first().human
 
     private fun getUserNotTurn(matchResponse: ResponseEntity<Match>) =
-        matchResponse.body!!.players.last().user
+        matchResponse.body!!.players.last().human
 
 }

@@ -1,7 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,7 +22,7 @@ internal class PlayerEntityTest {
     private val loseCount: Int = 2
     private val inProgressCount: Int = 4
     private val user =
-        User(id, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
+        Human(id, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
 
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
@@ -63,7 +63,7 @@ internal class PlayerEntityTest {
 
         val model = entity.toModel(user, listOf(batman), listOf(flash))
         assertEquals(id, model.id)
-        assertEquals(user, model.user)
+        assertEquals(user, model.human)
         assertTrue(model.availableCards.first() == batman)
         assertTrue(model.prizeCards.first() == flash)
     }

@@ -1,9 +1,13 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidDifficultyException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidHumanUserException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidIAUserException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -19,8 +23,10 @@ internal class UserIntegrationTest {
     private val fullName = "fullNameTest"
     private val password = "passwordTest"
     private val token = "tokenTest"
+    private val difficulty = IADifficulty.HARD
 
-    private val user = User(id = userId, userName = userName, fullName = fullName, password = password, token = token)
+    private val human = Human(id = userId, userName = userName, fullName = fullName, password = password, token = token)
+    private val ia = IA(id = userId, userName = userName, difficulty = difficulty)
 
     @BeforeEach
     fun init() {
@@ -29,44 +35,44 @@ internal class UserIntegrationTest {
     }
 
     @Nested
-    inner class CreateUser {
+    inner class CreateHuman {
 
         @Test
-        fun `Create new user`() {
+        fun `Create new human`() {
             val user = instance.createUser(userName, fullName, password)
 
-            val allUser = dao.getAllUser().map { it.toModel() }
+            val allUser = dao.getAllHuman().map { it.toModel() }
             assertEquals(1, allUser.size)
             assertTrue(allUser.contains(user))
         }
 
         @Test
-        fun `Create new user if another user has same userName but different fullName`() {
-            dao.saveUser(user.copy(fullName = "fullNameTest2"))
+        fun `Create new human if another human has same userName but different fullName`() {
+            dao.saveHuman(human.copy(fullName = "fullNameTest2"))
 
             val user = instance.createUser(userName, fullName, password)
 
-            val allUser = dao.getAllUser().map { it.toModel() }
+            val allUser = dao.getAllHuman().map { it.toModel() }
             assertEquals(2, allUser.size)
             assertTrue(allUser.contains(user))
         }
 
         @Test
-        fun `Create new user if another user has same fullName but different userName`() {
-            dao.saveUser(user.copy(userName = "userNameTest2"))
+        fun `Create new human if another human has same fullName but different userName`() {
+            dao.saveHuman(human.copy(userName = "userNameTest2"))
 
             val user = instance.createUser(userName, fullName, password)
 
-            val allUser = dao.getAllUser().map { it.toModel() }
+            val allUser = dao.getAllHuman().map { it.toModel() }
             assertEquals(2, allUser.size)
             assertTrue(allUser.contains(user))
         }
 
         @Test
-        fun `Create user and it already exists`() {
-            dao.saveUser(user)
+        fun `Create human and it already exists`() {
+            dao.saveHuman(human)
 
-            assertThrows(InvalidUserException::class.java) {
+            assertThrows(InvalidHumanUserException::class.java) {
                 instance.createUser(userName, fullName, password)
             }
         }
@@ -74,15 +80,45 @@ internal class UserIntegrationTest {
     }
 
     @Nested
-    inner class ActivateUserSession {
+    inner class CreateIA {
+
+        @Test
+        fun `Create new ia`() {
+            val user = instance.createUser(userName, difficulty.name)
+
+            val allUser = dao.getAllIA().map { it.toModel() }
+            assertEquals(1, allUser.size)
+            assertTrue(allUser.contains(user))
+        }
+
+        @Test
+        fun `Create ia and it already exists`() {
+            dao.saveIA(ia)
+
+            assertThrows(InvalidIAUserException::class.java) {
+                instance.createUser(userName, difficulty.name)
+            }
+        }
+
+        @Test
+        fun `Create ia with non exist difficulty`() {
+            assertThrows(InvalidDifficultyException::class.java) {
+                instance.createUser(userName, "HARDY")
+            }
+        }
+
+    }
+
+    @Nested
+    inner class ActivateHumanSession {
 
         @Test
         fun `Activate session of an existing user`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
             instance.activateUserSession(userName, password)
 
-            val foundUser = dao.getAllUser().first().toModel()
+            val foundUser = dao.getAllHuman().first().toModel()
             assertEquals(userId, foundUser.id)
             assertEquals(userName, foundUser.userName)
             assertEquals(fullName, foundUser.fullName)
@@ -98,7 +134,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Non activate section if only username matches`() {
-            dao.saveUser(user.copy(password = "passwordTest2"))
+            dao.saveHuman(human.copy(password = "passwordTest2"))
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.activateUserSession(userName, password)
@@ -107,7 +143,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Non activate section if only password matches`() {
-            dao.saveUser(user.copy(userName = "userNameTest2"))
+            dao.saveHuman(human.copy(userName = "userNameTest2"))
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.activateUserSession(userName, password)
@@ -124,15 +160,15 @@ internal class UserIntegrationTest {
     }
 
     @Nested
-    inner class DisableUserSession {
+    inner class DisableHumanSession {
 
         @Test
         fun `Disable session of an existing user`() {
-            dao.saveUser(user.copy(token = token))
+            dao.saveHuman(human.copy(token = token))
 
             instance.disableUserSession(token)
 
-            val allUser = dao.getAllUser()
+            val allUser = dao.getAllHuman()
             assertEquals(1, allUser.size)
 
             val foundUser = allUser.first().toModel()
@@ -151,7 +187,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Non disable section if token does not match`() {
-            dao.saveUser(user.copy(token = "tokenTest2"))
+            dao.saveHuman(human.copy(token = "tokenTest2"))
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.disableUserSession(token)
@@ -168,29 +204,58 @@ internal class UserIntegrationTest {
     }
 
     @Nested
-    inner class GetUserById {
+    inner class GetHumanById {
 
         @Test
-        fun `Get user by id`() {
-            dao.saveUser(user)
+        fun `Get human by id`() {
+            dao.saveHuman(human)
 
-            val userById = instance.getUserById(userId)
-            assertEquals(user, userById)
+            val userById = instance.getHumanUserById(userId)
+            assertEquals(human, userById)
         }
 
         @Test
-        fun `Get user by id but not exist`() {
-            dao.saveUser(user.copy(id = 1L))
+        fun `Get human by id but not exist`() {
+            dao.saveHuman(human.copy(id = 1L))
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getUserById(userId)
+                instance.getHumanUserById(userId)
             }
         }
 
         @Test
-        fun `Get user by id but no user exists in the system`() {
+        fun `Get human by id but no human exists in the system`() {
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getUserById(userId)
+                instance.getHumanUserById(userId)
+            }
+        }
+
+    }
+
+    @Nested
+    inner class GetIAById {
+
+        @Test
+        fun `Get ia by id`() {
+            dao.saveIA(ia)
+
+            val userById = instance.getIAUserById(userId)
+            assertEquals(ia, userById)
+        }
+
+        @Test
+        fun `Get ia by id but not exist`() {
+            dao.saveIA(ia.copy(id = 1L))
+
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.getIAUserById(userId)
+            }
+        }
+
+        @Test
+        fun `Get ia by id but no ia exists in the system`() {
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.getIAUserById(userId)
             }
         }
 
@@ -198,151 +263,281 @@ internal class UserIntegrationTest {
 
     @Test
     fun getAllUser() {
-        dao.saveUser(user)
-        dao.saveUser(user.copy(id = 1L))
+        dao.saveHuman(human)
+        dao.saveHuman(human.copy(id = 1L))
+        dao.saveIA(ia)
+        dao.saveIA(ia.copy(id = 1L))
 
         val allUser = instance.getAllUser()
-        assertEquals(2, allUser.size)
-        assertTrue(allUser.contains(user))
-    }
-
-    @Test
-    fun saveUser() {
-        instance.saveUser(user.copy(token = token))
-
-        val allUser = dao.getAllUser()
-        assertEquals(1, dao.getAllUser().size)
-
-        val foundUser = allUser.first().toModel()
-        assertEquals(userId, foundUser.id)
-        assertEquals(userName, foundUser.userName)
-        assertEquals(fullName, foundUser.fullName)
-        assertEquals(password, foundUser.password)
-        assertEquals(token, foundUser.token)
-
-        val stats = foundUser.stats
-        assertEquals(0, stats.winCount)
-        assertEquals(0, stats.tieCount)
-        assertEquals(0, stats.loseCount)
-        assertEquals(0, stats.inProgressCount)
+        assertEquals(4, allUser.size)
+        assertTrue(allUser.contains(human))
+        assertTrue(allUser.contains(ia))
     }
 
     @Nested
-    inner class SearchUserByIdUserNameOrFullName {
+    inner class SaveUser {
+
+        @Test
+        fun `Save user type human`() {
+            instance.saveUser(human.copy(token = token))
+
+            val allUser = dao.getAllHuman()
+            assertEquals(1, dao.getAllHuman().size)
+
+            val foundUser = allUser.first().toModel()
+            assertEquals(userId, foundUser.id)
+            assertEquals(userName, foundUser.userName)
+            assertEquals(fullName, foundUser.fullName)
+            assertEquals(password, foundUser.password)
+            assertEquals(token, foundUser.token)
+
+            val stats = foundUser.stats
+            assertEquals(0, stats.winCount)
+            assertEquals(0, stats.tieCount)
+            assertEquals(0, stats.loseCount)
+            assertEquals(0, stats.inProgressCount)
+        }
+
+        @Test
+        fun `Save user type ia`() {
+            instance.saveUser(ia)
+
+            val allUser = dao.getAllIA()
+            assertEquals(1, dao.getAllIA().size)
+
+            val foundUser = allUser.first().toModel()
+            assertEquals(userId, foundUser.id)
+            assertEquals(userName, foundUser.userName)
+            assertEquals(difficulty, foundUser.difficulty)
+
+            val stats = foundUser.stats
+            assertEquals(0, stats.winCount)
+            assertEquals(0, stats.tieCount)
+            assertEquals(0, stats.loseCount)
+            assertEquals(0, stats.inProgressCount)
+        }
+
+    }
+
+    @Nested
+    inner class SearchHumanUserByIdUserNameFullNameOrToken {
 
         @Test
         fun `Search user by id and find one`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(id = userId.toString())
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(id = userId.toString())
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(user))
+            assertTrue(usersFound.contains(human))
         }
 
         @Test
         fun `Search user by id and can't find any`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(id = "1")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(id = "1")
 
             assertTrue(usersFound.isEmpty())
         }
 
         @Test
         fun `Search user by id and not users in system`() {
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(id = "1")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(id = "1")
 
             assertTrue(usersFound.isEmpty())
         }
 
         @Test
         fun `Search user by userName and find one`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(userName = "userNameTest")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(userName = "userNameTest")
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(user))
+            assertTrue(usersFound.contains(human))
         }
 
         @Test
         fun `Search user by userName ignoreCase and find one`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(userName = "USERNAMETEST")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(userName = "USERNAMETEST")
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(user))
+            assertTrue(usersFound.contains(human))
         }
 
         @Test
         fun `Search user by userName and can't find any`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
 
             assertTrue(usersFound.isEmpty())
         }
 
         @Test
         fun `Search user by userName and not users in system`() {
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
 
             assertTrue(usersFound.isEmpty())
         }
 
         @Test
         fun `Search user by fullName and find one`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(fullName = "fullNameTest")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(fullName = "fullNameTest")
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(user))
+            assertTrue(usersFound.contains(human))
         }
 
         @Test
         fun `Search user by fullName ignoreCase and find one`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(fullName = "FULLNAMETEST")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(fullName = "FULLNAMETEST")
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(user))
+            assertTrue(usersFound.contains(human))
         }
 
         @Test
         fun `Search user by fullName and can't find any`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(fullName = "fullNameTest2")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(fullName = "fullNameTest2")
 
             assertTrue(usersFound.isEmpty())
         }
 
         @Test
         fun `Search user by fullName and not users in system`() {
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(fullName = "fullNameTest2")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(fullName = "fullNameTest2")
 
             assertTrue(usersFound.isEmpty())
         }
 
         @Test
         fun `Search user by token and find one`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(token = token.toString())
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(token = token.toString())
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(user))
+            assertTrue(usersFound.contains(human))
         }
 
         @Test
         fun `Search user by token and can't find any`() {
-            dao.saveUser(user)
+            dao.saveHuman(human)
 
-            val usersFound = instance.searchUserByIdUserNameFullNameOrToken(token = "token-test")
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(token = "token-test")
+
+            assertTrue(usersFound.isEmpty())
+        }
+
+    }
+
+    @Nested
+    inner class SearchIAUserByIdUserNameFullNameOrToken {
+
+        @Test
+        fun `Search user by id and find one`() {
+            dao.saveIA(ia)
+
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(id = userId.toString())
+
+            assertEquals(1, usersFound.size)
+            assertTrue(usersFound.contains(ia))
+        }
+
+        @Test
+        fun `Search user by id and can't find any`() {
+            dao.saveIA(ia)
+
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(id = "1")
+
+            assertTrue(usersFound.isEmpty())
+        }
+
+        @Test
+        fun `Search user by id and not users in system`() {
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(id = "1")
+
+            assertTrue(usersFound.isEmpty())
+        }
+
+        @Test
+        fun `Search user by userName and find one`() {
+            dao.saveIA(ia)
+
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(userName = "userNameTest")
+
+            assertEquals(1, usersFound.size)
+            assertTrue(usersFound.contains(ia))
+        }
+
+        @Test
+        fun `Search user by userName ignoreCase and find one`() {
+            dao.saveIA(ia)
+
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(userName = "USERNAMETEST")
+
+            assertEquals(1, usersFound.size)
+            assertTrue(usersFound.contains(ia))
+        }
+
+        @Test
+        fun `Search user by userName and can't find any`() {
+            dao.saveIA(ia)
+
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
+
+            assertTrue(usersFound.isEmpty())
+        }
+
+        @Test
+        fun `Search user by userName and not users in system`() {
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
+
+            assertTrue(usersFound.isEmpty())
+        }
+
+        @Test
+        fun `Search user by difficulty and find one`() {
+            dao.saveIA(ia)
+
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(difficulty = "HARD")
+
+            assertEquals(1, usersFound.size)
+            assertTrue(usersFound.contains(ia))
+        }
+
+        @Test
+        fun `Search user by difficulty ignoreCase and find one`() {
+            dao.saveIA(ia)
+
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(difficulty = "hard")
+
+            assertEquals(1, usersFound.size)
+            assertTrue(usersFound.contains(ia))
+        }
+
+        @Test
+        fun `Search user by difficulty and can't find any`() {
+            dao.saveIA(ia)
+
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(difficulty = "hards")
+
+            assertTrue(usersFound.isEmpty())
+        }
+
+        @Test
+        fun `Search user by difficulty and not users in system`() {
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(difficulty = "HARD")
 
             assertTrue(usersFound.isEmpty())
         }

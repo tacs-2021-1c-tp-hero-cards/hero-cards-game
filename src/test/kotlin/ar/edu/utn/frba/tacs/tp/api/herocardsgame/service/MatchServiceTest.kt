@@ -5,7 +5,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
@@ -27,11 +27,11 @@ internal class MatchServiceTest {
     private val userIntegrationMock = mock(UserIntegration::class.java)
     private val instance = MatchService(matchIntegrationMock, deckServiceMock, userIntegrationMock)
 
-    private val user = User(0L, "userName", "fullName", "password", token = "tokenTest")
-    private val player = Player(0L, user = user)
+    private val user = Human(0L, "userName", "fullName", "password", token = "tokenTest")
+    private val player = Player(0L, human = user)
 
-    private val opponentUser = User(1L, "userOpponentName", "opponentFullName", "opponentPassword")
-    private val opponentPlayer = Player(1L, user = opponentUser)
+    private val opponentUser = Human(1L, "userOpponentName", "opponentFullName", "opponentPassword")
+    private val opponentPlayer = Player(1L, human = opponentUser)
 
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
@@ -53,7 +53,7 @@ internal class MatchServiceTest {
         @Test
         fun `Create match with user that non exist`() {
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
-            `when`(userIntegrationMock.getUserById(0L)).thenThrow(ElementNotFoundException::class.java)
+            `when`(userIntegrationMock.getHumanUserById(0L)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.createMatch(listOf("0", "1"), 0L.toString())
@@ -74,8 +74,8 @@ internal class MatchServiceTest {
                     })
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
-            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
-            `when`(userIntegrationMock.getUserById(1L)).thenReturn(opponentUser)
+            `when`(userIntegrationMock.getHumanUserById(0L)).thenReturn(user)
+            `when`(userIntegrationMock.getHumanUserById(1L)).thenReturn(opponentUser)
             `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id = 0L))
             val randomMatch = match.updateTurn()
             `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id = 0L))
@@ -100,26 +100,26 @@ internal class MatchServiceTest {
 
         @Test
         fun `Build players with users and deck`() {
-            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
-            `when`(userIntegrationMock.getUserById(1L)).thenReturn(opponentUser)
+            `when`(userIntegrationMock.getHumanUserById(0L)).thenReturn(user)
+            `when`(userIntegrationMock.getHumanUserById(1L)).thenReturn(opponentUser)
 
             val players = instance.buildPlayers(listOf("0", "1"), deck)
 
             assertEquals(2, players.size)
 
-            val player1 = players.first { it.user == user.startMatch() }
+            val player1 = players.first { it.human == user.startMatch() }
             val availableCards1 = player1.availableCards
             assertEquals(1, availableCards1.size)
 
-            val player2 = players.first { it.user == opponentUser.startMatch() }
+            val player2 = players.first { it.human == opponentUser.startMatch() }
             val availableCards2 = player2.availableCards
             assertEquals(1, availableCards2.size)
         }
 
         @Test
         fun `Build players with a user that does not exist`() {
-            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
-            `when`(userIntegrationMock.getUserById(1L)).thenThrow(ElementNotFoundException::class.java)
+            `when`(userIntegrationMock.getHumanUserById(0L)).thenReturn(user)
+            `when`(userIntegrationMock.getHumanUserById(1L)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.buildPlayers(listOf("0", "1"), deck)
@@ -133,23 +133,23 @@ internal class MatchServiceTest {
         val players = instance.dealCards(listOf(player, opponentPlayer), batman)
 
         var first = players.first()
-        assertEquals(opponentUser, first.user)
+        assertEquals(opponentUser, first.human)
         assertTrue(first.availableCards.isEmpty())
         assertTrue(first.prizeCards.isEmpty())
 
         var last = players.last()
-        assertEquals(user, last.user)
+        assertEquals(user, last.human)
         assertTrue(last.availableCards.contains(batman))
         assertTrue(last.prizeCards.isEmpty())
 
         val opponentPlayers = instance.dealCards(players, flash)
         first = opponentPlayers.first()
-        assertEquals(user, first.user)
+        assertEquals(user, first.human)
         assertTrue(first.availableCards.contains(batman))
         assertTrue(first.prizeCards.isEmpty())
 
         last = opponentPlayers.last()
-        assertEquals(opponentUser, last.user)
+        assertEquals(opponentUser, last.human)
         assertTrue(last.availableCards.contains(flash))
         assertTrue(last.prizeCards.isEmpty())
     }
@@ -197,7 +197,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
+            `when`(userIntegrationMock.getHumanUserById(0L)).thenReturn(user)
             `when`(matchIntegrationMock.saveMatch(matchResult)).thenReturn(matchResult)
 
             val resultNextDuel = instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
@@ -233,7 +233,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user.copy(token = "tokenTest2"))
+            `when`(userIntegrationMock.getHumanUserById(0L)).thenReturn(user.copy(token = "tokenTest2"))
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
@@ -263,13 +263,13 @@ internal class MatchServiceTest {
                     player.copy(availableCards = listOf(flash)).startMatch().loseMatch(),
                     opponentPlayer.copy(
                         availableCards = listOf(batman),
-                        user = opponentUser.copy(stats = Stats())
+                        human = opponentUser.copy(stats = Stats())
                     ).startMatch().winMatch()
                 )
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
+            `when`(userIntegrationMock.getHumanUserById(0L)).thenReturn(user)
             `when`(matchIntegrationMock.saveMatch(matchResult)).thenReturn(matchResult)
 
             val abortMatch = instance.abortMatch(0L.toString(), "tokenTest")
@@ -283,12 +283,12 @@ internal class MatchServiceTest {
             val player = players.first()
             assertTrue(player.availableCards.contains(flash))
             assertTrue(player.prizeCards.isEmpty())
-            assertEquals(1, player.user.stats.loseCount)
+            assertEquals(1, player.human.stats.loseCount)
 
             val opponentPlayer = players.last()
             assertTrue(opponentPlayer.availableCards.contains(batman))
             assertTrue(opponentPlayer.prizeCards.isEmpty())
-            assertEquals(1, opponentPlayer.user.stats.winCount)
+            assertEquals(1, opponentPlayer.human.stats.winCount)
         }
 
         @Test
@@ -304,7 +304,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user.copy(token = "tokenTest2"))
+            `when`(userIntegrationMock.getHumanUserById(0L)).thenReturn(user.copy(token = "tokenTest2"))
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.abortMatch(0L.toString(), "tokenTest")

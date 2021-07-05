@@ -29,7 +29,7 @@ class MatchService(
 
     fun buildPlayers(usersId: List<String>, deck: Deck): List<Player> {
         var players = usersId.map {
-            Player(user = userIntegration.getUserById(it.toLong())).startMatch()
+            Player(human = userIntegration.getHumanUserById(it.toLong())).startMatch()
         }
 
         deck.mixCards().cards.forEach {
@@ -62,7 +62,7 @@ class MatchService(
     }
 
     private fun validateUserDuel(match: Match, token: String) {
-        if (userIntegration.getUserById(match.players.first().user.id!!).token != token) {
+        if (userIntegration.getHumanUserById(match.players.first().human.id!!).token != token) {
             throw InvalidTurnException(token)
         }
     }

@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelDifficulty
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import org.junit.jupiter.api.Assertions.*
@@ -208,28 +208,28 @@ internal class CardTest {
         @Test
         fun `By choosing hard of difficulty, get the type of power duel with the highest value`() {
             val result =
-                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(DuelDifficulty.HARD)
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(IADifficulty.HARD)
             assertEquals(DuelType.STRENGTH, result)
         }
 
         @Test
         fun `By choosing half of difficulty, get the type of power duel with the highest value`() {
             val result =
-                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(DuelDifficulty.HALF)
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(IADifficulty.HALF)
             assertEquals(DuelType.SPEED, result)
         }
 
         @Test
         fun `By choosing easy of difficulty, get the type of power duel with the highest value`() {
             val result =
-                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(DuelDifficulty.EASY)
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(IADifficulty.EASY)
             assertEquals(DuelType.HEIGHT, result)
         }
 
         @Test
         fun `By choosing random of difficulty, get the type of power duel with the highest value`() {
             val result =
-                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(DuelDifficulty.HARD)
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(IADifficulty.HARD)
             assertTrue(DuelType.values().contains(result))
         }
     }

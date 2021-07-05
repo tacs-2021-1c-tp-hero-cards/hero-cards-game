@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelDifficulty
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelStrategy
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
@@ -36,11 +36,11 @@ data class Card(
         return notEmpty
     }
 
-    fun calculateDuelTypeAccordingDifficulty(difficulty: DuelDifficulty): DuelType {
+    fun calculateDuelTypeAccordingDifficulty(difficulty: IADifficulty): DuelType {
          val duelType = when(difficulty){
-            DuelDifficulty.HARD -> powerstats.calculateBetterPowerstats()
-            DuelDifficulty.HALF -> powerstats.calculateMediumPowerstats()
-            DuelDifficulty.EASY -> powerstats.calculateWorstPowerstats()
+            IADifficulty.HARD -> powerstats.calculateBetterPowerstats()
+            IADifficulty.HALF -> powerstats.calculateMediumPowerstats()
+            IADifficulty.EASY -> powerstats.calculateWorstPowerstats()
              else -> powerstats.calculateRandomPowerstats()
         }
 
