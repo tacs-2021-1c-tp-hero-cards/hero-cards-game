@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelDifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import org.junit.jupiter.api.Assertions.*
@@ -194,9 +195,42 @@ internal class CardTest {
 
         @Test
         fun `Height and speed are invalid powers`() {
-            val card = Card(0L, "cardNameTest", Powerstats(-1,2,3,-1,5,6,7), "cardImageUrl")
+            val card = Card(0L, "cardNameTest", Powerstats(-1, 2, 3, -1, 5, 6, 7), "cardImageUrl")
             assertTrue(card.isInvalidPowerstats())
         }
     }
 
+    @Nested
+    inner class CalculateDuelTypeAccordingDifficulty {
+
+        val powerstats = Powerstats(1, 2, 3, 4, 5, 6, 7)
+
+        @Test
+        fun `By choosing hard of difficulty, get the type of power duel with the highest value`() {
+            val result =
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(DuelDifficulty.HARD)
+            assertEquals(DuelType.STRENGTH, result)
+        }
+
+        @Test
+        fun `By choosing half of difficulty, get the type of power duel with the highest value`() {
+            val result =
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(DuelDifficulty.HALF)
+            assertEquals(DuelType.SPEED, result)
+        }
+
+        @Test
+        fun `By choosing easy of difficulty, get the type of power duel with the highest value`() {
+            val result =
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(DuelDifficulty.EASY)
+            assertEquals(DuelType.HEIGHT, result)
+        }
+
+        @Test
+        fun `By choosing random of difficulty, get the type of power duel with the highest value`() {
+            val result =
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(DuelDifficulty.HARD)
+            assertTrue(DuelType.values().contains(result))
+        }
+    }
 }
