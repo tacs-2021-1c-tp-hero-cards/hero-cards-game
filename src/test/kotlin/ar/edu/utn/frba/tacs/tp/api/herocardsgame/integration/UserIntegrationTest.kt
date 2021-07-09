@@ -40,18 +40,34 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Create new human`() {
-            val user = instance.createUser(userName, fullName, password)
+            val user = instance.createUser(userName, fullName, false, password)
 
             val allUser = dao.getAllHuman().map { it.toModel() }
             assertEquals(1, allUser.size)
-            assertTrue(allUser.contains(user))
+
+            val userFound = allUser.first()
+            assertEquals(user, userFound)
+            assertFalse(userFound.isAdmin)
+
+        }
+
+        @Test
+        fun `Create new admin`() {
+            val user = instance.createUser(userName, fullName, true, password)
+
+            val allUser = dao.getAllHuman().map { it.toModel() }
+            assertEquals(1, allUser.size)
+
+            val userFound = allUser.first()
+            assertEquals(user, userFound)
+            assertTrue(userFound.isAdmin)
         }
 
         @Test
         fun `Create new human if another human has same userName but different fullName`() {
             dao.saveHuman(human.copy(fullName = "fullNameTest2"))
 
-            val user = instance.createUser(userName, fullName, password)
+            val user = instance.createUser(userName, fullName, false, password)
 
             val allUser = dao.getAllHuman().map { it.toModel() }
             assertEquals(2, allUser.size)
@@ -62,7 +78,7 @@ internal class UserIntegrationTest {
         fun `Create new human if another human has same fullName but different userName`() {
             dao.saveHuman(human.copy(userName = "userNameTest2"))
 
-            val user = instance.createUser(userName, fullName, password)
+            val user = instance.createUser(userName, fullName, false, password)
 
             val allUser = dao.getAllHuman().map { it.toModel() }
             assertEquals(2, allUser.size)
@@ -74,7 +90,7 @@ internal class UserIntegrationTest {
             dao.saveHuman(human)
 
             assertThrows(InvalidHumanUserException::class.java) {
-                instance.createUser(userName, fullName, password)
+                instance.createUser(userName, fullName, false, password)
             }
         }
 

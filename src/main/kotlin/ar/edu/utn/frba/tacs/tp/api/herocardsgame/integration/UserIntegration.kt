@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component
 @Component
 class UserIntegration(private val dao: Dao) {
 
-    fun createUser(userName: String, fullName: String, password: String): User {
+    fun createUser(userName: String, fullName: String, isAdmin: Boolean, password: String): User {
         if (dao.getAllHuman().any { it.userName == userName && it.fullName == fullName }) {
             throw InvalidHumanUserException(userName, fullName)
         }
 
-        return saveUser(Human(userName = userName, fullName = fullName, password = password))
+        return saveUser(Human(userName = userName, fullName = fullName, password = password, isAdmin = isAdmin))
     }
 
     fun createUser(userName: String, difficulty: String): User {

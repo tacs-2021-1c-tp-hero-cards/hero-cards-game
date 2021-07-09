@@ -27,7 +27,10 @@ class UsersController(private val userIntegration: UserIntegration) :
         try {
             reportRequest(method = RequestMethod.POST, path = "/signUp", body = createUserRequest)
             val response = userIntegration.createUser(
-                createUserRequest.userName, createUserRequest.fullName, createUserRequest.buildPasswordHash()
+                createUserRequest.userName,
+                createUserRequest.fullName,
+                createUserRequest.isAdmin,
+                createUserRequest.buildPasswordHash()
             )
             reportResponse(HttpStatus.OK, response.id!!)
         } catch (e: InvalidHumanUserException) {
@@ -108,7 +111,7 @@ class UsersController(private val userIntegration: UserIntegration) :
             reportResponse(HttpStatus.OK, response.id!!)
         } catch (e: InvalidIAUserException) {
             reportError(e, HttpStatus.BAD_REQUEST)
-        } catch (e: InvalidDifficultyException){
+        } catch (e: InvalidDifficultyException) {
             reportError(e, HttpStatus.BAD_REQUEST)
         }
 

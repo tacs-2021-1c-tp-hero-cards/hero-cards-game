@@ -216,6 +216,27 @@ internal class DaoTest {
             }
 
             @Test
+            fun `Save admin with all fields defined`() {
+                instance = Dao()
+                instance.saveHuman(user.copy(isAdmin = true))
+
+                val allUsers = instance.getAllHuman()
+                assertEquals(1, allUsers.size)
+
+                val foundUser = allUsers.first()
+                assertEquals(user.id, foundUser.id)
+                assertEquals(user.userName, foundUser.userName)
+                assertEquals(user.fullName, foundUser.fullName)
+                assertEquals(user.password, foundUser.password)
+                assertEquals(user.token, foundUser.token)
+                assertEquals(user.stats.winCount, foundUser.winCount)
+                assertEquals(user.stats.tieCount, foundUser.tieCount)
+                assertEquals(user.stats.loseCount, foundUser.loseCount)
+                assertEquals(user.stats.inProgressCount, foundUser.inProgressCount)
+                assertTrue(foundUser.isAdmin)
+            }
+
+            @Test
             fun `Save user without defined token`() {
                 instance = Dao()
                 instance.saveHuman(user.copy(token = null))

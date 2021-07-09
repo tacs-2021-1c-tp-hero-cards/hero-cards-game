@@ -48,7 +48,28 @@ internal class UsersControllerTest {
                         0L,
                         "userName",
                         "fullName",
-                        HashService.calculatePasswordHash("userName", "password")
+                        HashService.calculatePasswordHash("userName", "password"),
+                        isAdmin = false
+                    )
+                )
+            )
+        }
+
+        @Test
+        fun `Sign up with a new admin`() {
+            val response = instance.signUp(CreateUserRequest("userName", "fullName", "password", true))
+            assertEquals(200, response.statusCodeValue)
+            assertEquals(response.body!!, 0L)
+
+            val users = instance.getHumanUserByIdUserNameFullNameOrToken(userId = "0")
+            assertTrue(
+                users.body!!.contains(
+                    Human(
+                        0L,
+                        "userName",
+                        "fullName",
+                        HashService.calculatePasswordHash("userName", "password"),
+                        isAdmin = true
                     )
                 )
             )

@@ -13,7 +13,16 @@ class HumanEntity(id: Long? = null, human: Human) {
     val tieCount: Int = human.stats.tieCount
     val loseCount: Int = human.stats.loseCount
     val inProgressCount: Int = human.stats.inProgressCount
+    val isAdmin: Boolean = human.isAdmin
 
     fun toModel(): Human =
-        Human(id, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
+        Human(
+            id,
+            userName,
+            fullName,
+            password,
+            token,
+            Stats(winCount, tieCount, loseCount, inProgressCount),
+            isAdmin = isAdmin
+        )
 }
