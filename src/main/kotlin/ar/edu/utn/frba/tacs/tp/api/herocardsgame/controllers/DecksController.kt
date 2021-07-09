@@ -84,7 +84,7 @@ class DecksController(private val deckService: DeckService) :
         try {
             reportRequest(
                 method = RequestMethod.PUT,
-                path = "//admin/decks/{deck-id}",
+                path = "/admin/decks/{deck-id}",
                 pathVariables = hashMapOf("deck-id" to deckId),
                 body = updateDeckRequest
             )
@@ -109,7 +109,7 @@ class DecksController(private val deckService: DeckService) :
         try {
             reportRequest(
                 method = RequestMethod.DELETE,
-                path = "//admin/decks/{deck-id}",
+                path = "/admin/decks/{deck-id}",
                 pathVariables = hashMapOf("deck-id" to deckId),
                 body = null
             )

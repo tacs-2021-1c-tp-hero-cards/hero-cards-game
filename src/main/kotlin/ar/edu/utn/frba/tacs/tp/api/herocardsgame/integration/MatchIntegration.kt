@@ -16,7 +16,7 @@ class MatchIntegration(
     fun getMatchById(id: Long): Match {
         val matchEntity = dao.getMatchById(id) ?: throw ElementNotFoundException("match", "id", id.toString())
         val players = matchEntity.playerIds.map { playerIntegration.getPlayerById(it) }
-        val deck = deckIntegration.getDeckById(id).searchDeckVersion(matchEntity.deckVersion)
+        val deck = deckIntegration.getDeckById(matchEntity.deckId).searchDeckVersion(matchEntity.deckVersion)
         val duelHistoryList = matchEntity.duelHistoryIds.map { getDuelHistoryById(it) }
 
         return matchEntity.toModel(players, deck, duelHistoryList)

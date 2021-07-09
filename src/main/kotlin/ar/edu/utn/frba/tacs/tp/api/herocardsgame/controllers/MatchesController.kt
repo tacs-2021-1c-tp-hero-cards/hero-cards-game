@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*
 @Controller
 @CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
 class MatchesController(private val matchService: MatchService) :
-    AbstractController<StatsController>(StatsController::class.java) {
+    AbstractController<MatchesController>(MatchesController::class.java) {
 
     @PostMapping("/users/matches")
     fun createMatch(@RequestBody createMatchRequest: CreateMatchRequest): ResponseEntity<Match> =
@@ -25,7 +25,7 @@ class MatchesController(private val matchService: MatchService) :
                 path = "/users/matches",
                 body = createMatchRequest
             )
-            val response = matchService.createMatch(createMatchRequest.userIds, createMatchRequest.deckId)
+            val response = matchService.createMatch(createMatchRequest.humanUserIds, createMatchRequest.iaUserIds, createMatchRequest.deckId)
             reportResponse(HttpStatus.CREATED, response)
         } catch (e: ElementNotFoundException) {
             reportError(e, HttpStatus.BAD_REQUEST)

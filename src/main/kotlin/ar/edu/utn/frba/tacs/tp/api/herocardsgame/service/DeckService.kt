@@ -48,7 +48,7 @@ class DeckService(
 
     private fun searchCards(cardIds: List<String>): List<Card> {
         val cards = cardIds.map { cardIntegration.getCardById(it) }
-        cards.filter { it.isInvalidPowerstats() }.map { throw InvalidPowerstatsException(it.id) }
+        cards.filter { it.validateInvalidPowerstats() }.map { throw InvalidPowerstatsException(it.id) }
         return cards
     }
 }

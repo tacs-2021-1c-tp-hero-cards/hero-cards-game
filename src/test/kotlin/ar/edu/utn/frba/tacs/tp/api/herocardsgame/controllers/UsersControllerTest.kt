@@ -1,11 +1,14 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.ActivateUserSessionRequest
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateIARequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateUserRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.HashService
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -38,14 +41,35 @@ internal class UsersControllerTest {
             assertEquals(200, response.statusCodeValue)
             assertEquals(response.body!!, 0L)
 
-            val users = instance.getUserByIdUserNameOrFullName(userId = "0")
+            val users = instance.getHumanUserByIdUserNameFullNameOrToken(userId = "0")
             assertTrue(
                 users.body!!.contains(
-                    User(
+                    Human(
                         0L,
                         "userName",
                         "fullName",
-                        HashService.calculatePasswordHash("userName", "password")
+                        HashService.calculatePasswordHash("userName", "password"),
+                        isAdmin = false
+                    )
+                )
+            )
+        }
+
+        @Test
+        fun `Sign up with a new admin`() {
+            val response = instance.signUp(CreateUserRequest("userName", "fullName", "password", true))
+            assertEquals(200, response.statusCodeValue)
+            assertEquals(response.body!!, 0L)
+
+            val users = instance.getHumanUserByIdUserNameFullNameOrToken(userId = "0")
+            assertTrue(
+                users.body!!.contains(
+                    Human(
+                        0L,
+                        "userName",
+                        "fullName",
+                        HashService.calculatePasswordHash("userName", "password"),
+                        isAdmin = true
                     )
                 )
             )
@@ -57,10 +81,10 @@ internal class UsersControllerTest {
             assertEquals(200, response.statusCodeValue)
             assertEquals(response.body!!, 0L)
 
-            val users = instance.getUserByIdUserNameOrFullName(userId = "0")
+            val users = instance.getHumanUserByIdUserNameFullNameOrToken(userId = "0")
             assertTrue(
                 users.body!!.contains(
-                    User(
+                    Human(
                         0L,
                         "userName",
                         "fullName",
@@ -88,10 +112,10 @@ internal class UsersControllerTest {
             val token = response.body!!.token
             assertTrue(token.isNotBlank())
 
-            val users = instance.getUserByIdUserNameOrFullName(userId = "0")
+            val users = instance.getHumanUserByIdUserNameFullNameOrToken(userId = "0")
             assertTrue(
                 users.body!!.contains(
-                    User(
+                    Human(
                         0L,
                         "userName",
                         "fullName",
@@ -121,10 +145,10 @@ internal class UsersControllerTest {
             val response = instance.logOut(hashMapOf("token" to token))
             assertEquals(200, response.statusCodeValue)
 
-            val users = instance.getUserByIdUserNameOrFullName(userId = "0")
+            val users = instance.getHumanUserByIdUserNameFullNameOrToken(userId = "0")
             assertTrue(
                 users.body!!.contains(
-                    User(
+                    Human(
                         0L,
                         "userName",
                         "fullName",
@@ -143,7 +167,7 @@ internal class UsersControllerTest {
     }
 
     @Nested
-    inner class GetUserByIdUserNameOrFullName {
+    inner class GetHumanUserByIdUserNameOrFullName {
 
         @Test
         fun `Search by user userName and fullName`() {
@@ -151,15 +175,82 @@ internal class UsersControllerTest {
             instance.signUp(CreateUserRequest("userName", "fullName2", "password2"))
             instance.signUp(CreateUserRequest("userName2", "fullName2", "password3"))
 
-            val response = instance.getUserByIdUserNameOrFullName(userName = "userName", fullName = "fullName")
+            val response = instance.getHumanUserByIdUserNameFullNameOrToken(userName = "userName", fullName = "fullName")
             assertEquals(200, response.statusCodeValue)
             assertTrue(
                 response.body!!.contains(
-                    User(
+                    Human(
                         0L,
                         "userName",
                         "fullName",
                         HashService.calculatePasswordHash("userName", "password")
+                    )
+                )
+            )
+        }
+    }
+
+    @Nested
+    inner class CreateIA {
+
+        @Test
+        fun `Create IA with exist difficulty`() {
+            val response = instance.createIA(CreateIARequest("userName", IADifficulty.HARD.name))
+            assertEquals(200, response.statusCodeValue)
+            assertEquals(response.body!!, 0L)
+
+            val users = instance.getIAUserByIdUserNameFullNameOrToken(userId = "0")
+            assertTrue(
+                users.body!!.contains(
+                    IA(id = 0L, userName = "userName", difficulty = IADifficulty.HARD)
+                )
+            )
+        }
+
+        @Test
+        fun `Not create ia with a exist ia`() {
+            val response = instance.createIA(CreateIARequest("userName", IADifficulty.HARD.name))
+            assertEquals(200, response.statusCodeValue)
+            assertEquals(response.body!!, 0L)
+
+            val users = instance.getIAUserByIdUserNameFullNameOrToken(userId = "0")
+            assertTrue(
+                users.body!!.contains(
+                    IA(id = 0L, userName = "userName", difficulty = IADifficulty.HARD)
+                )
+            )
+
+            val otherResponse = instance.createIA(CreateIARequest("userName", IADifficulty.RANDOM.name))
+            assertEquals(400, otherResponse.statusCodeValue)
+            assertNull(otherResponse.body)
+        }
+
+        @Test
+        fun `Not create ia with a non exist difficulty`() {
+            val response = instance.createIA(CreateIARequest("userName", "HARDY"))
+            assertEquals(400, response.statusCodeValue)
+            assertNull(response.body)
+        }
+
+    }
+
+    @Nested
+    inner class GetIAUserByIdUserNameOrFullName {
+
+        @Test
+        fun `Search by user userName and difficulty`() {
+            instance.createIA(CreateIARequest("userName", "HARD"))
+            instance.createIA(CreateIARequest("userName", "EASY"))
+            instance.createIA(CreateIARequest("userName2", "EASY"))
+
+            val response = instance.getIAUserByIdUserNameFullNameOrToken(userName = "userName", difficulty = "HARD")
+            assertEquals(200, response.statusCodeValue)
+            assertTrue(
+                response.body!!.contains(
+                    IA(
+                        id = 0L,
+                        userName = "userName",
+                        difficulty = IADifficulty.HARD
                     )
                 )
             )

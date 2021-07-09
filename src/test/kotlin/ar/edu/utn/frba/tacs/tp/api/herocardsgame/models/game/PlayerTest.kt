@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
@@ -13,17 +13,17 @@ internal class PlayerTest {
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
 
-    lateinit var user: User
+    lateinit var human: Human
     lateinit var player: Player
-    lateinit var userOpponent: User
+    lateinit var humanOpponent: Human
     lateinit var opponent: Player
 
     @BeforeEach
     fun init() {
-        user = User(0L, "userName", "fullName", "password")
-        player = Player(id = 0L, user = user, availableCards = listOf(batman))
-        userOpponent = User(1L, "userName2", "fullName2", "password2")
-        opponent = Player(id = 1L, user = user)
+        human = Human(0L, "userName", "fullName", "password")
+        player = Player(id = 0L, user = human, availableCards = listOf(batman))
+        humanOpponent = Human(1L, "userName2", "fullName2", "password2")
+        opponent = Player(id = 1L, user = human)
     }
 
     @Nested
@@ -33,7 +33,7 @@ internal class PlayerTest {
         fun winDuel() {
             val winPlayer = player.winDuel(flash)
 
-            assertEquals(user, winPlayer.user)
+            assertEquals(human, winPlayer.user)
             assertTrue(winPlayer.prizeCards.contains(batman))
             assertTrue(winPlayer.prizeCards.contains(flash))
             assertTrue(winPlayer.availableCards.isEmpty())
@@ -43,7 +43,7 @@ internal class PlayerTest {
         fun loseDuel() {
             val losePlayer = player.loseDuel()
 
-            assertEquals(user, losePlayer.user)
+            assertEquals(human, losePlayer.user)
             assertTrue(losePlayer.availableCards.isEmpty())
             assertTrue(losePlayer.prizeCards.isEmpty())
         }
@@ -52,7 +52,7 @@ internal class PlayerTest {
         fun tieDuel() {
             val tie = player.tieDuel()
 
-            assertEquals(user, tie.user)
+            assertEquals(human, tie.user)
             assertTrue(tie.availableCards.isEmpty())
             assertTrue(tie.prizeCards.contains(batman))
         }

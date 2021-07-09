@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import org.junit.jupiter.api.Assertions.*
@@ -185,18 +186,51 @@ internal class CardTest {
     }
 
     @Nested
-    inner class IsValidPowerstats {
+    inner class ValidateInvalidPowerstats {
         @Test
         fun `All powerstats are valid`() {
             val card = Card(0L, "cardNameTest", Powerstats(1, 2, 3, 4, 5, 6, 7), "cardImageUrl")
-            assertFalse(card.isInvalidPowerstats())
+            assertFalse(card.validateInvalidPowerstats())
         }
 
         @Test
         fun `Height and speed are invalid powers`() {
-            val card = Card(0L, "cardNameTest", Powerstats(-1,2,3,-1,5,6,7), "cardImageUrl")
-            assertTrue(card.isInvalidPowerstats())
+            val card = Card(0L, "cardNameTest", Powerstats(-1, 2, 3, -1, 5, 6, 7), "cardImageUrl")
+            assertTrue(card.validateInvalidPowerstats())
         }
     }
 
+    @Nested
+    inner class CalculateDuelTypeAccordingDifficulty {
+
+        val powerstats = Powerstats(1, 2, 3, 4, 5, 6, 7)
+
+        @Test
+        fun `By choosing hard of difficulty, get the type of power duel with the highest value`() {
+            val result =
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(IADifficulty.HARD)
+            assertEquals(DuelType.STRENGTH, result)
+        }
+
+        @Test
+        fun `By choosing half of difficulty, get the type of power duel with the highest value`() {
+            val result =
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(IADifficulty.HALF)
+            assertEquals(DuelType.SPEED, result)
+        }
+
+        @Test
+        fun `By choosing easy of difficulty, get the type of power duel with the highest value`() {
+            val result =
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(IADifficulty.EASY)
+            assertEquals(DuelType.HEIGHT, result)
+        }
+
+        @Test
+        fun `By choosing random of difficulty, get the type of power duel with the highest value`() {
+            val result =
+                card.copy(powerstats = powerstats).calculateDuelTypeAccordingDifficulty(IADifficulty.HARD)
+            assertTrue(DuelType.values().contains(result))
+        }
+    }
 }

@@ -1,7 +1,8 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
@@ -24,7 +25,7 @@ internal class PlayerIntegrationTest {
     private val batman = BuilderContextUtils.buildBatman()
     private val batmanII = BuilderContextUtils.buildBatmanII()
 
-    private val user = User(0L, "userName", "fullName", "password")
+    private val user = Human(0L, "userName", "fullName", "password")
     private val player = Player(0L, user, listOf(batman), listOf(batmanII))
     private val playerHistory = PlayerHistory(0L, 0L, batman, listOf(batman, batmanII))
 
@@ -42,7 +43,7 @@ internal class PlayerIntegrationTest {
         fun `Get player by id`() {
             dao.savePLayer(player)
 
-            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
+            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
             `when`(cardIntegrationMock.getCardById(batman.id.toString())).thenReturn(batman)
             `when`(cardIntegrationMock.getCardById(batmanII.id.toString())).thenReturn(batmanII)
 

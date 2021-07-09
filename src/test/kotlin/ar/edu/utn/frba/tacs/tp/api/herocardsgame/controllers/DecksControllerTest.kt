@@ -284,7 +284,7 @@ internal class DecksControllerTest {
             `when`(superHeroClientMock.getCharacter("124")).thenReturn(BuilderContextUtils.buildCharacterApiWithInvalidPowerstats())
             instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
 
-            val response = instance.updateDeck("1", UpdateDeckRequest(null, listOf("124")))
+            val response = instance.updateDeck("0", UpdateDeckRequest(null, listOf("124")))
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }

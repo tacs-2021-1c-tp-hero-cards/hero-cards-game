@@ -25,17 +25,20 @@ class StatsController(val statsService: StatsService) :
         return reportResponse(HttpStatus.OK, response)
     }
 
-    @GetMapping("/user/{user-id}")
-    fun getStatsByUser(@PathVariable("user-id") userId: String): ResponseEntity<UserStatsResponse> =
+    @GetMapping("/user/{user-id}/{user-type}")
+    fun getStatsByUser(
+        @PathVariable("user-id") userId: String,
+        @PathVariable("user-type") userType: String
+    ): ResponseEntity<UserStatsResponse> =
         try {
             reportRequest(
                 method = RequestMethod.GET,
-                path = "/admin/stats/user/{user-id}",
+                path = "/admin/stats/user/{user-id}/{user-type}",
                 body = null,
-                pathVariables = hashMapOf("user-id" to userId)
+                pathVariables = hashMapOf("user-id" to userId, "user-type" to userType)
             )
 
-            val response = statsService.buildUserStats(userId)
+            val response = statsService.buildUserStats(userId, userType)
             reportResponse(HttpStatus.OK, response)
         } catch (e: ElementNotFoundException) {
             reportError(e, HttpStatus.NOT_FOUND)

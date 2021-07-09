@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
@@ -15,7 +16,7 @@ class PlayerIntegration(
 
     fun getPlayerById(id: Long): Player {
         val playerEntity = dao.getPlayerById(id) ?: throw ElementNotFoundException("player", "id", id.toString())
-        val user = userIntegration.getUserById(playerEntity.userId)
+        val user = userIntegration.getUserById(playerEntity.userId, UserType.getUserType(playerEntity.userType))
         val prizeCards = playerEntity.prizeCardIds.map { cardIntegration.getCardById(it.toString()) }
         val availableCards = playerEntity.availableCardIds.map { cardIntegration.getCardById(it.toString()) }
         return playerEntity.toModel(user, availableCards, prizeCards)
