@@ -1,6 +1,8 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
@@ -15,7 +17,7 @@ data class Match(
     val duelHistoryList: List<DuelHistory> = emptyList()
 ) {
 
-    fun resolveDuel(duelType: DuelType): Match {
+    fun resolveDuel(duelType: DuelType? = null): Match {
         validateNotFinalizedOrCancelled()
 
         val player = players.first()
@@ -24,7 +26,9 @@ data class Match(
         val playerCard = player.availableCards.first()
         val opponentCard = opponent.availableCards.first()
 
-        val duelResult = playerCard.duel(opponentCard, duelType)
+        val newDuelType = duelType ?: calculateDuelTypeAccordingDifficulty(player.user as IA, playerCard)
+
+        val duelResult = playerCard.duel(opponentCard, newDuelType)
 
         val playerList = when (duelResult) {
             DuelResult.WIN -> listOf(player.winDuel(opponentCard), opponent.loseDuel())
@@ -34,9 +38,12 @@ data class Match(
 
         return this.copy(
             players = playerList,
-            duelHistoryList = duelHistoryList.plus(DuelHistory(player, opponent, duelType, duelResult))
+            duelHistoryList = duelHistoryList.plus(DuelHistory(player, opponent, newDuelType, duelResult))
         )
     }
+
+    private fun calculateDuelTypeAccordingDifficulty(iaUser: IA, card: Card): DuelType =
+        card.calculateDuelTypeAccordingDifficulty(iaUser.difficulty)
 
     fun updateTurn(): Match =
         this.copy(players = players.reversed())

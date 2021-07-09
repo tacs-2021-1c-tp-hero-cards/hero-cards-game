@@ -2,11 +2,13 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -17,16 +19,18 @@ import org.mockito.Mockito.mock
 internal class MatchTest {
 
     private val deckMock = mock(DeckHistory::class.java)
-    private val batman = BuilderContextUtils.buildBatman()
-    private val flash = BuilderContextUtils.buildFlash()
+    private val batman = BuilderContextUtils.buildBatman().copy()
+    private val flash = BuilderContextUtils.buildFlash().copy()
 
     lateinit var player: Player
-    lateinit var opponent: Player
+    lateinit var humanOpponent: Player
+    lateinit var iaOpponent: Player
 
     @BeforeEach
     fun init() {
         player = Player(0L, Human(0L, "player", "fullName", "password"))
-        opponent = Player(1L, Human(1L, "opponent", "fullName", "password"))
+        humanOpponent = Player(1L, Human(1L, "humanUserName", "humanFullName", "humanPassword"))
+        iaOpponent = Player(2L, IA(2L, "iaUserName", difficulty = IADifficulty.HARD))
     }
 
     @Nested
@@ -37,7 +41,7 @@ internal class MatchTest {
             val match = Match(
                 players = listOf(
                     player.copy(availableCards = listOf(batman), prizeCards = listOf(batman)).startMatch(),
-                    opponent.startMatch()
+                    humanOpponent.startMatch()
                 ),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
@@ -66,7 +70,7 @@ internal class MatchTest {
         @Test
         fun `If all players have no cards available then match is finalized`() {
             val match = Match(
-                players = listOf(player.startMatch(), opponent.startMatch()),
+                players = listOf(player.startMatch(), iaOpponent.startMatch()),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).updateStatusMatch()
@@ -83,7 +87,7 @@ internal class MatchTest {
             assertEquals(1, tie.user.stats.tieCount)
 
             val otherTie = resultPlayers.last()
-            assertEquals(1L, otherTie.id)
+            assertEquals(2L, otherTie.id)
             assertEquals(0, otherTie.user.stats.inProgressCount)
             assertEquals(0, otherTie.user.stats.winCount)
             assertEquals(0, otherTie.user.stats.loseCount)
@@ -96,7 +100,7 @@ internal class MatchTest {
             val match = Match(
                 players = listOf(
                     player.copy(availableCards = listOf(batman)),
-                    opponent.copy(availableCards = listOf(flash))
+                    humanOpponent.copy(availableCards = listOf(flash))
                 ),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
@@ -110,13 +114,13 @@ internal class MatchTest {
     @Test
     fun updateTurn() {
         val match = Match(
-            players = listOf(player, opponent),
+            players = listOf(player, humanOpponent),
             deck = deckMock,
             status = MatchStatus.IN_PROGRESS
         ).updateTurn()
 
         val players = match.players
-        assertEquals(opponent, players.first())
+        assertEquals(humanOpponent, players.first())
         assertEquals(player, players.last())
     }
 
@@ -129,7 +133,7 @@ internal class MatchTest {
                 id = 0L,
                 players = listOf(
                     player.copy(availableCards = listOf(flash)),
-                    opponent.copy(availableCards = listOf(batman))
+                    humanOpponent.copy(availableCards = listOf(batman))
                 ),
                 deck = deckMock,
                 status = MatchStatus.CANCELLED
@@ -146,7 +150,7 @@ internal class MatchTest {
                 id = 0L,
                 players = listOf(
                     player.copy(availableCards = listOf(flash)),
-                    opponent.copy(availableCards = listOf(batman))
+                    humanOpponent.copy(availableCards = listOf(batman))
                 ),
                 deck = deckMock,
                 status = MatchStatus.FINALIZED
@@ -158,14 +162,14 @@ internal class MatchTest {
         }
 
         @Test
-        fun `Resolve duel that wins`() {
+        fun `Resolve duel that wins when user is human`() {
             val flash = flash.copy(powerstats = flash.powerstats.copy(speed = 1))
             val batman = batman.copy(powerstats = batman.powerstats.copy(speed = 0))
 
             val match = Match(
                 players = listOf(
                     player.copy(availableCards = listOf(flash)),
-                    opponent.copy(availableCards = listOf(batman))
+                    humanOpponent.copy(availableCards = listOf(batman))
                 ),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
@@ -203,14 +207,56 @@ internal class MatchTest {
         }
 
         @Test
-        fun `Resolve duel that lose`() {
+        fun `Resolve duel that wins when user is ia`() {
+            val match = Match(
+                players = listOf(
+                    iaOpponent.copy(availableCards = listOf(flash)),
+                    player.copy(availableCards = listOf(batman))
+                ),
+                deck = deckMock,
+                status = MatchStatus.IN_PROGRESS
+            ).resolveDuel()
+
+            val players = match.players
+
+            val winPlayer = players.first()
+            assertTrue(winPlayer.availableCards.isEmpty())
+            assertTrue(winPlayer.prizeCards.contains(batman))
+            assertTrue(winPlayer.prizeCards.contains(flash))
+
+            val losePlayer = players.last()
+            assertTrue(losePlayer.availableCards.isEmpty())
+            assertTrue(losePlayer.prizeCards.isEmpty())
+
+            val duelHistory = match.duelHistoryList.first()
+            assertNull(duelHistory.id)
+            assertEquals(DuelResult.WIN, duelHistory.duelResult)
+            assertEquals(DuelType.SPEED, duelHistory.duelType)
+
+            val duelHistoryPlayer = duelHistory.player
+            assertEquals(2L, duelHistoryPlayer.id)
+            assertNull(duelHistoryPlayer.version)
+            assertEquals(flash, duelHistoryPlayer.cardPlayed)
+            assertTrue(duelHistoryPlayer.availableCards.contains(flash))
+            assertTrue(duelHistoryPlayer.prizeCards.isEmpty())
+
+            val duelHistoryOpponent = duelHistory.opponent
+            assertEquals(0L, duelHistoryOpponent.id)
+            assertNull(duelHistoryOpponent.version)
+            assertEquals(batman, duelHistoryOpponent.cardPlayed)
+            assertTrue(duelHistoryOpponent.availableCards.contains(batman))
+            assertTrue(duelHistoryOpponent.prizeCards.isEmpty())
+        }
+
+        @Test
+        fun `Resolve duel that lose when user is human`() {
             val flash = flash.copy(powerstats = flash.powerstats.copy(weight = 1))
             val batman = batman.copy(powerstats = batman.powerstats.copy(weight = 0))
 
             val match = Match(
                 players = listOf(
                     player.copy(availableCards = listOf(flash)),
-                    opponent.copy(availableCards = listOf(batman))
+                    humanOpponent.copy(availableCards = listOf(batman))
                 ),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
@@ -248,14 +294,58 @@ internal class MatchTest {
         }
 
         @Test
-        fun `Resolve duel that tie`() {
+        fun `Resolve duel that lose when user is ia`() {
+            val flash = flash.copy(powerstats = flash.powerstats.copy(speed = 0, height = 0))
+
+            val match = Match(
+                players = listOf(
+                    iaOpponent.copy(availableCards = listOf(flash)),
+                    player.copy(availableCards = listOf(batman))
+                ),
+                deck = deckMock,
+                status = MatchStatus.IN_PROGRESS
+            ).resolveDuel()
+
+            val players = match.players
+
+            val losePlayer = players.first()
+            assertTrue(losePlayer.availableCards.isEmpty())
+            assertTrue(losePlayer.prizeCards.isEmpty())
+
+            val winPlayer = players.last()
+            assertTrue(winPlayer.availableCards.isEmpty())
+            assertTrue(winPlayer.prizeCards.contains(batman))
+            assertTrue(winPlayer.prizeCards.contains(flash))
+
+            val duelHistory = match.duelHistoryList.first()
+            assertNull(duelHistory.id)
+            assertEquals(DuelResult.LOSE, duelHistory.duelResult)
+            assertEquals(DuelType.INTELLIGENCE, duelHistory.duelType)
+
+            val duelHistoryPlayer = duelHistory.player
+            assertEquals(2L, duelHistoryPlayer.id)
+            assertNull(duelHistoryPlayer.version)
+            assertEquals(flash, duelHistoryPlayer.cardPlayed)
+            assertTrue(duelHistoryPlayer.availableCards.contains(flash))
+            assertTrue(duelHistoryPlayer.prizeCards.isEmpty())
+
+            val duelHistoryOpponent = duelHistory.opponent
+            assertEquals(0L, duelHistoryOpponent.id)
+            assertNull(duelHistoryOpponent.version)
+            assertEquals(batman, duelHistoryOpponent.cardPlayed)
+            assertTrue(duelHistoryOpponent.availableCards.contains(batman))
+            assertTrue(duelHistoryOpponent.prizeCards.isEmpty())
+        }
+
+        @Test
+        fun `Resolve duel that tie when user is human`() {
             val flash = flash.copy(powerstats = flash.powerstats.copy(combat = 1))
             val batman = batman.copy(powerstats = batman.powerstats.copy(combat = 1))
 
             val match = Match(
                 players = listOf(
                     player.copy(availableCards = listOf(flash)),
-                    opponent.copy(availableCards = listOf(batman))
+                    humanOpponent.copy(availableCards = listOf(batman))
                 ),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
@@ -291,6 +381,49 @@ internal class MatchTest {
             assertTrue(duelHistoryOpponent.prizeCards.isEmpty())
         }
 
+        @Test
+        fun `Resolve duel that tie when user is ia`() {
+            val batman = batman.copy(powerstats = batman.powerstats.copy(speed = 85000000))
+
+            val match = Match(
+                players = listOf(
+                    iaOpponent.copy(availableCards = listOf(flash)),
+                    player.copy(availableCards = listOf(batman))
+                ),
+                deck = deckMock,
+                status = MatchStatus.IN_PROGRESS
+            ).resolveDuel()
+
+            val players = match.players
+
+            val tiePlayer = players.first()
+            assertTrue(tiePlayer.availableCards.isEmpty())
+            assertTrue(tiePlayer.prizeCards.contains(flash))
+
+            val otherTiePlayer = players.last()
+            assertTrue(otherTiePlayer.availableCards.isEmpty())
+            assertTrue(otherTiePlayer.prizeCards.contains(batman))
+
+            val duelHistory = match.duelHistoryList.first()
+            assertNull(duelHistory.id)
+            assertEquals(DuelResult.TIE, duelHistory.duelResult)
+            assertEquals(DuelType.SPEED, duelHistory.duelType)
+
+            val duelHistoryPlayer = duelHistory.player
+            assertEquals(2L, duelHistoryPlayer.id)
+            assertNull(duelHistoryPlayer.version)
+            assertEquals(flash, duelHistoryPlayer.cardPlayed)
+            assertTrue(duelHistoryPlayer.availableCards.contains(flash))
+            assertTrue(duelHistoryPlayer.prizeCards.isEmpty())
+
+            val duelHistoryOpponent = duelHistory.opponent
+            assertEquals(0L, duelHistoryOpponent.id)
+            assertNull(duelHistoryOpponent.version)
+            assertEquals(batman, duelHistoryOpponent.cardPlayed)
+            assertTrue(duelHistoryOpponent.availableCards.contains(batman))
+            assertTrue(duelHistoryOpponent.prizeCards.isEmpty())
+        }
+
     }
 
     @Nested
@@ -302,7 +435,7 @@ internal class MatchTest {
                 id = 0L,
                 players = listOf(
                     player.copy(availableCards = listOf(flash)),
-                    opponent.copy(availableCards = listOf(batman))
+                    humanOpponent.copy(availableCards = listOf(batman))
                 ),
                 deck = deckMock,
                 status = MatchStatus.CANCELLED
@@ -319,7 +452,7 @@ internal class MatchTest {
                 id = 0L,
                 players = listOf(
                     player.copy(availableCards = listOf(flash)),
-                    opponent.copy(availableCards = listOf(batman))
+                    humanOpponent.copy(availableCards = listOf(batman))
                 ),
                 deck = deckMock,
                 status = MatchStatus.FINALIZED
@@ -333,7 +466,7 @@ internal class MatchTest {
         @Test
         fun `Abort match when match is in progress`() {
             val match = Match(
-                players = listOf(player, opponent),
+                players = listOf(player, humanOpponent),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             )

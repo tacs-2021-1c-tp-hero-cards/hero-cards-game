@@ -233,7 +233,61 @@ internal class MatchServiceTest {
     inner class NextDuel {
 
         @Test
-        fun `User with the turn plays next duel`() {
+        fun `Human user with the turn plays next duel`() {
+            val flash = flash.copy(powerstats = flash.powerstats.copy(speed = 1))
+            val batman = batman.copy(powerstats = batman.powerstats.copy(speed = 0))
+
+            val match = Match(
+                id = 0L,
+                players = listOf(
+                    player.copy(availableCards = listOf(flash)).startMatch(),
+                    iaOpponentPlayer.copy(availableCards = listOf(batman)).startMatch()
+                ),
+                deck = deckHistory,
+                status = MatchStatus.IN_PROGRESS
+            )
+
+            val matchResult = match.copy(
+                players = listOf(
+                    iaOpponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch()
+                        .loseMatch(),
+                    player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch()
+                        .winMatch()
+                ),
+                status = MatchStatus.FINALIZED,
+                duelHistoryList = listOf(
+                    DuelHistory(
+                        player.copy(availableCards = listOf(flash)),
+                        iaOpponentPlayer.copy(availableCards = listOf(batman)),
+                        DuelType.SPEED,
+                        DuelResult.WIN
+                    )
+                )
+            )
+
+            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
+            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(matchIntegrationMock.saveMatch(matchResult)).thenReturn(matchResult)
+
+            val resultNextDuel = instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
+            assertEquals(MatchStatus.FINALIZED, resultNextDuel.status)
+            assertEquals(deckHistory, resultNextDuel.deck)
+            assertEquals(0L, resultNextDuel.id)
+
+            val players = resultNextDuel.players
+
+            val winPlayer = players.last()
+            assertTrue(winPlayer.availableCards.isEmpty())
+            assertTrue(winPlayer.prizeCards.contains(batman))
+            assertTrue(winPlayer.prizeCards.contains(flash))
+
+            val losePlayer = players.first()
+            assertTrue(losePlayer.availableCards.isEmpty())
+            assertTrue(losePlayer.prizeCards.isEmpty())
+        }
+
+        @Test
+        fun `IA user with the turn plays next duel`() {
             val flash = flash.copy(powerstats = flash.powerstats.copy(speed = 1))
             val batman = batman.copy(powerstats = batman.powerstats.copy(speed = 0))
 
@@ -287,10 +341,7 @@ internal class MatchServiceTest {
         }
 
         @Test
-        fun `User without the turn plays next duel`() {
-            val flash = flash.copy(powerstats = flash.powerstats.copy(speed = 1))
-            val batman = batman.copy(powerstats = batman.powerstats.copy(speed = 0))
-
+        fun `Human user without the turn plays next duel`() {
             val match = Match(
                 id = 0L,
                 players = listOf(
@@ -306,6 +357,26 @@ internal class MatchServiceTest {
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
+            }
+        }
+
+        @Test
+        fun `IA user without the turn plays next duel`() {
+            val match = Match(
+                id = 0L,
+                players = listOf(
+                    player.copy(availableCards = listOf(flash)),
+                    iaOpponentPlayer.copy(availableCards = listOf(batman))
+                ),
+                deck = deckHistory,
+                status = MatchStatus.IN_PROGRESS
+            )
+
+            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
+            `when`(userIntegrationMock.getUserById(0L, UserType.IA)).thenReturn(iaOpponentUser)
+
+            assertThrows(InvalidTurnException::class.java) {
+                instance.nextDuel(0L.toString())
             }
         }
 
