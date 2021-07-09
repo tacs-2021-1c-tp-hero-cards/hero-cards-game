@@ -25,7 +25,7 @@ class MatchesController(private val matchService: MatchService) :
                 path = "/users/matches",
                 body = createMatchRequest
             )
-            val response = matchService.createMatch(createMatchRequest.userIds, createMatchRequest.deckId)
+            val response = matchService.createMatch(createMatchRequest.humanUserIds, createMatchRequest.iaUserIds, createMatchRequest.deckId)
             reportResponse(HttpStatus.CREATED, response)
         } catch (e: ElementNotFoundException) {
             reportError(e, HttpStatus.BAD_REQUEST)

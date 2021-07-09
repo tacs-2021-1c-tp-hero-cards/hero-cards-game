@@ -613,7 +613,7 @@ internal class DaoTest {
 
             val foundPlayer = instance.getPlayerById(player.id!!)!!
             assertEquals(player.id, foundPlayer.id)
-            assertEquals(player.human.id, foundPlayer.userId)
+            assertEquals(player.user.id, foundPlayer.userId)
             assertTrue(foundPlayer.availableCardIds.contains(batman.id))
             assertTrue(foundPlayer.prizeCardIds.contains(flash.id))
         }

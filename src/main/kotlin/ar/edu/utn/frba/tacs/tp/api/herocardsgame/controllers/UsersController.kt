@@ -70,7 +70,7 @@ class UsersController(private val userIntegration: UserIntegration) :
      * @param userId, userName, fullName
      * @return list of user
      */
-    @GetMapping("/users/human/search")
+    @GetMapping("/users/human")
     fun getHumanUserByIdUserNameFullNameOrToken(
         @RequestParam(value = "user-id") userId: String? = null,
         @RequestParam(value = "user-name") userName: String? = null,
@@ -116,7 +116,7 @@ class UsersController(private val userIntegration: UserIntegration) :
      * @param userId, userName, difficulty
      * @return list of user
      */
-    @GetMapping("/users/ia/search")
+    @GetMapping("/users/ia")
     fun getIAUserByIdUserNameFullNameOrToken(
         @RequestParam(value = "user-id") userId: String? = null,
         @RequestParam(value = "user-name") userName: String? = null,

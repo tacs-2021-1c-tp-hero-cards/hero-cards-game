@@ -186,17 +186,17 @@ internal class CardTest {
     }
 
     @Nested
-    inner class IsValidPowerstats {
+    inner class ValidateInvalidPowerstats {
         @Test
         fun `All powerstats are valid`() {
             val card = Card(0L, "cardNameTest", Powerstats(1, 2, 3, 4, 5, 6, 7), "cardImageUrl")
-            assertFalse(card.isInvalidPowerstats())
+            assertFalse(card.validateInvalidPowerstats())
         }
 
         @Test
         fun `Height and speed are invalid powers`() {
             val card = Card(0L, "cardNameTest", Powerstats(-1, 2, 3, -1, 5, 6, 7), "cardImageUrl")
-            assertTrue(card.isInvalidPowerstats())
+            assertTrue(card.validateInvalidPowerstats())
         }
     }
 

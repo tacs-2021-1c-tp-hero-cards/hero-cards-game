@@ -21,9 +21,9 @@ internal class PlayerTest {
     @BeforeEach
     fun init() {
         human = Human(0L, "userName", "fullName", "password")
-        player = Player(id = 0L, human = human, availableCards = listOf(batman))
+        player = Player(id = 0L, user = human, availableCards = listOf(batman))
         humanOpponent = Human(1L, "userName2", "fullName2", "password2")
-        opponent = Player(id = 1L, human = human)
+        opponent = Player(id = 1L, user = human)
     }
 
     @Nested
@@ -33,7 +33,7 @@ internal class PlayerTest {
         fun winDuel() {
             val winPlayer = player.winDuel(flash)
 
-            assertEquals(human, winPlayer.human)
+            assertEquals(human, winPlayer.user)
             assertTrue(winPlayer.prizeCards.contains(batman))
             assertTrue(winPlayer.prizeCards.contains(flash))
             assertTrue(winPlayer.availableCards.isEmpty())
@@ -43,7 +43,7 @@ internal class PlayerTest {
         fun loseDuel() {
             val losePlayer = player.loseDuel()
 
-            assertEquals(human, losePlayer.human)
+            assertEquals(human, losePlayer.user)
             assertTrue(losePlayer.availableCards.isEmpty())
             assertTrue(losePlayer.prizeCards.isEmpty())
         }
@@ -52,7 +52,7 @@ internal class PlayerTest {
         fun tieDuel() {
             val tie = player.tieDuel()
 
-            assertEquals(human, tie.human)
+            assertEquals(human, tie.user)
             assertTrue(tie.availableCards.isEmpty())
             assertTrue(tie.prizeCards.contains(batman))
         }
@@ -64,7 +64,7 @@ internal class PlayerTest {
 
         @Test
         fun `User win match and add a victory`() {
-            val stats = player.startMatch().winMatch().human.stats
+            val stats = player.startMatch().winMatch().user.stats
             assertEquals(1, stats.winCount)
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.loseCount)
@@ -73,7 +73,7 @@ internal class PlayerTest {
 
         @Test
         fun `User tied game and add a tie`() {
-            val stats = player.startMatch().tieMatch().human.stats
+            val stats = player.startMatch().tieMatch().user.stats
             assertEquals(0, stats.winCount)
             assertEquals(1, stats.tieCount)
             assertEquals(0, stats.loseCount)
@@ -82,7 +82,7 @@ internal class PlayerTest {
 
         @Test
         fun `User loses match and add a loss`() {
-            val stats = player.startMatch().loseMatch().human.stats
+            val stats = player.startMatch().loseMatch().user.stats
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.tieCount)
             assertEquals(1, stats.loseCount)
@@ -91,7 +91,7 @@ internal class PlayerTest {
 
         @Test
         fun `User started game and add a in progress match`() {
-            val stats = player.startMatch().human.stats
+            val stats = player.startMatch().user.stats
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.loseCount)
@@ -100,7 +100,7 @@ internal class PlayerTest {
 
         @Test
         fun `User ended game and dec a in progress match`() {
-            val stats = player.startMatch().endMatch().human.stats
+            val stats = player.startMatch().endMatch().user.stats
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.loseCount)
@@ -121,17 +121,17 @@ internal class PlayerTest {
 
             val win = resultPlayers.first()
             assertEquals(0L, win.id)
-            assertEquals(0, win.human.stats.inProgressCount)
-            assertEquals(1, win.human.stats.winCount)
-            assertEquals(0, win.human.stats.loseCount)
-            assertEquals(0, win.human.stats.tieCount)
+            assertEquals(0, win.user.stats.inProgressCount)
+            assertEquals(1, win.user.stats.winCount)
+            assertEquals(0, win.user.stats.loseCount)
+            assertEquals(0, win.user.stats.tieCount)
 
             val lose = resultPlayers.last()
             assertEquals(1L, lose.id)
-            assertEquals(0, lose.human.stats.inProgressCount)
-            assertEquals(0, lose.human.stats.winCount)
-            assertEquals(1, lose.human.stats.loseCount)
-            assertEquals(0, lose.human.stats.tieCount)
+            assertEquals(0, lose.user.stats.inProgressCount)
+            assertEquals(0, lose.user.stats.winCount)
+            assertEquals(1, lose.user.stats.loseCount)
+            assertEquals(0, lose.user.stats.tieCount)
         }
 
         @Test
@@ -143,17 +143,17 @@ internal class PlayerTest {
 
             val lose = resultPlayers.first()
             assertEquals(0L, lose.id)
-            assertEquals(0, lose.human.stats.inProgressCount)
-            assertEquals(0, lose.human.stats.winCount)
-            assertEquals(1, lose.human.stats.loseCount)
-            assertEquals(0, lose.human.stats.tieCount)
+            assertEquals(0, lose.user.stats.inProgressCount)
+            assertEquals(0, lose.user.stats.winCount)
+            assertEquals(1, lose.user.stats.loseCount)
+            assertEquals(0, lose.user.stats.tieCount)
 
             val win = resultPlayers.last()
             assertEquals(1L, win.id)
-            assertEquals(0, win.human.stats.inProgressCount)
-            assertEquals(1, win.human.stats.winCount)
-            assertEquals(0, win.human.stats.loseCount)
-            assertEquals(0, win.human.stats.tieCount)
+            assertEquals(0, win.user.stats.inProgressCount)
+            assertEquals(1, win.user.stats.winCount)
+            assertEquals(0, win.user.stats.loseCount)
+            assertEquals(0, win.user.stats.tieCount)
         }
 
         @Test
@@ -165,17 +165,17 @@ internal class PlayerTest {
 
             val tie = resultPlayers.first()
             assertEquals(0L, tie.id)
-            assertEquals(0, tie.human.stats.inProgressCount)
-            assertEquals(0, tie.human.stats.winCount)
-            assertEquals(0, tie.human.stats.loseCount)
-            assertEquals(1, tie.human.stats.tieCount)
+            assertEquals(0, tie.user.stats.inProgressCount)
+            assertEquals(0, tie.user.stats.winCount)
+            assertEquals(0, tie.user.stats.loseCount)
+            assertEquals(1, tie.user.stats.tieCount)
 
             val otherTie = resultPlayers.last()
             assertEquals(1L, otherTie.id)
-            assertEquals(0, otherTie.human.stats.inProgressCount)
-            assertEquals(0, otherTie.human.stats.winCount)
-            assertEquals(0, otherTie.human.stats.loseCount)
-            assertEquals(1, otherTie.human.stats.tieCount)
+            assertEquals(0, otherTie.user.stats.inProgressCount)
+            assertEquals(0, otherTie.user.stats.winCount)
+            assertEquals(0, otherTie.user.stats.loseCount)
+            assertEquals(1, otherTie.user.stats.tieCount)
         }
 
     }

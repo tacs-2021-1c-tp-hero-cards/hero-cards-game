@@ -20,7 +20,7 @@ data class Card(
     fun duel(otherCard: Card, duelType: DuelType): DuelResult =
         DuelStrategy().getDuelStrategy(duelType).invoke(this, otherCard)
 
-    fun isInvalidPowerstats(): Boolean {
+    fun validateInvalidPowerstats(): Boolean {
         val invalidPowers = powerstats.calculateInvalidPowers()
         val notEmpty = invalidPowers.isNotEmpty()
 

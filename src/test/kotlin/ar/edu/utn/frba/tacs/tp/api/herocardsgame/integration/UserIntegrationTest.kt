@@ -6,6 +6,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidHumanUserExcep
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidIAUserException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import org.junit.jupiter.api.Assertions.*
@@ -210,7 +211,7 @@ internal class UserIntegrationTest {
         fun `Get human by id`() {
             dao.saveHuman(human)
 
-            val userById = instance.getHumanUserById(userId)
+            val userById = instance.getUserById(userId, UserType.HUMAN)
             assertEquals(human, userById)
         }
 
@@ -219,14 +220,14 @@ internal class UserIntegrationTest {
             dao.saveHuman(human.copy(id = 1L))
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getHumanUserById(userId)
+                instance.getUserById(userId, UserType.HUMAN)
             }
         }
 
         @Test
         fun `Get human by id but no human exists in the system`() {
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getHumanUserById(userId)
+                instance.getUserById(userId, UserType.HUMAN)
             }
         }
 
@@ -239,7 +240,7 @@ internal class UserIntegrationTest {
         fun `Get ia by id`() {
             dao.saveIA(ia)
 
-            val userById = instance.getIAUserById(userId)
+            val userById = instance.getUserById(userId, UserType.IA)
             assertEquals(ia, userById)
         }
 
@@ -248,14 +249,14 @@ internal class UserIntegrationTest {
             dao.saveIA(ia.copy(id = 1L))
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getIAUserById(userId)
+                instance.getUserById(userId, UserType.IA)
             }
         }
 
         @Test
         fun `Get ia by id but no ia exists in the system`() {
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getIAUserById(userId)
+                instance.getUserById(userId, UserType.IA)
             }
         }
 

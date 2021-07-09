@@ -18,8 +18,8 @@ internal class StatsControllerTest {
     private lateinit var dao: Dao
     private lateinit var instance: StatsController
 
-    private var human = Human(userName = "userName", fullName = "fullName", password = "password")
-    private var ia = IA(userName = "userName", difficulty = IADifficulty.HARD)
+    private var human = Human(userName = "humanName", fullName = "fullName", password = "password")
+    private var ia = IA(userName = "iaName", difficulty = IADifficulty.HARD)
 
     @BeforeEach
     fun init() {
@@ -42,7 +42,7 @@ internal class StatsControllerTest {
 
         @Test
         fun `User not exist`() {
-            val response = instance.getStatsByUser("0", UserType.HUMAN.name)
+            val response = instance.getStatsByUser("0", "HUMAN")
             assertEquals(404, response.statusCodeValue)
             assertNull(response.body)
         }
@@ -51,32 +51,34 @@ internal class StatsControllerTest {
         fun `User not play any match`() {
             dao.saveHuman(human)
 
-            val response = instance.getStatsByUser("0", UserType.HUMAN.name)
+            val response = instance.getStatsByUser("0", "HUMAN")
             assertEquals(200, response.statusCodeValue)
             val stats = response.body!!
             assertEquals("0", stats.id)
+            assertEquals("humanName", stats.userName)
             assertEquals(0, stats.inProgressCount)
             assertEquals(0, stats.loseCount)
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.totalPoint)
-            assertEquals(UserType.HUMAN.name, stats.userType)
+            assertEquals("HUMAN", stats.userType)
         }
 
         @Test
         fun `User plays multiple matches`() {
             dao.saveHuman(human.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch())
 
-            val response = instance.getStatsByUser("0", UserType.HUMAN.name)
+            val response = instance.getStatsByUser("0", "HUMAN")
             assertEquals(200, response.statusCodeValue)
             val stats = response.body!!
             assertEquals("0", stats.id)
+            assertEquals("humanName", stats.userName)
             assertEquals(1, stats.inProgressCount)
             assertEquals(2, stats.loseCount)
             assertEquals(1, stats.tieCount)
             assertEquals(2, stats.winCount)
             assertEquals(7, stats.totalPoint)
-            assertEquals(UserType.HUMAN.name, stats.userType)
+            assertEquals("HUMAN", stats.userType)
         }
 
     }
@@ -86,7 +88,7 @@ internal class StatsControllerTest {
 
         @Test
         fun `User not exist`() {
-            val response = instance.getStatsByUser("0", UserType.IA.name)
+            val response = instance.getStatsByUser("0", "IA")
             assertEquals(404, response.statusCodeValue)
             assertNull(response.body)
         }
@@ -95,32 +97,34 @@ internal class StatsControllerTest {
         fun `User not play any match`() {
             dao.saveIA(ia)
 
-            val response = instance.getStatsByUser("0", UserType.IA.name)
+            val response = instance.getStatsByUser("0", "IA")
             assertEquals(200, response.statusCodeValue)
             val stats = response.body!!
             assertEquals("0", stats.id)
+            assertEquals("iaName", stats.userName)
             assertEquals(0, stats.inProgressCount)
             assertEquals(0, stats.loseCount)
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.totalPoint)
-            assertEquals(UserType.IA.name, stats.userType)
+            assertEquals("IA", stats.userType)
         }
 
         @Test
         fun `User plays multiple matches`() {
             dao.saveIA(ia.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch())
 
-            val response = instance.getStatsByUser("0", UserType.IA.name)
+            val response = instance.getStatsByUser("0", "IA")
             assertEquals(200, response.statusCodeValue)
             val stats = response.body!!
             assertEquals("0", stats.id)
+            assertEquals("iaName", stats.userName)
             assertEquals(1, stats.inProgressCount)
             assertEquals(2, stats.loseCount)
             assertEquals(1, stats.tieCount)
             assertEquals(2, stats.winCount)
             assertEquals(7, stats.totalPoint)
-            assertEquals(UserType.IA.name, stats.userType)
+            assertEquals("IA", stats.userType)
         }
 
     }
@@ -148,28 +152,31 @@ internal class StatsControllerTest {
             assertEquals(3, allStats.size)
 
             val firstStats = allStats.first()
+            assertEquals("humanName", firstStats.userName)
             assertEquals(1, firstStats.inProgressCount)
             assertEquals(2, firstStats.loseCount)
             assertEquals(1, firstStats.tieCount)
             assertEquals(2, firstStats.winCount)
             assertEquals(7, firstStats.totalPoint)
-            assertEquals(UserType.HUMAN.name, firstStats.userType)
+            assertEquals("HUMAN", firstStats.userType)
 
             val secondStats = allStats[1]
+            assertEquals("iaName", secondStats.userName)
             assertEquals(0, secondStats.inProgressCount)
             assertEquals(0, secondStats.loseCount)
             assertEquals(0, secondStats.tieCount)
             assertEquals(1, secondStats.winCount)
             assertEquals(3, secondStats.totalPoint)
-            assertEquals(UserType.IA.name, secondStats.userType)
+            assertEquals("IA", secondStats.userType)
 
             val lastStats = allStats.last()
+            assertEquals("humanName", lastStats.userName)
             assertEquals(1, lastStats.inProgressCount)
             assertEquals(1, lastStats.loseCount)
             assertEquals(1, lastStats.tieCount)
             assertEquals(0, lastStats.winCount)
             assertEquals(1, lastStats.totalPoint)
-            assertEquals(UserType.HUMAN.name, lastStats.userType)
+            assertEquals("HUMAN", lastStats.userType)
         }
 
     }

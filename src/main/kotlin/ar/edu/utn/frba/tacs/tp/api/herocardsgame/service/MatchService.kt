@@ -4,6 +4,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundExcept
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
@@ -19,18 +21,28 @@ class MatchService(
     private val userIntegration: UserIntegration
 ) {
 
-    fun createMatch(usersId: List<String>, deckId: String): Match {
+    fun createMatch(humanUserIds: List<String>, iaUserIds: List<String>, deckId: String): Match {
         val deck =
-            deckService.searchDeck(deckId = deckId).firstOrNull() ?: throw ElementNotFoundException("deck", "id", deckId)
-        val players = buildPlayers(usersId, deck)
+            deckService.searchDeck(deckId = deckId).firstOrNull() ?: throw ElementNotFoundException(
+                "deck",
+                "id",
+                deckId
+            )
+        val players = buildPlayers(humanUserIds, iaUserIds, deck)
         val newMatch = Match(players = players, deck = DeckHistory(deck), status = MatchStatus.IN_PROGRESS)
         return matchIntegration.saveMatch(newMatch)
     }
 
-    fun buildPlayers(usersId: List<String>, deck: Deck): List<Player> {
-        var players = usersId.map {
-            Player(human = userIntegration.getHumanUserById(it.toLong())).startMatch()
+    fun buildPlayers(usersId: List<String>, iaUserIds: List<String>, deck: Deck): List<Player> {
+        val humanPlayers = usersId.map {
+            Player(user = userIntegration.getUserById(it.toLong(), UserType.HUMAN)).startMatch()
         }
+
+        val iaPlayers = iaUserIds.map {
+            Player(user = userIntegration.getUserById(it.toLong(), UserType.IA)).startMatch()
+        }
+
+        var players = humanPlayers.plus(iaPlayers)
 
         deck.mixCards().cards.forEach {
             players = dealCards(players, it)
@@ -62,7 +74,8 @@ class MatchService(
     }
 
     private fun validateUserDuel(match: Match, token: String) {
-        if (userIntegration.getHumanUserById(match.players.first().human.id!!).token != token) {
+        val user = match.players.first().user
+        if ((userIntegration.getUserById(user.id!!, user.userType) as Human).token != token) {
             throw InvalidTurnException(token)
         }
     }

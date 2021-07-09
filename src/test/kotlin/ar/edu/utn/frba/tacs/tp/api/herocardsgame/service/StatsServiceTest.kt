@@ -18,8 +18,8 @@ internal class StatsServiceTest {
     private val userServiceMock = mock(UserIntegration::class.java)
     private val instance = StatsService(userServiceMock)
 
-    private val human = Human(0L, "player", "fullName", "password")
-    private val ia = IA(0L, "player", difficulty = IADifficulty.HARD)
+    private val human = Human(0L, "humanName", "fullName", "password")
+    private val ia = IA(0L, "iaName", difficulty = IADifficulty.HARD)
 
     @Test
     fun `Can't build statistics with non-existent user type`(){
@@ -33,39 +33,41 @@ internal class StatsServiceTest {
 
         @Test
         fun `User not exist`() {
-            `when`(userServiceMock.getHumanUserById(0L)).thenThrow(ElementNotFoundException::class.java)
+            `when`(userServiceMock.getUserById(0L, UserType.HUMAN)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.buildUserStats("0", UserType.HUMAN.name)
+                instance.buildUserStats("0", "HUMAN")
             }
         }
 
         @Test
         fun `User not play any match`() {
-            `when`(userServiceMock.getHumanUserById(0L)).thenReturn(human)
+            `when`(userServiceMock.getUserById(0L, UserType.HUMAN)).thenReturn(human)
 
-            val stats = instance.buildUserStats("0", UserType.HUMAN.name)
+            val stats = instance.buildUserStats("0", "HUMAN")
+            assertEquals("humanName", stats.userName)
             assertEquals(0, stats.inProgressCount)
             assertEquals(0, stats.loseCount)
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.totalPoint)
-            assertEquals(UserType.HUMAN.name, stats.userType)
+            assertEquals("HUMAN", stats.userType)
         }
 
         @Test
         fun `User plays multiple matches`() {
-            `when`(userServiceMock.getHumanUserById(0L)).thenReturn(
+            `when`(userServiceMock.getUserById(0L, UserType.HUMAN)).thenReturn(
                 human.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch()
             )
 
-            val stats = instance.buildUserStats("0", UserType.HUMAN.name)
+            val stats = instance.buildUserStats("0", "HUMAN")
+            assertEquals("humanName", stats.userName)
             assertEquals(1, stats.inProgressCount)
             assertEquals(2, stats.loseCount)
             assertEquals(1, stats.tieCount)
             assertEquals(2, stats.winCount)
             assertEquals(7, stats.totalPoint)
-            assertEquals(UserType.HUMAN.name, stats.userType)
+            assertEquals("HUMAN", stats.userType)
         }
 
     }
@@ -75,39 +77,41 @@ internal class StatsServiceTest {
 
         @Test
         fun `User not exist`() {
-            `when`(userServiceMock.getIAUserById(0L)).thenThrow(ElementNotFoundException::class.java)
+            `when`(userServiceMock.getUserById(0L, UserType.IA)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.buildUserStats("0", UserType.IA.name)
+                instance.buildUserStats("0", "IA")
             }
         }
 
         @Test
         fun `User not play any match`() {
-            `when`(userServiceMock.getIAUserById(0L)).thenReturn(ia)
+            `when`(userServiceMock.getUserById(0L, UserType.IA)).thenReturn(ia)
 
-            val stats = instance.buildUserStats("0", UserType.IA.name)
+            val stats = instance.buildUserStats("0", "IA")
+            assertEquals("iaName", stats.userName)
             assertEquals(0, stats.inProgressCount)
             assertEquals(0, stats.loseCount)
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.totalPoint)
-            assertEquals(UserType.IA.name, stats.userType)
+            assertEquals("IA", stats.userType)
         }
 
         @Test
         fun `User plays multiple matches`() {
-            `when`(userServiceMock.getIAUserById(0L)).thenReturn(
+            `when`(userServiceMock.getUserById(0L, UserType.IA)).thenReturn(
                 ia.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch()
             )
 
-            val stats = instance.buildUserStats("0", UserType.IA.name)
+            val stats = instance.buildUserStats("0", "IA")
+            assertEquals("iaName", stats.userName)
             assertEquals(1, stats.inProgressCount)
             assertEquals(2, stats.loseCount)
             assertEquals(1, stats.tieCount)
             assertEquals(2, stats.winCount)
             assertEquals(7, stats.totalPoint)
-            assertEquals(UserType.IA.name, stats.userType)
+            assertEquals("IA", stats.userType)
         }
 
     }
@@ -135,28 +139,31 @@ internal class StatsServiceTest {
             assertEquals(3, allStats.size)
 
             val firstStats = allStats.first()
+            assertEquals("iaName", firstStats.userName)
             assertEquals(1, firstStats.inProgressCount)
             assertEquals(2, firstStats.loseCount)
             assertEquals(1, firstStats.tieCount)
             assertEquals(2, firstStats.winCount)
             assertEquals(7, firstStats.totalPoint)
-            assertEquals(UserType.IA.name, firstStats.userType)
+            assertEquals("IA", firstStats.userType)
 
             val secondStats = allStats[1]
+            assertEquals("humanName", secondStats.userName)
             assertEquals(0, secondStats.inProgressCount)
             assertEquals(0, secondStats.loseCount)
             assertEquals(0, secondStats.tieCount)
             assertEquals(1, secondStats.winCount)
             assertEquals(3, secondStats.totalPoint)
-            assertEquals(UserType.HUMAN.name, secondStats.userType)
+            assertEquals("HUMAN", secondStats.userType)
 
             val lastStats = allStats.last()
+            assertEquals("humanName", lastStats.userName)
             assertEquals(1, lastStats.inProgressCount)
             assertEquals(1, lastStats.loseCount)
             assertEquals(1, lastStats.tieCount)
             assertEquals(0, lastStats.winCount)
             assertEquals(1, lastStats.totalPoint)
-            assertEquals(UserType.HUMAN.name, lastStats.userType)
+            assertEquals("HUMAN", lastStats.userType)
         }
 
     }
