@@ -3,6 +3,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateMatchRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NextDuelRequest
@@ -18,15 +19,43 @@ class MatchesController(private val matchService: MatchService) :
     AbstractController<MatchesController>(MatchesController::class.java) {
 
     @PostMapping("/users/matches")
-    fun createMatch(@RequestBody createMatchRequest: CreateMatchRequest): ResponseEntity<Match> =
+    fun createMatch(
+        @RequestBody createMatchRequest: CreateMatchRequest,
+        @RequestHeader(value = "x-user-token") token: String
+    ): ResponseEntity<Match> =
         try {
             reportRequest(
                 method = RequestMethod.POST,
                 path = "/users/matches",
                 body = createMatchRequest
             )
-            val response = matchService.createMatch(createMatchRequest.humanUserIds, createMatchRequest.iaUserIds, createMatchRequest.deckId)
+            val response = matchService.createMatch(
+                token,
+                createMatchRequest.userId,
+                UserType.getUserType(createMatchRequest.userType),
+                createMatchRequest.deckId
+            )
+
             reportResponse(HttpStatus.CREATED, response)
+        } catch (e: ElementNotFoundException) {
+            reportError(e, HttpStatus.BAD_REQUEST)
+        }
+
+    @PutMapping("/users/matches/{match-id}/matchConfirmation")
+    fun matchConfirmation(
+        @PathVariable("match-id") matchId: String,
+        @RequestBody confirmationMap: HashMap<String, Boolean>
+    ): ResponseEntity<Void> =
+        try {
+            reportRequest(
+                method = RequestMethod.PUT,
+                path = "/users/matches/{match-id}/matchConfirmation",
+                pathVariables = hashMapOf("match-id" to matchId),
+                body = confirmationMap
+            )
+
+            matchService.matchConfirmation(confirmationMap["confirm"]!!)
+            reportResponse(HttpStatus.OK)
         } catch (e: ElementNotFoundException) {
             reportError(e, HttpStatus.BAD_REQUEST)
         }

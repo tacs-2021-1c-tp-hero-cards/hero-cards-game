@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*
 
 @Controller
 @CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
-class UsersController(private val userIntegration: UserIntegration) :
+class UsersController(
+    private val userIntegration: UserIntegration
+) :
     AbstractController<UsersController>(UsersController::class.java) {
 
     /**
@@ -32,6 +34,7 @@ class UsersController(private val userIntegration: UserIntegration) :
                 createUserRequest.isAdmin,
                 createUserRequest.buildPasswordHash()
             )
+
             reportResponse(HttpStatus.OK, response.id!!)
         } catch (e: InvalidHumanUserException) {
             reportError(e, HttpStatus.BAD_REQUEST)

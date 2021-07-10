@@ -18,31 +18,43 @@ import org.springframework.stereotype.Service
 class MatchService(
     private val matchIntegration: MatchIntegration,
     private val deckService: DeckService,
-    private val userIntegration: UserIntegration
+    private val userIntegration: UserIntegration,
+    private val notificationClientService: NotificationClientService
 ) {
 
-    fun createMatch(humanUserIds: List<String>, iaUserIds: List<String>, deckId: String): Match {
+    fun createMatch(token: String, userId: String, userType: UserType, deckId: String): Match {
         val deck =
             deckService.searchDeck(deckId = deckId).firstOrNull() ?: throw ElementNotFoundException(
                 "deck",
                 "id",
                 deckId
             )
-        val players = buildPlayers(humanUserIds, iaUserIds, deck)
-        val newMatch = Match(players = players, deck = DeckHistory(deck), status = MatchStatus.IN_PROGRESS)
-        return matchIntegration.saveMatch(newMatch)
+        val players = buildPlayers(token, userId, userType, deck)
+        val newMatch = matchIntegration.saveMatch(
+            Match(
+                players = players,
+                deck = DeckHistory(deck),
+                status = MatchStatus.PENDING
+            )
+        )
+
+        if (userType == UserType.HUMAN) {
+            notificationClientService.notifyCreateMatch(userId, newMatch)
+        }
+
+        return newMatch
     }
 
-    fun buildPlayers(usersId: List<String>, iaUserIds: List<String>, deck: Deck): List<Player> {
-        val humanPlayers = usersId.map {
-            Player(user = userIntegration.getUserById(it.toLong(), UserType.HUMAN)).startMatch()
-        }
+    fun buildPlayers(token: String, userId: String, userType: UserType, deck: Deck): List<Player> {
 
-        val iaPlayers = iaUserIds.map {
-            Player(user = userIntegration.getUserById(it.toLong(), UserType.IA)).startMatch()
-        }
+        val player = Player(
+            user = userIntegration.searchHumanUserByIdUserNameFullNameOrToken(token = token).firstOrNull()
+                ?: throw ElementNotFoundException("human user", "token", token)
+        )
 
-        var players = humanPlayers.plus(iaPlayers)
+        val opponent = Player(user = userIntegration.getUserById(userId.toLong(), userType))
+
+        var players = listOf(player, opponent)
 
         deck.mixCards().cards.forEach {
             players = dealCards(players, it)
@@ -76,12 +88,16 @@ class MatchService(
     private fun validateUserDuel(match: Match, token: String?) {
         val user = match.players.first().user
 
-        if (token == null && user.userType == UserType.HUMAN){
+        if (token == null && user.userType == UserType.HUMAN) {
             throw InvalidTurnException(userName = user.userName)
         }
 
         if (token != null && (userIntegration.getUserById(user.id!!, user.userType) as Human).token != token) {
             throw InvalidTurnException(token)
         }
+    }
+
+    fun matchConfirmation(confirmation: Boolean) {
+        TODO("Not yet implemented")
     }
 }
