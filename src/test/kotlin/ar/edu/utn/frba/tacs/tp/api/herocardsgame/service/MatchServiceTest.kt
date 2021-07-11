@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.service
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
@@ -458,6 +459,70 @@ internal class MatchServiceTest {
                 instance.abortMatch(0L.toString(), "tokenTest")
             }
         }
+
+    }
+
+    @Nested
+    inner class MatchConfirmation {
+
+        @Test
+        fun `Confirm match when the match is pending`() {
+            val match = Match(
+                id = 0L,
+                players = listOf(player, humanOpponentPlayer),
+                deck = deckHistory,
+                status = MatchStatus.PENDING
+            )
+            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
+
+            instance.matchConfirmation("0", true)
+            verify(matchIntegrationMock, times(1)).saveMatch(
+                match.copy(
+                    status = MatchStatus.IN_PROGRESS,
+                    players = match.players.map { it.startMatch() }
+                )
+            )
+        }
+
+        @Test
+        fun `Reject match when the match is pending`() {
+            val match = Match(
+                id = 0L,
+                players = listOf(player, humanOpponentPlayer),
+                deck = deckHistory,
+                status = MatchStatus.PENDING
+            )
+            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
+
+            instance.matchConfirmation("0", false)
+            verify(matchIntegrationMock, times(1)).saveMatch(match.copy(status = MatchStatus.CANCELLED))
+        }
+
+        @Test
+        fun `Confirm match when the match is in progress`() {
+            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(
+                Match(
+                    id = 0L,
+                    players = listOf(player, humanOpponentPlayer),
+                    deck = deckHistory,
+                    status = MatchStatus.IN_PROGRESS
+                )
+            )
+
+            assertThrows(InvalidMatchException::class.java) {
+                instance.matchConfirmation("0", false)
+            }
+        }
+
+        @Test
+        fun `Confirm match when the match not found`() {
+            `when`(matchIntegrationMock.getMatchById(0L)).thenThrow(ElementNotFoundException::class.java)
+
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.matchConfirmation("0", true)
+            }
+        }
+
 
     }
 

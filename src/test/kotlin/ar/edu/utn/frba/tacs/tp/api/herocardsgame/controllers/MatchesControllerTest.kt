@@ -92,7 +92,7 @@ internal class MatchesControllerTest {
     }
 
     @Bean
-    fun getSimpMessagingTemplate(): SimpMessagingTemplate{
+    fun getSimpMessagingTemplate(): SimpMessagingTemplate {
         return mock(SimpMessagingTemplate::class.java)
     }
 
@@ -415,6 +415,72 @@ internal class MatchesControllerTest {
 
             val response =
                 instance.abortMatch("0", hashMapOf("token" to getUserNotTurn(matchResponse).token!!))
+            assertEquals(400, response.statusCodeValue)
+            assertNull(response.body)
+        }
+
+    }
+
+    @Nested
+    inner class MatchConfirmation {
+
+        @Test
+        fun `Confirm match when the match is pending`() {
+            dao.saveHuman(user)
+            dao.saveHuman(humanOpponent)
+            dao.saveDeck(deck)
+
+            instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
+
+            val response = instance.matchConfirmation("0", hashMapOf("confirm" to true))
+            assertEquals(200, response.statusCodeValue)
+            val match = response.body!!
+            assertEquals(0L, match.id)
+            assertEquals(deckHistory, match.deck)
+            assertEquals(MatchStatus.IN_PROGRESS, match.status)
+
+            val players = match.players
+            assertEquals(2, players.size)
+            assertTrue(players.all { it.user.stats.winCount == 0 && it.user.stats.tieCount == 0 && it.user.stats.loseCount == 0 && it.user.stats.inProgressCount == 1 })
+        }
+
+        @Test
+        fun `Reject match when the match is pending`() {
+            dao.saveHuman(user)
+            dao.saveIA(iaOpponent)
+            dao.saveDeck(deck)
+
+            instance.createMatch(CreateMatchRequest("2", "IA", "0"), "token")
+
+            val response = instance.matchConfirmation("0", hashMapOf("confirm" to false))
+            assertEquals(200, response.statusCodeValue)
+            val match = response.body!!
+            assertEquals(0L, match.id)
+            assertEquals(deckHistory, match.deck)
+            assertEquals(MatchStatus.CANCELLED, match.status)
+
+            val players = match.players
+            assertEquals(2, players.size)
+            assertTrue(players.all { it.user.stats.winCount == 0 && it.user.stats.tieCount == 0 && it.user.stats.loseCount == 0 && it.user.stats.inProgressCount == 0 })
+        }
+
+        @Test
+        fun `Confirm match when the match is in progress`() {
+            dao.saveHuman(user)
+            dao.saveHuman(humanOpponent)
+            dao.saveDeck(deck)
+
+            instance.createMatch(CreateMatchRequest("2", "IA", "0"), "token")
+            instance.matchConfirmation("0", hashMapOf("confirm" to true))
+
+            val response = instance.matchConfirmation("0", hashMapOf("confirm" to false))
+            assertEquals(400, response.statusCodeValue)
+            assertNull(response.body)
+        }
+
+        @Test
+        fun `Confirm match when the match not found`() {
+            val response = instance.matchConfirmation("0", hashMapOf("confirm" to false))
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }

@@ -97,7 +97,8 @@ class MatchService(
         }
     }
 
-    fun matchConfirmation(confirmation: Boolean) {
-        TODO("Not yet implemented")
+    fun matchConfirmation(matchId: String, confirmation: Boolean): Match {
+        val matchFound = searchMatchById(matchId)
+        return matchIntegration.saveMatch(matchFound.confirmMatch(confirmation))
     }
 }

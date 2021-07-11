@@ -45,7 +45,7 @@ class MatchesController(private val matchService: MatchService) :
     fun matchConfirmation(
         @PathVariable("match-id") matchId: String,
         @RequestBody confirmationMap: HashMap<String, Boolean>
-    ): ResponseEntity<Void> =
+    ): ResponseEntity<Match> =
         try {
             reportRequest(
                 method = RequestMethod.PUT,
@@ -54,9 +54,11 @@ class MatchesController(private val matchService: MatchService) :
                 body = confirmationMap
             )
 
-            matchService.matchConfirmation(confirmationMap["confirm"]!!)
-            reportResponse(HttpStatus.OK)
+            val response = matchService.matchConfirmation(matchId, confirmationMap["confirm"]!!)
+            reportResponse(HttpStatus.OK, response)
         } catch (e: ElementNotFoundException) {
+            reportError(e, HttpStatus.BAD_REQUEST)
+        }catch (e: InvalidMatchException) {
             reportError(e, HttpStatus.BAD_REQUEST)
         }
 
