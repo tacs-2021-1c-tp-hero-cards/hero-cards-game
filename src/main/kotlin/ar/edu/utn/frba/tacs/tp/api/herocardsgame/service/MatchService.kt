@@ -38,9 +38,7 @@ class MatchService(
             )
         )
 
-        if (userType == UserType.HUMAN) {
-            notificationClientService.notifyCreateMatch(userId, newMatch)
-        }
+        notificationClientService.notifyCreateMatch(userId, userType, newMatch)
 
         return newMatch
     }
@@ -74,8 +72,11 @@ class MatchService(
     fun nextDuel(matchId: String, token: String? = null, duelType: DuelType? = null): Match {
         val match = searchMatchById(matchId)
         validateUserDuel(match, token)
-        val newMatch = match.resolveDuel(duelType).updateTurn().updateStatusMatch()
-        return matchIntegration.saveMatch(newMatch)
+        val newMatch = matchIntegration.saveMatch(match.resolveDuel(duelType).updateTurn().updateStatusMatch())
+
+        notificationClientService.notifyResultDuel(newMatch)
+
+        return newMatch
     }
 
     fun abortMatch(matchId: String, token: String): Match {
@@ -88,12 +89,12 @@ class MatchService(
     private fun validateUserDuel(match: Match, token: String?) {
         val user = match.players.first().user
 
-        if (token == null && user.userType == UserType.HUMAN) {
-            throw InvalidTurnException(userName = user.userName)
-        }
-
-        if (token != null && (userIntegration.getUserById(user.id!!, user.userType) as Human).token != token) {
-            throw InvalidTurnException(token)
+        if (user.userType == UserType.HUMAN && (userIntegration.getUserById(
+                user.id!!,
+                user.userType
+            ) as Human).token != token
+        ) {
+            throw InvalidTurnException(token!!)
         }
     }
 

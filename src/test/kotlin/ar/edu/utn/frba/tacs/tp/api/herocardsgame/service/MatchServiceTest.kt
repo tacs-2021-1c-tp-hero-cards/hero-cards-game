@@ -104,7 +104,7 @@ internal class MatchServiceTest {
             assertEquals(deckHistory, result.deck)
             assertEquals(MatchStatus.PENDING, result.status)
 
-            verify(notificationClientServiceMock, times(1)).notifyCreateMatch("1", result)
+            verify(notificationClientServiceMock, times(1)).notifyCreateMatch("1", UserType.HUMAN, result)
         }
 
         @Test
@@ -366,26 +366,6 @@ internal class MatchServiceTest {
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
-            }
-        }
-
-        @Test
-        fun `IA user without the turn plays next duel`() {
-            val match = Match(
-                id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    iaOpponentPlayer.copy(availableCards = listOf(batman))
-                ),
-                deck = deckHistory,
-                status = MatchStatus.IN_PROGRESS
-            )
-
-            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.IA)).thenReturn(iaOpponentUser)
-
-            assertThrows(InvalidTurnException::class.java) {
-                instance.nextDuel(0L.toString())
             }
         }
 
