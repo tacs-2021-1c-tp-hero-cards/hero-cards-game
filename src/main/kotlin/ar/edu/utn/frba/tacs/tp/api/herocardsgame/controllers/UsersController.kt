@@ -91,7 +91,7 @@ class UsersController(private val userIntegration: UserIntegration) :
                 "token" to token
             )
         )
-        val response = userIntegration.searchHumanUserByIdUserNameFullNameOrToken(userId, userName, fullName)
+        val response = userIntegration.searchHumanUserByIdUserNameFullNameOrToken(userId, userName, fullName, token)
         return reportResponse(HttpStatus.OK, response)
     }
 
