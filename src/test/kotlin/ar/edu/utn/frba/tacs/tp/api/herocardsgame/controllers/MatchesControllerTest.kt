@@ -132,7 +132,7 @@ internal class MatchesControllerTest {
             val match = response.body!!
             assertEquals(0L, match.id)
             assertEquals(DeckHistory(deck), match.deck)
-            assertEquals(MatchStatus.PENDING, match.status)
+            assertEquals(MatchStatus.IN_PROGRESS, match.status)
 
             val players = match.players
             assertEquals(2, players.size)
@@ -448,10 +448,10 @@ internal class MatchesControllerTest {
         @Test
         fun `Reject match when the match is pending`() {
             dao.saveHuman(user)
-            dao.saveIA(iaOpponent)
+            dao.saveHuman(humanOpponent)
             dao.saveDeck(deck)
 
-            instance.createMatch(CreateMatchRequest("2", "IA", "0"), "token")
+            instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
             val response = instance.matchConfirmation("0", MatchConfirmationRequest(false), user.token!!)
             assertEquals(200, response.statusCodeValue)

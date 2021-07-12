@@ -34,7 +34,11 @@ class MatchService(
             Match(
                 players = players,
                 deck = DeckHistory(deck),
-                status = MatchStatus.PENDING
+                status = if (userType == UserType.HUMAN) {
+                    MatchStatus.PENDING
+                } else {
+                    MatchStatus.IN_PROGRESS
+                }
             )
         )
 

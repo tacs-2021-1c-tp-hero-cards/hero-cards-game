@@ -112,7 +112,7 @@ internal class MatchServiceTest {
             val match =
                 Match(
                     deck = deckHistory,
-                    status = MatchStatus.PENDING,
+                    status = MatchStatus.IN_PROGRESS,
                     players = listOf(player, iaOpponentPlayer).map {
                         it.copy(
                             id = null,
@@ -138,7 +138,7 @@ internal class MatchServiceTest {
                 )
             )
             assertEquals(deckHistory, result.deck)
-            assertEquals(MatchStatus.PENDING, result.status)
+            assertEquals(MatchStatus.IN_PROGRESS, result.status)
         }
 
     }
