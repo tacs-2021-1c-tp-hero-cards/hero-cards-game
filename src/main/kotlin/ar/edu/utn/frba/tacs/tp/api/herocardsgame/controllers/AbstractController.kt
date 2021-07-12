@@ -16,10 +16,13 @@ abstract class AbstractController<T>(clazz: Class<T>) {
         path: String,
         pathVariables: HashMap<String, String> = hashMapOf(),
         requestParams: HashMap<String, String?> = hashMapOf(),
-        body: B?
+        requestHeader: HashMap<String, String?> = hashMapOf(),
+        body: B? = null,
+
     ) = log.info(
         "path: [${buildPath(path, pathVariables)}] method: [${method.name}] " +
                 "requestParam: ${buildParam(requestParams)} " +
+                "requestHeader: ${buildParam(requestHeader)} " +
                 buildRequestBody(body)
     )
 

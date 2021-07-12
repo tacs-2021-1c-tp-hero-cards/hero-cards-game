@@ -63,10 +63,15 @@ class UsersController(
      * @return
      */
     @PostMapping("/logOut")
-    fun logOut(@RequestBody tokenMap: HashMap<String, String>): ResponseEntity<Void> =
+    fun logOut(@RequestHeader(value = "x-user-token") token: String): ResponseEntity<Void> =
         try {
-            reportRequest(method = RequestMethod.POST, path = "/logOut", body = tokenMap)
-            userIntegration.disableUserSession(tokenMap["token"]!!)
+            reportRequest(
+                method = RequestMethod.POST,
+                path = "/logOut",
+                requestHeader = hashMapOf("x-user-token" to token),
+                body = null
+            )
+            userIntegration.disableUserSession(token)
             reportResponse(HttpStatus.OK)
         } catch (e: ElementNotFoundException) {
             reportError(e, HttpStatus.BAD_REQUEST)

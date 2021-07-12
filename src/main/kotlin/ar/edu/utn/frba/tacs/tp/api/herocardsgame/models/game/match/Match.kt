@@ -75,8 +75,7 @@ data class Match(
         }
 
         return if (confirmation) {
-            copy(players = listOf(players.first().startMatch(), players.last().startMatch()),
-            status = MatchStatus.IN_PROGRESS)
+            copy(players = players.map { it.startMatch() }, status = MatchStatus.IN_PROGRESS)
         } else {
             copy(status = MatchStatus.CANCELLED)
         }

@@ -142,7 +142,7 @@ internal class UsersControllerTest {
             instance.signUp(CreateUserRequest("userName", "fullName", "password"))
             val token = instance.logIn(ActivateUserSessionRequest("userName", "password")).body!!.token
 
-            val response = instance.logOut(hashMapOf("token" to token))
+            val response = instance.logOut(token)
             assertEquals(200, response.statusCodeValue)
 
             val users = instance.getHumanUserByIdUserNameFullNameOrToken(userId = "0")
@@ -160,7 +160,7 @@ internal class UsersControllerTest {
 
         @Test
         fun `Not Log out with a not exist user`() {
-            val response = instance.logOut(hashMapOf("token" to "tokenTest"))
+            val response = instance.logOut("tokenTest")
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }
