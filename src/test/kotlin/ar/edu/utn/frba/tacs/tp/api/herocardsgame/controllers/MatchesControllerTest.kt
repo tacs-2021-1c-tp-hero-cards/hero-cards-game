@@ -7,6 +7,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
@@ -112,13 +113,7 @@ internal class MatchesControllerTest {
             assertEquals(0L, match.id)
             assertEquals(DeckHistory(deck), match.deck)
             assertEquals(MatchStatus.PENDING, match.status)
-
-            val players = match.players
-            assertEquals(2, players.size)
-            assertTrue(players.any { it.user.userName == "userName" && it.user.id == 0L })
-            assertTrue(players.any { it.user.userName == "userName2" && it.user.id == 1L })
-            assertTrue(players.all { it.availableCards.isNotEmpty() })
-            assertTrue(players.all { it.prizeCards.isEmpty() })
+            validatePlayers(user, humanOpponent, match)
         }
 
         @Test
@@ -133,13 +128,7 @@ internal class MatchesControllerTest {
             assertEquals(0L, match.id)
             assertEquals(DeckHistory(deck), match.deck)
             assertEquals(MatchStatus.IN_PROGRESS, match.status)
-
-            val players = match.players
-            assertEquals(2, players.size)
-            assertTrue(players.any { it.user.userName == "userName" && it.user.id == 0L })
-            assertTrue(players.any { it.user.userName == "userName3" && it.user.id == 2L })
-            assertTrue(players.all { it.availableCards.isNotEmpty() })
-            assertTrue(players.all { it.prizeCards.isEmpty() })
+            validatePlayers(user, iaOpponent, match)
         }
 
         @Test
@@ -177,6 +166,7 @@ internal class MatchesControllerTest {
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }
+
     }
 
     @Nested
@@ -198,11 +188,6 @@ internal class MatchesControllerTest {
             assertEquals(DeckHistory(deck), match.deck)
             assertEquals(MatchStatus.FINALIZED, match.status)
 
-            val players = match.players
-            assertEquals(2, players.size)
-            assertTrue(players.any { it.prizeCards.isEmpty() })
-            assertTrue(players.any { it.prizeCards.isNotEmpty() })
-
             val duelHistory = match.duelHistoryList.first()
             assertEquals(0L, duelHistory.id)
             assertEquals(DuelType.COMBAT, duelHistory.duelType)
@@ -214,15 +199,12 @@ internal class MatchesControllerTest {
             dao.saveIA(iaOpponent)
             dao.saveDeck(deck)
 
-            val matchResult = instance.createMatch(CreateMatchRequest("2", "IA", "0"), "token").body!!
+            var matchResult = instance.createMatch(CreateMatchRequest("2", "IA", "0"), "token").body!!
 
-            val iaPlayer = matchResult.players.first { it.user.userType == UserType.IA }
-
-            val newPlayers = listOf(
-                iaPlayer,
-                matchResult.players.first { it.user.userType == UserType.HUMAN })
-
-            dao.saveMatch(matchResult.copy(players = newPlayers))
+            if(matchResult.player.user.userType != UserType.IA){
+                matchResult = matchResult.copy(player = matchResult.opponent, opponent = matchResult.player)
+                dao.saveMatch(matchResult)
+            }
 
             val response = instance.nextDuel("0", NextDuelRequest(null), user.token!!)
             assertEquals(200, response.statusCodeValue)
@@ -232,15 +214,10 @@ internal class MatchesControllerTest {
             assertEquals(DeckHistory(deck), match.deck)
             assertEquals(MatchStatus.FINALIZED, match.status)
 
-            val players = match.players
-            assertEquals(2, players.size)
-            assertTrue(players.any { it.prizeCards.isEmpty() })
-            assertTrue(players.any { it.prizeCards.isNotEmpty() })
-
             val duelHistory = match.duelHistoryList.first()
             assertEquals(0L, duelHistory.id)
             assertEquals(
-                iaPlayer.availableCards.first().calculateDuelTypeAccordingDifficulty(iaOpponent.difficulty),
+                matchResult.player.availableCards.first().calculateDuelTypeAccordingDifficulty(iaOpponent.difficulty),
                 duelHistory.duelType
             )
         }
@@ -311,13 +288,7 @@ internal class MatchesControllerTest {
             assertEquals(0L, match.id)
             assertEquals(deckHistory, match.deck)
             assertEquals(MatchStatus.PENDING, match.status)
-
-            val players = match.players
-            assertEquals(2, players.size)
-            assertTrue(players.any { it.user.userName == "userName" && it.user.id == 0L })
-            assertTrue(players.any { it.user.userName == "userName2" && it.user.id == 1L })
-            assertTrue(players.all { it.availableCards.isNotEmpty() })
-            assertTrue(players.all { it.prizeCards.isEmpty() })
+            validatePlayers(user, humanOpponent, match)
         }
 
         @Test
@@ -360,16 +331,8 @@ internal class MatchesControllerTest {
             assertEquals(0L, match.id)
             assertEquals(deckHistory, match.deck)
             assertEquals(MatchStatus.CANCELLED, match.status)
-
-            val players = match.players
-            assertEquals(2, players.size)
-
-            val userTurn = getUserTurn(response)
-            assertTrue(players.any { it.user.userName == userTurn.userName && it.user.id == userTurn.id && it.user.stats.loseCount == 1 })
-            val userNotTurn = getUserNotTurn(response)
-            assertTrue(players.any { it.user.userName == userNotTurn.userName && it.user.id == userNotTurn.id && it.user.stats.winCount == 1 })
-            assertTrue(players.all { it.availableCards.isNotEmpty() })
-            assertTrue(players.all { it.prizeCards.isEmpty() })
+            assertTrue(match.player.user.stats.loseCount == 1 )
+            assertTrue(match.opponent.user.stats.winCount == 1 )
         }
 
         @Test
@@ -433,16 +396,19 @@ internal class MatchesControllerTest {
 
             val matchResponse = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
-            val response = instance.confirmMatch("0", MatchConfirmationRequest(true), getUserNotTurn(matchResponse).token!!)
+            val response =
+                instance.confirmMatch("0", MatchConfirmationRequest(true), getUserNotTurn(matchResponse).token!!)
             assertEquals(200, response.statusCodeValue)
             val match = response.body!!
             assertEquals(0L, match.id)
             assertEquals(deckHistory, match.deck)
             assertEquals(MatchStatus.IN_PROGRESS, match.status)
 
-            val players = match.players
-            assertEquals(2, players.size)
-            assertTrue(players.all { it.user.stats.winCount == 0 && it.user.stats.tieCount == 0 && it.user.stats.loseCount == 0 && it.user.stats.inProgressCount == 1 })
+            val playerStats = match.player.user.stats
+            assertTrue(playerStats.winCount == 0 && playerStats.tieCount == 0 && playerStats.loseCount == 0 && playerStats.inProgressCount == 1 )
+
+            val opponentStats = match.player.user.stats
+            assertTrue(opponentStats.winCount == 0 && opponentStats.tieCount == 0 && opponentStats.loseCount == 0 && opponentStats.inProgressCount == 1 )
         }
 
         @Test
@@ -460,9 +426,11 @@ internal class MatchesControllerTest {
             assertEquals(deckHistory, match.deck)
             assertEquals(MatchStatus.CANCELLED, match.status)
 
-            val players = match.players
-            assertEquals(2, players.size)
-            assertTrue(players.all { it.user.stats.winCount == 0 && it.user.stats.tieCount == 0 && it.user.stats.loseCount == 0 && it.user.stats.inProgressCount == 0 })
+            val playerStats = match.player.user.stats
+            assertTrue(playerStats.winCount == 0 && playerStats.tieCount == 0 && playerStats.loseCount == 0 && playerStats.inProgressCount == 0 )
+
+            val opponentStats = match.player.user.stats
+            assertTrue(opponentStats.winCount == 0 && opponentStats.tieCount == 0 && opponentStats.loseCount == 0 && opponentStats.inProgressCount == 0 )
         }
 
         @Test
@@ -474,7 +442,8 @@ internal class MatchesControllerTest {
             val matchResponse = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
             instance.confirmMatch("0", MatchConfirmationRequest(true), getUserTurn(matchResponse).token!!)
 
-            val response = instance.confirmMatch("0", MatchConfirmationRequest(false), getUserNotTurn(matchResponse).token!!)
+            val response =
+                instance.confirmMatch("0", MatchConfirmationRequest(false), getUserNotTurn(matchResponse).token!!)
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }
@@ -489,9 +458,24 @@ internal class MatchesControllerTest {
     }
 
     private fun getUserTurn(matchResponse: ResponseEntity<Match>) =
-        matchResponse.body!!.players.first().user as Human
+        matchResponse.body!!.player.user as Human
 
     private fun getUserNotTurn(matchResponse: ResponseEntity<Match>) =
-        matchResponse.body!!.players.last().user as Human
+        matchResponse.body!!.opponent.user as Human
 
+    private fun validatePlayers(user: User, user2: User, match: Match) {
+        val player = match.player
+        val opponent = match.opponent
+
+        if (user.id == player.user.id) {
+            assertEquals(user, player.user)
+            assertEquals(user2, opponent.user)
+        } else {
+            assertEquals(user2, player.user)
+            assertEquals(user, opponent.user)
+        }
+
+        assertTrue(player.availableCards.isNotEmpty() && player.prizeCards.isEmpty())
+        assertTrue(opponent.availableCards.isNotEmpty() && opponent.prizeCards.isEmpty())
+    }
 }

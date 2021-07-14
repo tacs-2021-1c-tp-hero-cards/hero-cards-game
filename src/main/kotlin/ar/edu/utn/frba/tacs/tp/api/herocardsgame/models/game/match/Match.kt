@@ -11,7 +11,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 
 data class Match(
     val id: Long? = null,
-    val players: List<Player>,
+    val player: Player,
+    val opponent: Player,
     val deck: DeckHistory,
     val status: MatchStatus,
     val duelHistoryList: List<DuelHistory> = emptyList()
@@ -19,9 +20,6 @@ data class Match(
 
     fun resolveDuel(duelType: DuelType? = null): Match {
         validateNotFinalizedOrCancelled()
-
-        val player = players.first()
-        val opponent = players.last()
 
         val playerCard = player.availableCards.first()
         val opponentCard = opponent.availableCards.first()
@@ -37,7 +35,8 @@ data class Match(
         }
 
         return this.copy(
-            players = playerList,
+            player = playerList.first(),
+            opponent = playerList.last(),
             duelHistoryList = duelHistoryList.plus(DuelHistory(player, opponent, newDuelType, duelResult))
         )
     }
@@ -45,12 +44,12 @@ data class Match(
     private fun calculateDuelTypeAccordingDifficulty(iaUser: IA, card: Card): DuelType =
         card.calculateDuelTypeAccordingDifficulty(iaUser.difficulty)
 
-    fun updateTurn(): Match =
-        this.copy(players = players.reversed())
+    fun updateTurn(): Match = copy(player = opponent, opponent = player)
 
     fun updateStatusMatch(): Match =
-        if (players.any { it.availableCards.isEmpty() }) {
-            this.copy(status = MatchStatus.FINALIZED, players = players.first().calculateWinPlayer(players.last()))
+        if (player.availableCards.isEmpty() || opponent.availableCards.isEmpty()) {
+            val playersResult = player.calculateWinPlayer(opponent)
+            this.copy(status = MatchStatus.FINALIZED, player = playersResult.first(), opponent = playersResult.last())
         } else {
             this
         }
@@ -58,7 +57,8 @@ data class Match(
     fun abortMatch(): Match {
         this.validateNotFinalizedOrCancelled()
         return copy(
-            players = listOf(players.first().loseMatch(), players.last().winMatch()),
+            player = player.loseMatch(),
+            opponent = opponent.winMatch(),
             status = MatchStatus.CANCELLED
         )
     }
@@ -75,7 +75,7 @@ data class Match(
         }
 
         return if (confirmation) {
-            copy(players = players.map { it.startMatch() }, status = MatchStatus.IN_PROGRESS)
+            copy(player = player.startMatch(), opponent = opponent.startMatch(), status = MatchStatus.IN_PROGRESS)
         } else {
             copy(status = MatchStatus.CANCELLED)
         }

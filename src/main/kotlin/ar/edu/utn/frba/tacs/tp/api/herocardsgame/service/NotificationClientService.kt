@@ -25,7 +25,7 @@ class NotificationClientService(val userIntegration: UserIntegration, val templa
     }
 
     fun notifyConfirmMatch(token: String, match: Match) {
-        match.players
+        listOf(match.player, match.opponent)
             .filter { it.user.userType == UserType.HUMAN }
             .map { userIntegration.searchHumanUserByIdUserNameFullNameOrToken(it.user.id!!.toString()).first() }
             .filter { it.token != null && it.token != token }
@@ -42,30 +42,30 @@ class NotificationClientService(val userIntegration: UserIntegration, val templa
     }
 
     fun notifyResultDuel(match: Match) {
-        val user = match.players.first().user
-
+        val user = match.player.user
         if (user.userType == UserType.HUMAN) {
-            val token =
-                userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id!!.toString()).first().token
-
-            val duelResult = match.duelHistoryList.last()
-            val opponentDuelResult = duelResult.copy(
-                player = duelResult.opponent,
-                opponent = duelResult.player,
-                duelResult = duelResult.duelResult.calculateOppositeResult()
-            )
-
-            this.template.convertAndSend("/topic/user/$token/nextDuel", opponentDuelResult)
+            userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id!!.toString())
+                .filter { it.token != null }
+                .map {
+                    val duelResult = match.duelHistoryList.last()
+                    val opponentDuelResult = duelResult.copy(
+                        player = duelResult.opponent,
+                        opponent = duelResult.player,
+                        duelResult = duelResult.duelResult.calculateOppositeResult()
+                    )
+                    this.template.convertAndSend("/topic/user/${it.token}/nextDuel", opponentDuelResult)
+                }
         }
     }
 
-    fun notifyAbort(token: String, match: Match) {
-        match.players
-            .filter { it.user.userType == UserType.HUMAN }
-            .map { userIntegration.searchHumanUserByIdUserNameFullNameOrToken(it.user.id!!.toString()).first() }
-            .filter { it.token != null && it.token != token }
-            .map {
-                this.template.convertAndSend("/topic/user/$token/abortions", NotifyResponse(match.id!!, it))
-            }
+    fun notifyAbort(match: Match) {
+        val user = match.opponent.user
+        if (user.userType == UserType.HUMAN) {
+            userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id!!.toString())
+                .filter { it.token != null }
+                .map {
+                    this.template.convertAndSend("/topic/user/${it.token}/abortions", NotifyResponse(match.id!!, it))
+                }
+        }
     }
 }

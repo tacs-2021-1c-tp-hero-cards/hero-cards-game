@@ -31,7 +31,8 @@ class MatchService(
         val players = buildPlayers(token, userId, userType, deck)
         val newMatch = matchIntegration.saveMatch(
             Match(
-                players = players,
+                player = players.first(),
+                opponent = players.last(),
                 deck = DeckHistory(deck),
                 status = if (userType == UserType.HUMAN) {
                     MatchStatus.PENDING
@@ -74,7 +75,7 @@ class MatchService(
 
     fun nextDuel(matchId: String, token: String, duelType: DuelType? = null): Match {
         val match = searchMatchById(matchId)
-        validateUserDuel(match, token)
+        validateUserTurn(match, token)
         val newMatch = matchIntegration.saveMatch(match.resolveDuel(duelType).updateTurn().updateStatusMatch())
         notificationClientService.notifyResultDuel(newMatch)
         return newMatch
@@ -82,15 +83,14 @@ class MatchService(
 
     fun abortMatch(matchId: String, token: String): Match {
         val match = searchMatchById(matchId)
-        validateUserDuel(match, token)
+        validateUserTurn(match, token)
         val newMatch = matchIntegration.saveMatch(match.abortMatch())
-        notificationClientService.notifyAbort(token, newMatch)
+        notificationClientService.notifyAbort(newMatch)
         return newMatch
     }
 
-    private fun validateUserDuel(match: Match, token: String?) {
-        val user = match.players.first().user
-
+    private fun validateUserTurn(match: Match, token: String?) {
+        val user = match.player.user
         if (user.userType == UserType.HUMAN &&
             userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id.toString()).first().token != token
         ) {

@@ -49,26 +49,26 @@ internal class MatchEntityTest {
 
     @Test
     fun toEntityWithId() {
-        val model = Match(id, listOf(player, opponent), deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
+        val model = Match(id, player, opponent, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
 
         val entity = MatchEntity(match = model)
         assertEquals(id, entity.id)
         assertEquals(id, entity.deckId)
-        assertTrue(entity.playerIds.contains(0L))
-        assertTrue(entity.playerIds.contains(1L))
+        assertEquals(0L, entity.playerId)
+        assertEquals(1L, entity.opponentId)
         assertEquals(MatchStatus.IN_PROGRESS.name, entity.status)
         assertTrue(entity.duelHistoryIds.contains(0L))
     }
 
     @Test
     fun toEntityWithOutId() {
-        val model = Match(null, listOf(player, opponent), deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
+        val model = Match(null, player, opponent, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
 
         val entity = MatchEntity(1L, model)
         assertEquals(1L, entity.id)
         assertEquals(id, entity.deckId)
-        assertTrue(entity.playerIds.contains(0L))
-        assertTrue(entity.playerIds.contains(1L))
+        assertEquals(0L, entity.playerId)
+        assertEquals(1L, entity.opponentId)
         assertEquals(MatchStatus.IN_PROGRESS.name, entity.status)
         assertTrue(entity.duelHistoryIds.contains(0L))
     }
@@ -78,15 +78,15 @@ internal class MatchEntityTest {
         val entity =
             MatchEntity(
                 id,
-                Match(null, listOf(player, opponent), deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
+                Match(null, player, opponent, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
             )
 
-        val model = entity.toModel(listOf(player, opponent), deckHistory, listOf(duelHistory))
+        val model = entity.toModel(player, opponent, deckHistory, listOf(duelHistory))
         assertEquals(id, model.id)
         assertEquals(deckHistory, model.deck)
         assertEquals(MatchStatus.IN_PROGRESS, model.status)
-        assertTrue(model.players.contains(player))
-        assertTrue(model.players.contains(opponent))
+        assertEquals(player, model.player)
+        assertEquals(opponent, model.opponent)
 
         val duelHistory = model.duelHistoryList.first()
         assertEquals(0L, duelHistory.id)

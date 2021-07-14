@@ -52,9 +52,9 @@ internal class MatchIntegrationTest {
         DuelHistory(0L, playerHistory, iaOpponentHistory, DuelType.SPEED, DuelResult.WIN)
 
     private val matchWithHuman =
-        Match(0L, listOf(player, humanOpponent), deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistoryWithHuman))
+        Match(0L, player, humanOpponent, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistoryWithHuman))
     private val matchWithIA =
-        Match(1L, listOf(player, iaOpponent), deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistoryWithIA))
+        Match(1L, player, iaOpponent, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistoryWithIA))
 
     @BeforeEach
     fun init() {
@@ -168,8 +168,9 @@ internal class MatchIntegrationTest {
             assertEquals(matchWithHuman.id, found.id)
             assertEquals(matchWithHuman.deck.id, found.deckId)
             assertEquals(matchWithHuman.status.name, found.status)
-            assertTrue(found.playerIds.contains(player.id))
-            assertTrue(found.playerIds.contains(humanOpponent.id))
+
+            assertEquals(player.id, found.playerId)
+            assertEquals(humanOpponent.id, found.opponentId)
         }
 
         @Test
@@ -187,8 +188,8 @@ internal class MatchIntegrationTest {
             assertEquals(matchWithIA.id, found.id)
             assertEquals(matchWithIA.deck.id, found.deckId)
             assertEquals(matchWithIA.status.name, found.status)
-            assertTrue(found.playerIds.contains(player.id))
-            assertTrue(found.playerIds.contains(iaOpponent.id))
+            assertEquals(player.id, found.playerId)
+            assertEquals(iaOpponent.id, found.opponentId)
         }
 
     }

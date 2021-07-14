@@ -15,11 +15,12 @@ class MatchIntegration(
 
     fun getMatchById(id: Long): Match {
         val matchEntity = dao.getMatchById(id) ?: throw ElementNotFoundException("match", "id", id.toString())
-        val players = matchEntity.playerIds.map { playerIntegration.getPlayerById(it) }
+        val player = playerIntegration.getPlayerById(matchEntity.playerId)
+        val opponent = playerIntegration.getPlayerById(matchEntity.opponentId)
         val deck = deckIntegration.getDeckById(matchEntity.deckId).searchDeckVersion(matchEntity.deckVersion)
         val duelHistoryList = matchEntity.duelHistoryIds.map { getDuelHistoryById(it) }
 
-        return matchEntity.toModel(players, deck, duelHistoryList)
+        return matchEntity.toModel(player, opponent, deck, duelHistoryList)
     }
 
     private fun getDuelHistoryById(id: Long): DuelHistory {
@@ -32,11 +33,17 @@ class MatchIntegration(
     }
 
     fun saveMatch(match: Match): Match {
-        val savedPlayers = match.players.map { playerIntegration.savePlayer(it) }
+        val savedPlayer = playerIntegration.savePlayer(match.player)
+        val savedOpponent = playerIntegration.savePlayer(match.opponent)
         val savedDuelHistoryList = match.duelHistoryList.map { saveDuelHistory(it) }
 
-        return dao.saveMatch(match.copy(players = savedPlayers, duelHistoryList = savedDuelHistoryList))
-            .toModel(savedPlayers, match.deck, savedDuelHistoryList)
+        return dao.saveMatch(
+            match.copy(
+                player = savedPlayer,
+                opponent = savedOpponent,
+                duelHistoryList = savedDuelHistoryList
+            )
+        ).toModel(savedPlayer, savedOpponent, match.deck, savedDuelHistoryList)
     }
 
     private fun saveDuelHistory(duelHistory: DuelHistory): DuelHistory {

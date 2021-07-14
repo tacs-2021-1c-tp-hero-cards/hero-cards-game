@@ -83,12 +83,9 @@ internal class MatchServiceTest {
                 Match(
                     deck = deckHistory,
                     status = MatchStatus.PENDING,
-                    players = listOf(player, humanOpponentPlayer).map {
-                        it.copy(
-                            id = null,
-                            availableCards = listOf(batman)
-                        )
-                    })
+                    player = player.copy(id = null, availableCards = listOf(batman)),
+                    opponent = humanOpponentPlayer.copy(id = null, availableCards = listOf(batman))
+                )
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
@@ -101,12 +98,6 @@ internal class MatchServiceTest {
             val result = instance.createMatch("tokenTest", "1", UserType.HUMAN, 0L.toString())
 
             assertEquals(0L, result.id)
-            assertTrue(result.players.contains(player.copy(id = null, availableCards = listOf(batman))))
-            assertTrue(
-                result.players.contains(
-                    humanOpponentPlayer.copy(id = null, availableCards = listOf(batman))
-                )
-            )
             assertEquals(deckHistory, result.deck)
             assertEquals(MatchStatus.PENDING, result.status)
 
@@ -119,12 +110,9 @@ internal class MatchServiceTest {
                 Match(
                     deck = deckHistory,
                     status = MatchStatus.IN_PROGRESS,
-                    players = listOf(player, iaOpponentPlayer).map {
-                        it.copy(
-                            id = null,
-                            availableCards = listOf(batman)
-                        )
-                    })
+                    player = player.copy(id = null, availableCards = listOf(batman)),
+                    opponent = iaOpponentPlayer.copy(id = null, availableCards = listOf(batman))
+                )
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
@@ -137,12 +125,6 @@ internal class MatchServiceTest {
             val result = instance.createMatch("tokenTest", "2", UserType.IA, 0L.toString())
 
             assertEquals(0L, result.id)
-            assertTrue(result.players.contains(player.copy(id = null, availableCards = listOf(batman))))
-            assertTrue(
-                result.players.contains(
-                    iaOpponentPlayer.copy(id = null, availableCards = listOf(batman))
-                )
-            )
             assertEquals(deckHistory, result.deck)
             assertEquals(MatchStatus.IN_PROGRESS, result.status)
         }
@@ -253,22 +235,18 @@ internal class MatchServiceTest {
             val batman = batman.copy(powerstats = batman.powerstats.copy(speed = 0))
 
             val match = Match(
-                id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)).startMatch(),
-                    iaOpponentPlayer.copy(availableCards = listOf(batman)).startMatch()
-                ),
-                deck = deckHistory,
-                status = MatchStatus.IN_PROGRESS
+                0L,
+                player.copy(availableCards = listOf(flash)).startMatch(),
+                iaOpponentPlayer.copy(availableCards = listOf(batman)).startMatch(),
+                deckHistory,
+                MatchStatus.IN_PROGRESS
             )
 
             val matchResult = match.copy(
-                players = listOf(
-                    iaOpponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch()
-                        .loseMatch(),
-                    player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch()
-                        .winMatch()
-                ),
+                player =
+                iaOpponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch().loseMatch(),
+                opponent = player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch()
+                    .winMatch(),
                 status = MatchStatus.FINALIZED,
                 duelHistoryList = listOf(
                     DuelHistory(
@@ -289,14 +267,12 @@ internal class MatchServiceTest {
             assertEquals(deckHistory, resultNextDuel.deck)
             assertEquals(0L, resultNextDuel.id)
 
-            val players = resultNextDuel.players
-
-            val winPlayer = players.last()
+            val winPlayer = resultNextDuel.opponent
             assertTrue(winPlayer.availableCards.isEmpty())
             assertTrue(winPlayer.prizeCards.contains(batman))
             assertTrue(winPlayer.prizeCards.contains(flash))
 
-            val losePlayer = players.first()
+            val losePlayer = resultNextDuel.player
             assertTrue(losePlayer.availableCards.isEmpty())
             assertTrue(losePlayer.prizeCards.isEmpty())
         }
@@ -307,22 +283,18 @@ internal class MatchServiceTest {
             val batman = batman.copy(powerstats = batman.powerstats.copy(speed = 0))
 
             val match = Match(
-                id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)).startMatch(),
-                    humanOpponentPlayer.copy(availableCards = listOf(batman)).startMatch()
-                ),
-                deck = deckHistory,
-                status = MatchStatus.IN_PROGRESS
+                0L,
+                player.copy(availableCards = listOf(flash)).startMatch(),
+                humanOpponentPlayer.copy(availableCards = listOf(batman)).startMatch(),
+                deckHistory,
+                MatchStatus.IN_PROGRESS
             )
 
             val matchResult = match.copy(
-                players = listOf(
-                    humanOpponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch()
-                        .loseMatch(),
-                    player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch()
-                        .winMatch()
-                ),
+                player = humanOpponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch()
+                    .loseMatch(),
+                opponent = player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch()
+                    .winMatch(),
                 status = MatchStatus.FINALIZED,
                 duelHistoryList = listOf(
                     DuelHistory(
@@ -343,14 +315,12 @@ internal class MatchServiceTest {
             assertEquals(deckHistory, resultNextDuel.deck)
             assertEquals(0L, resultNextDuel.id)
 
-            val players = resultNextDuel.players
-
-            val winPlayer = players.last()
+            val winPlayer = resultNextDuel.opponent
             assertTrue(winPlayer.availableCards.isEmpty())
             assertTrue(winPlayer.prizeCards.contains(batman))
             assertTrue(winPlayer.prizeCards.contains(flash))
 
-            val losePlayer = players.first()
+            val losePlayer = resultNextDuel.player
             assertTrue(losePlayer.availableCards.isEmpty())
             assertTrue(losePlayer.prizeCards.isEmpty())
         }
@@ -358,17 +328,21 @@ internal class MatchServiceTest {
         @Test
         fun `Human user without the turn plays next duel`() {
             val match = Match(
-                id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    humanOpponentPlayer.copy(availableCards = listOf(batman))
-                ),
-                deck = deckHistory,
-                status = MatchStatus.IN_PROGRESS
+                0L,
+                player.copy(availableCards = listOf(flash)),
+                humanOpponentPlayer.copy(availableCards = listOf(batman)),
+                deckHistory,
+                MatchStatus.IN_PROGRESS
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user.copy(token = "tokenTest2")))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(
+                listOf(
+                    user.copy(
+                        token = "tokenTest2"
+                    )
+                )
+            )
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
@@ -383,24 +357,20 @@ internal class MatchServiceTest {
         @Test
         fun `User with the turn aborts match`() {
             val match = Match(
-                id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)).startMatch(),
-                    humanOpponentPlayer.copy(availableCards = listOf(batman)).startMatch()
-                ),
-                deck = deckHistory,
-                status = MatchStatus.IN_PROGRESS
+                0L,
+                player.copy(availableCards = listOf(flash)).startMatch(),
+                humanOpponentPlayer.copy(availableCards = listOf(batman)).startMatch(),
+                deckHistory,
+                MatchStatus.IN_PROGRESS
             )
 
             val matchResult = match.copy(
                 status = MatchStatus.CANCELLED,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)).startMatch().loseMatch(),
-                    humanOpponentPlayer.copy(
-                        availableCards = listOf(batman),
-                        user = humanOpponentUser.copy(stats = Stats())
-                    ).startMatch().winMatch()
-                )
+                player = player.copy(availableCards = listOf(flash)).startMatch().loseMatch(),
+                opponent = humanOpponentPlayer.copy(
+                    availableCards = listOf(batman),
+                    user = humanOpponentUser.copy(stats = Stats())
+                ).startMatch().winMatch()
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
@@ -413,14 +383,12 @@ internal class MatchServiceTest {
             assertEquals(deckHistory, abortMatch.deck)
             assertEquals(0L, abortMatch.id)
 
-            val players = abortMatch.players
-
-            val player = players.first()
+            val player = abortMatch.player
             assertTrue(player.availableCards.contains(flash))
             assertTrue(player.prizeCards.isEmpty())
             assertEquals(1, player.user.stats.loseCount)
 
-            val opponentPlayer = players.last()
+            val opponentPlayer = abortMatch.opponent
             assertTrue(opponentPlayer.availableCards.contains(batman))
             assertTrue(opponentPlayer.prizeCards.isEmpty())
             assertEquals(1, opponentPlayer.user.stats.winCount)
@@ -429,13 +397,11 @@ internal class MatchServiceTest {
         @Test
         fun `User without the turn aborts match`() {
             val match = Match(
-                id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    humanOpponentPlayer.copy(availableCards = listOf(batman))
-                ),
-                deck = deckHistory,
-                status = MatchStatus.IN_PROGRESS
+                0L,
+                player.copy(availableCards = listOf(flash)),
+                humanOpponentPlayer.copy(availableCards = listOf(batman)),
+                deckHistory,
+                MatchStatus.IN_PROGRESS
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
@@ -455,31 +421,22 @@ internal class MatchServiceTest {
 
         @Test
         fun `Confirm match when the match is pending`() {
-            val match = Match(
-                id = 0L,
-                players = listOf(player, humanOpponentPlayer),
-                deck = deckHistory,
-                status = MatchStatus.PENDING
-            )
+            val match = Match(0L, player, humanOpponentPlayer, deckHistory, MatchStatus.PENDING)
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
 
             instance.matchConfirmation("0", true, humanOpponentUser.token!!)
             verify(matchIntegrationMock, times(1)).saveMatch(
                 match.copy(
                     status = MatchStatus.IN_PROGRESS,
-                    players = match.players.map { it.startMatch() }
+                    player = player.startMatch(),
+                    opponent = humanOpponentPlayer.startMatch()
                 )
             )
         }
 
         @Test
         fun `Reject match when the match is pending`() {
-            val match = Match(
-                id = 0L,
-                players = listOf(player, humanOpponentPlayer),
-                deck = deckHistory,
-                status = MatchStatus.PENDING
-            )
+            val match = Match(0L, player, humanOpponentPlayer, deckHistory, MatchStatus.PENDING)
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
 
             instance.matchConfirmation("0", false, humanOpponentUser.token!!)
@@ -489,12 +446,7 @@ internal class MatchServiceTest {
         @Test
         fun `Confirm match when the match is in progress`() {
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(
-                Match(
-                    id = 0L,
-                    players = listOf(player, humanOpponentPlayer),
-                    deck = deckHistory,
-                    status = MatchStatus.IN_PROGRESS
-                )
+                Match(id = 0L, player, humanOpponentPlayer, deckHistory, MatchStatus.IN_PROGRESS)
             )
 
             assertThrows(InvalidMatchException::class.java) {

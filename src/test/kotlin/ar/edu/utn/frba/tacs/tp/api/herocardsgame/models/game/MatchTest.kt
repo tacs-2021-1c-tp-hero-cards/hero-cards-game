@@ -41,54 +41,48 @@ internal class MatchTest {
         @Test
         fun `If player has no cards available then match is finalized`() {
             val match = Match(
-                players = listOf(
-                    player.copy(availableCards = listOf(batman), prizeCards = listOf(batman)).startMatch(),
-                    humanOpponent.startMatch()
-                ),
+                player = player.copy(availableCards = listOf(batman), prizeCards = listOf(batman)).startMatch(),
+                opponent = humanOpponent.startMatch(),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).updateStatusMatch()
 
             assertEquals(MatchStatus.FINALIZED, match.status)
 
-            val resultPlayers = match.players
-
-            val win = resultPlayers.first()
+            val win = match.player
             assertEquals(0L, win.id)
             assertEquals(0, win.user.stats.inProgressCount)
             assertEquals(1, win.user.stats.winCount)
             assertEquals(0, win.user.stats.loseCount)
             assertEquals(0, win.user.stats.tieCount)
 
-            val lose = resultPlayers.last()
+            val lose = match.opponent
             assertEquals(1L, lose.id)
             assertEquals(0, lose.user.stats.inProgressCount)
             assertEquals(0, lose.user.stats.winCount)
             assertEquals(1, lose.user.stats.loseCount)
             assertEquals(0, lose.user.stats.tieCount)
-
         }
 
         @Test
         fun `If all players have no cards available then match is finalized`() {
             val match = Match(
-                players = listOf(player.startMatch(), iaOpponent.startMatch()),
+                player = player.startMatch(),
+                opponent = iaOpponent.startMatch(),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).updateStatusMatch()
 
             assertEquals(MatchStatus.FINALIZED, match.status)
 
-            val resultPlayers = match.players
-
-            val tie = resultPlayers.first()
+            val tie = match.player
             assertEquals(0L, tie.id)
             assertEquals(0, tie.user.stats.inProgressCount)
             assertEquals(0, tie.user.stats.winCount)
             assertEquals(0, tie.user.stats.loseCount)
             assertEquals(1, tie.user.stats.tieCount)
 
-            val otherTie = resultPlayers.last()
+            val otherTie = match.opponent
             assertEquals(2L, otherTie.id)
             assertEquals(0, otherTie.user.stats.inProgressCount)
             assertEquals(0, otherTie.user.stats.winCount)
@@ -100,10 +94,8 @@ internal class MatchTest {
         @Test
         fun `If all players have cards available then match is in progress`() {
             val match = Match(
-                players = listOf(
-                    player.copy(availableCards = listOf(batman)),
-                    humanOpponent.copy(availableCards = listOf(flash))
-                ),
+                player = player.copy(availableCards = listOf(batman)),
+                opponent = humanOpponent.copy(availableCards = listOf(flash)),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).updateStatusMatch()
@@ -116,14 +108,14 @@ internal class MatchTest {
     @Test
     fun updateTurn() {
         val match = Match(
-            players = listOf(player, humanOpponent),
+            player = player,
+            opponent = humanOpponent,
             deck = deckMock,
             status = MatchStatus.IN_PROGRESS
         ).updateTurn()
 
-        val players = match.players
-        assertEquals(humanOpponent, players.first())
-        assertEquals(player, players.last())
+        assertEquals(humanOpponent, match.player)
+        assertEquals(player, match.opponent)
     }
 
     @Nested
@@ -133,10 +125,8 @@ internal class MatchTest {
         fun `Resolve Duel when match is cancelled`() {
             val match = Match(
                 id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    humanOpponent.copy(availableCards = listOf(batman))
-                ),
+                player = player.copy(availableCards = listOf(flash)),
+                opponent = humanOpponent.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.CANCELLED
             )
@@ -150,10 +140,8 @@ internal class MatchTest {
         fun `Resolve Duel when match is finalized`() {
             val match = Match(
                 id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    humanOpponent.copy(availableCards = listOf(batman))
-                ),
+                player = player.copy(availableCards = listOf(flash)),
+                opponent = humanOpponent.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.FINALIZED
             )
@@ -169,22 +157,18 @@ internal class MatchTest {
             val batman = batman.copy(powerstats = batman.powerstats.copy(speed = 0))
 
             val match = Match(
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    humanOpponent.copy(availableCards = listOf(batman))
-                ),
+                player = player.copy(availableCards = listOf(flash)),
+                opponent = humanOpponent.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).resolveDuel(DuelType.SPEED)
 
-            val players = match.players
-
-            val winPlayer = players.first()
+            val winPlayer = match.player
             assertTrue(winPlayer.availableCards.isEmpty())
             assertTrue(winPlayer.prizeCards.contains(batman))
             assertTrue(winPlayer.prizeCards.contains(flash))
 
-            val losePlayer = players.last()
+            val losePlayer = match.opponent
             assertTrue(losePlayer.availableCards.isEmpty())
             assertTrue(losePlayer.prizeCards.isEmpty())
 
@@ -211,22 +195,18 @@ internal class MatchTest {
         @Test
         fun `Resolve duel that wins when user is ia`() {
             val match = Match(
-                players = listOf(
-                    iaOpponent.copy(availableCards = listOf(flash)),
-                    player.copy(availableCards = listOf(batman))
-                ),
+                player = iaOpponent.copy(availableCards = listOf(flash)),
+                opponent = player.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).resolveDuel()
 
-            val players = match.players
-
-            val winPlayer = players.first()
+            val winPlayer = match.player
             assertTrue(winPlayer.availableCards.isEmpty())
             assertTrue(winPlayer.prizeCards.contains(batman))
             assertTrue(winPlayer.prizeCards.contains(flash))
 
-            val losePlayer = players.last()
+            val losePlayer = match.opponent
             assertTrue(losePlayer.availableCards.isEmpty())
             assertTrue(losePlayer.prizeCards.isEmpty())
 
@@ -256,21 +236,17 @@ internal class MatchTest {
             val batman = batman.copy(powerstats = batman.powerstats.copy(weight = 0))
 
             val match = Match(
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    humanOpponent.copy(availableCards = listOf(batman))
-                ),
+                player = player.copy(availableCards = listOf(flash)),
+                opponent = humanOpponent.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).resolveDuel(DuelType.WEIGHT)
 
-            val players = match.players
-
-            val losePlayer = players.first()
+            val losePlayer = match.player
             assertTrue(losePlayer.availableCards.isEmpty())
             assertTrue(losePlayer.prizeCards.isEmpty())
 
-            val winPlayer = players.last()
+            val winPlayer = match.opponent
             assertTrue(winPlayer.availableCards.isEmpty())
             assertTrue(winPlayer.prizeCards.contains(batman))
             assertTrue(winPlayer.prizeCards.contains(flash))
@@ -300,21 +276,17 @@ internal class MatchTest {
             val flash = flash.copy(powerstats = flash.powerstats.copy(speed = 0, height = 0))
 
             val match = Match(
-                players = listOf(
-                    iaOpponent.copy(availableCards = listOf(flash)),
-                    player.copy(availableCards = listOf(batman))
-                ),
+                player = iaOpponent.copy(availableCards = listOf(flash)),
+                opponent = player.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).resolveDuel()
 
-            val players = match.players
-
-            val losePlayer = players.first()
+            val losePlayer = match.player
             assertTrue(losePlayer.availableCards.isEmpty())
             assertTrue(losePlayer.prizeCards.isEmpty())
 
-            val winPlayer = players.last()
+            val winPlayer = match.opponent
             assertTrue(winPlayer.availableCards.isEmpty())
             assertTrue(winPlayer.prizeCards.contains(batman))
             assertTrue(winPlayer.prizeCards.contains(flash))
@@ -345,21 +317,17 @@ internal class MatchTest {
             val batman = batman.copy(powerstats = batman.powerstats.copy(combat = 1))
 
             val match = Match(
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    humanOpponent.copy(availableCards = listOf(batman))
-                ),
+                player = player.copy(availableCards = listOf(flash)),
+                opponent = humanOpponent.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).resolveDuel(DuelType.COMBAT)
 
-            val players = match.players
-
-            val tiePlayer = players.first()
+            val tiePlayer = match.player
             assertTrue(tiePlayer.availableCards.isEmpty())
             assertTrue(tiePlayer.prizeCards.contains(flash))
 
-            val otherTiePlayer = players.last()
+            val otherTiePlayer = match.opponent
             assertTrue(otherTiePlayer.availableCards.isEmpty())
             assertTrue(otherTiePlayer.prizeCards.contains(batman))
 
@@ -388,21 +356,17 @@ internal class MatchTest {
             val batman = batman.copy(powerstats = batman.powerstats.copy(speed = 85000000))
 
             val match = Match(
-                players = listOf(
-                    iaOpponent.copy(availableCards = listOf(flash)),
-                    player.copy(availableCards = listOf(batman))
-                ),
+                player = iaOpponent.copy(availableCards = listOf(flash)),
+                opponent = player.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).resolveDuel()
 
-            val players = match.players
-
-            val tiePlayer = players.first()
+            val tiePlayer = match.player
             assertTrue(tiePlayer.availableCards.isEmpty())
             assertTrue(tiePlayer.prizeCards.contains(flash))
 
-            val otherTiePlayer = players.last()
+            val otherTiePlayer = match.opponent
             assertTrue(otherTiePlayer.availableCards.isEmpty())
             assertTrue(otherTiePlayer.prizeCards.contains(batman))
 
@@ -435,10 +399,8 @@ internal class MatchTest {
         fun `Abort match when match is cancelled`() {
             val match = Match(
                 id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    humanOpponent.copy(availableCards = listOf(batman))
-                ),
+                player = player.copy(availableCards = listOf(flash)),
+                opponent = humanOpponent.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.CANCELLED
             )
@@ -452,10 +414,8 @@ internal class MatchTest {
         fun `Abort match when match is finalized`() {
             val match = Match(
                 id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    humanOpponent.copy(availableCards = listOf(batman))
-                ),
+                player = player.copy(availableCards = listOf(flash)),
+                opponent = humanOpponent.copy(availableCards = listOf(batman)),
                 deck = deckMock,
                 status = MatchStatus.FINALIZED
             )
@@ -468,17 +428,16 @@ internal class MatchTest {
         @Test
         fun `Abort match when match is in progress`() {
             val match = Match(
-                players = listOf(player, humanOpponent),
+                player = player,
+                opponent = humanOpponent,
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             )
 
             val abortMatch = match.abortMatch()
             assertEquals(MatchStatus.CANCELLED, abortMatch.status)
-
-            val players = abortMatch.players
-            assertEquals(1, players.first().user.stats.loseCount)
-            assertEquals(1, players.last().user.stats.winCount)
+            assertEquals(1, abortMatch.player.user.stats.loseCount)
+            assertEquals(1, abortMatch.opponent.user.stats.winCount)
         }
 
     }
@@ -489,21 +448,22 @@ internal class MatchTest {
         @Test
         fun `Failure when match is FINALIZED`() {
             assertThrows(InvalidMatchException::class.java) {
-                Match(0L, emptyList(), deckMock, MatchStatus.FINALIZED).validateNotFinalizedOrCancelled()
+                Match(0L, player, humanOpponent, deckMock, MatchStatus.FINALIZED).validateNotFinalizedOrCancelled()
             }
         }
 
         @Test
         fun `Failure when match is CANCELLED`() {
             assertThrows(InvalidMatchException::class.java) {
-                Match(0L, emptyList(), deckMock, MatchStatus.CANCELLED).validateNotFinalizedOrCancelled()
+                Match(0L, player, humanOpponent, deckMock, MatchStatus.CANCELLED).validateNotFinalizedOrCancelled()
             }
         }
 
         @Test
         fun `Success when match is IN_PROGRESS`() {
             Match(
-                players = emptyList(),
+                player = player,
+                opponent = humanOpponent,
                 deck = deckMock,
                 status = MatchStatus.IN_PROGRESS
             ).validateNotFinalizedOrCancelled()
@@ -517,45 +477,44 @@ internal class MatchTest {
         @Test
         fun `Confirm match when the match is pending`() {
             val result = Match(
-                players = listOf(player, humanOpponent),
+                player = player,
+                opponent = humanOpponent,
                 deck = deckMock,
                 status = MatchStatus.PENDING
             ).confirmMatch(true)
             assertEquals(MatchStatus.IN_PROGRESS, result.status)
 
-            val players = result.players
-            assertTrue(players.all {
-                it.user.stats.winCount == 0 && it.user.stats.tieCount == 0 &&
-                        it.user.stats.loseCount == 0 && it.user.stats.inProgressCount == 1
-            })
+            val playerStat = result.player.user.stats
+            assertTrue(playerStat.winCount == 0 && playerStat.tieCount == 0 && playerStat.loseCount == 0 && playerStat.inProgressCount == 1)
+            val opponentStat = result.opponent.user.stats
+            assertTrue(opponentStat.winCount == 0 && opponentStat.tieCount == 0 && opponentStat.loseCount == 0 && opponentStat.inProgressCount == 1)
         }
 
         @Test
         fun `Reject match when the match is pending`() {
             val result = Match(
-                players = listOf(player, humanOpponent),
+                player = player,
+                opponent = humanOpponent,
                 deck = deckMock,
                 status = MatchStatus.PENDING
             ).confirmMatch(false)
             assertEquals(MatchStatus.CANCELLED, result.status)
 
-            val players = result.players
-            assertTrue(players.all {
-                it.user.stats.winCount == 0 && it.user.stats.tieCount == 0 &&
-                        it.user.stats.loseCount == 0 && it.user.stats.inProgressCount == 0
-            })
+            val playerStat = result.player.user.stats
+            assertTrue(playerStat.winCount == 0 && playerStat.tieCount == 0 && playerStat.loseCount == 0 && playerStat.inProgressCount == 0)
+            val opponentStat = result.opponent.user.stats
+            assertTrue(opponentStat.winCount == 0 && opponentStat.tieCount == 0 && opponentStat.loseCount == 0 && opponentStat.inProgressCount == 0)
         }
 
         @Test
         fun `Confirm match when the match is in progress`() {
             assertThrows(InvalidMatchException::class.java) {
-                Match(id = 0L, players = listOf(player, humanOpponent), deck = deckMock, status = MatchStatus.PENDING)
+                Match(id = 0L, player = player, opponent = humanOpponent, deck = deckMock, status = MatchStatus.PENDING)
                     .copy(
                         status = MatchStatus.IN_PROGRESS
                     ).confirmMatch(true)
             }
         }
-
 
     }
 }

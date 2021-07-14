@@ -40,8 +40,13 @@ internal class DaoTest {
 
     private val user = Human(0L, "userName", "fullName", "password", "token", Stats())
     private val player = Player(0L, user, listOf(batman), listOf(flash))
+
+    private val opponentUser =
+        Human(1L, "opponentUserName", "opponentUserFullName", "opponentUserPassword", "opponentUserToken", Stats())
+    private val opponentPlayer = Player(1L, opponentUser, listOf(batman), listOf(flash))
+
     private val playerHistory = PlayerHistory(0L, 0L, batman, listOf(batman), listOf(flash))
-    private val match = Match(0L, listOf(player), deckHistory, MatchStatus.IN_PROGRESS)
+    private val match = Match(0L, player, opponentPlayer, deckHistory, MatchStatus.IN_PROGRESS)
     private val duelHistory =
         DuelHistory(0L, playerHistory, playerHistory.copy(id = 1L, version = 1), DuelType.SPEED, DuelResult.WIN)
     private val ia = IA(0L, "userName", Stats(), IADifficulty.HARD)
@@ -705,8 +710,8 @@ internal class DaoTest {
             assertEquals(match.status.name, foundMatch.status)
             assertEquals(match.deck.id, foundMatch.deckId)
 
-            val players = foundMatch.playerIds
-            assertTrue(players.contains(player.id))
+            assertEquals(player.id, foundMatch.playerId)
+            assertEquals(opponentPlayer.id, foundMatch.opponentId)
         }
 
         @Nested
