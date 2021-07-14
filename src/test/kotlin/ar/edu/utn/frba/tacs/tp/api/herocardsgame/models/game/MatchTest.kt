@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
@@ -10,6 +11,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -506,6 +508,54 @@ internal class MatchTest {
                 status = MatchStatus.IN_PROGRESS
             ).validateNotFinalizedOrCancelled()
         }
+
+    }
+
+    @Nested
+    inner class ConfirmMatch {
+
+        @Test
+        fun `Confirm match when the match is pending`() {
+            val result = Match(
+                players = listOf(player, humanOpponent),
+                deck = deckMock,
+                status = MatchStatus.PENDING
+            ).confirmMatch(true)
+            assertEquals(MatchStatus.IN_PROGRESS, result.status)
+
+            val players = result.players
+            assertTrue(players.all {
+                it.user.stats.winCount == 0 && it.user.stats.tieCount == 0 &&
+                        it.user.stats.loseCount == 0 && it.user.stats.inProgressCount == 1
+            })
+        }
+
+        @Test
+        fun `Reject match when the match is pending`() {
+            val result = Match(
+                players = listOf(player, humanOpponent),
+                deck = deckMock,
+                status = MatchStatus.PENDING
+            ).confirmMatch(false)
+            assertEquals(MatchStatus.CANCELLED, result.status)
+
+            val players = result.players
+            assertTrue(players.all {
+                it.user.stats.winCount == 0 && it.user.stats.tieCount == 0 &&
+                        it.user.stats.loseCount == 0 && it.user.stats.inProgressCount == 0
+            })
+        }
+
+        @Test
+        fun `Confirm match when the match is in progress`() {
+            assertThrows(InvalidMatchException::class.java) {
+                Match(id = 0L, players = listOf(player, humanOpponent), deck = deckMock, status = MatchStatus.PENDING)
+                    .copy(
+                        status = MatchStatus.IN_PROGRESS
+                    ).confirmMatch(true)
+            }
+        }
+
 
     }
 }

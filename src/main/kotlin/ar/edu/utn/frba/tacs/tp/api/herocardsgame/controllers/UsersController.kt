@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*
 
 @Controller
 @CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
-class UsersController(private val userIntegration: UserIntegration) :
+class UsersController(
+    private val userIntegration: UserIntegration
+) :
     AbstractController<UsersController>(UsersController::class.java) {
 
     /**
@@ -32,6 +34,7 @@ class UsersController(private val userIntegration: UserIntegration) :
                 createUserRequest.isAdmin,
                 createUserRequest.buildPasswordHash()
             )
+
             reportResponse(HttpStatus.OK, response.id!!)
         } catch (e: InvalidHumanUserException) {
             reportError(e, HttpStatus.BAD_REQUEST)
@@ -60,10 +63,15 @@ class UsersController(private val userIntegration: UserIntegration) :
      * @return
      */
     @PostMapping("/logOut")
-    fun logOut(@RequestBody tokenMap: HashMap<String, String>): ResponseEntity<Void> =
+    fun logOut(@RequestHeader(value = "x-user-token") token: String): ResponseEntity<Void> =
         try {
-            reportRequest(method = RequestMethod.POST, path = "/logOut", body = tokenMap)
-            userIntegration.disableUserSession(tokenMap["token"]!!)
+            reportRequest(
+                method = RequestMethod.POST,
+                path = "/logOut",
+                requestHeader = hashMapOf("x-user-token" to token),
+                body = null
+            )
+            userIntegration.disableUserSession(token)
             reportResponse(HttpStatus.OK)
         } catch (e: ElementNotFoundException) {
             reportError(e, HttpStatus.BAD_REQUEST)

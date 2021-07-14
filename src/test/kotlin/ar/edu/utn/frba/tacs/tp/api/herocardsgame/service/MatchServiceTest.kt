@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.service
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
@@ -28,13 +29,21 @@ internal class MatchServiceTest {
     private val matchIntegrationMock = mock(MatchIntegration::class.java)
     private val deckServiceMock = mock(DeckService::class.java)
     private val userIntegrationMock = mock(UserIntegration::class.java)
-    private val instance = MatchService(matchIntegrationMock, deckServiceMock, userIntegrationMock)
+    private val notificationClientServiceMock = mock(NotificationClientService::class.java)
+    private val instance =
+        MatchService(matchIntegrationMock, deckServiceMock, userIntegrationMock, notificationClientServiceMock)
 
-    private val user = Human(0L, "userName", "fullName", "password", token = "tokenTest")
+    private val user = Human(0L, "userName", "fullName", "password", "tokenTest")
     private val player = Player(0L, user = user)
 
     private val humanOpponentUser =
-        Human(1L, "humanOpponentUserName", "humanOpponentUserFullName", "humanOpponentUserPassword")
+        Human(
+            1L,
+            "humanOpponentUserName",
+            "humanOpponentUserFullName",
+            "humanOpponentUserPassword",
+            "humanOpponentUserToken"
+        )
     private val humanOpponentPlayer = Player(1L, user = humanOpponentUser)
 
     private val iaOpponentUser =
@@ -54,7 +63,7 @@ internal class MatchServiceTest {
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(emptyList())
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.createMatch(listOf("0", "1"), emptyList(), 0L.toString())
+                instance.createMatch("tokenTest", "1", UserType.HUMAN, 0L.toString())
             }
         }
 
@@ -64,7 +73,7 @@ internal class MatchServiceTest {
             `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.createMatch(listOf("0", "1"), emptyList(), 0L.toString())
+                instance.createMatch("tokenTest", "1", UserType.HUMAN, 0L.toString())
             }
         }
 
@@ -73,32 +82,35 @@ internal class MatchServiceTest {
             val match =
                 Match(
                     deck = deckHistory,
-                    status = MatchStatus.IN_PROGRESS,
+                    status = MatchStatus.PENDING,
                     players = listOf(player, humanOpponentPlayer).map {
                         it.copy(
                             id = null,
                             availableCards = listOf(batman)
-                        ).startMatch()
+                        )
                     })
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
+                .thenReturn(listOf(user))
             `when`(userIntegrationMock.getUserById(1L, UserType.HUMAN)).thenReturn(humanOpponentUser)
             `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id = 0L))
             val randomMatch = match.updateTurn()
             `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id = 0L))
 
-            val result = instance.createMatch(listOf(0L.toString(), 1L.toString()), emptyList(), 0L.toString())
+            val result = instance.createMatch("tokenTest", "1", UserType.HUMAN, 0L.toString())
 
             assertEquals(0L, result.id)
-            assertTrue(result.players.contains(player.copy(id = null, availableCards = listOf(batman)).startMatch()))
+            assertTrue(result.players.contains(player.copy(id = null, availableCards = listOf(batman))))
             assertTrue(
                 result.players.contains(
-                    humanOpponentPlayer.copy(id = null, availableCards = listOf(batman)).startMatch()
+                    humanOpponentPlayer.copy(id = null, availableCards = listOf(batman))
                 )
             )
             assertEquals(deckHistory, result.deck)
-            assertEquals(MatchStatus.IN_PROGRESS, result.status)
+            assertEquals(MatchStatus.PENDING, result.status)
+
+            verify(notificationClientServiceMock, times(1)).notifyCreateMatch("1", UserType.HUMAN, result)
         }
 
         @Test
@@ -111,23 +123,24 @@ internal class MatchServiceTest {
                         it.copy(
                             id = null,
                             availableCards = listOf(batman)
-                        ).startMatch()
+                        )
                     })
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
+                .thenReturn(listOf(user))
             `when`(userIntegrationMock.getUserById(2L, UserType.IA)).thenReturn(iaOpponentUser)
             `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id = 0L))
             val randomMatch = match.updateTurn()
             `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id = 0L))
 
-            val result = instance.createMatch(listOf(0L.toString()), listOf(2L.toString()), 0L.toString())
+            val result = instance.createMatch("tokenTest", "2", UserType.IA, 0L.toString())
 
             assertEquals(0L, result.id)
-            assertTrue(result.players.contains(player.copy(id = null, availableCards = listOf(batman)).startMatch()))
+            assertTrue(result.players.contains(player.copy(id = null, availableCards = listOf(batman))))
             assertTrue(
                 result.players.contains(
-                    iaOpponentPlayer.copy(id = null, availableCards = listOf(batman)).startMatch()
+                    iaOpponentPlayer.copy(id = null, availableCards = listOf(batman))
                 )
             )
             assertEquals(deckHistory, result.deck)
@@ -141,36 +154,38 @@ internal class MatchServiceTest {
 
         @Test
         fun `Build human players with users and deck`() {
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
+                .thenReturn(listOf(user))
             `when`(userIntegrationMock.getUserById(1L, UserType.HUMAN)).thenReturn(humanOpponentUser)
 
-            val players = instance.buildPlayers(listOf("0", "1"), emptyList(), deck)
+            val players = instance.buildPlayers("tokenTest", "1", UserType.HUMAN, deck)
 
             assertEquals(2, players.size)
 
-            val player1 = players.first { it.user == user.startMatch() }
+            val player1 = players.first { it.user == user }
             val availableCards1 = player1.availableCards
             assertEquals(1, availableCards1.size)
 
-            val player2 = players.first { it.user == humanOpponentUser.startMatch() }
+            val player2 = players.first { it.user == humanOpponentUser }
             val availableCards2 = player2.availableCards
             assertEquals(1, availableCards2.size)
         }
 
         @Test
         fun `Build human and ia players with users and deck`() {
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
+                .thenReturn(listOf(user))
             `when`(userIntegrationMock.getUserById(2L, UserType.IA)).thenReturn(iaOpponentUser)
 
-            val players = instance.buildPlayers(listOf("0"), listOf("2"), deck)
+            val players = instance.buildPlayers("tokenTest", "2", UserType.IA, deck)
 
             assertEquals(2, players.size)
 
-            val player1 = players.first { it.user == user.startMatch() }
+            val player1 = players.first { it.user == user }
             val availableCards1 = player1.availableCards
             assertEquals(1, availableCards1.size)
 
-            val player2 = players.first { it.user == iaOpponentUser.startMatch() }
+            val player2 = players.first { it.user == iaOpponentUser }
             val availableCards2 = player2.availableCards
             assertEquals(1, availableCards2.size)
         }
@@ -181,7 +196,7 @@ internal class MatchServiceTest {
             `when`(userIntegrationMock.getUserById(1L, UserType.HUMAN)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.buildPlayers(listOf("0", "1"), emptyList(), deck)
+                instance.buildPlayers("tokenTest", "1", UserType.HUMAN, deck)
             }
         }
 
@@ -191,7 +206,7 @@ internal class MatchServiceTest {
             `when`(userIntegrationMock.getUserById(2L, UserType.IA)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.buildPlayers(listOf("0"), listOf("2"), deck)
+                instance.buildPlayers("tokenTest", "2", UserType.IA, deck)
             }
         }
 
@@ -266,7 +281,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user))
             `when`(matchIntegrationMock.saveMatch(matchResult)).thenReturn(matchResult)
 
             val resultNextDuel = instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
@@ -320,7 +335,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user))
             `when`(matchIntegrationMock.saveMatch(matchResult)).thenReturn(matchResult)
 
             val resultNextDuel = instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
@@ -353,30 +368,10 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user.copy(token = "tokenTest2"))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user.copy(token = "tokenTest2")))
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
-            }
-        }
-
-        @Test
-        fun `IA user without the turn plays next duel`() {
-            val match = Match(
-                id = 0L,
-                players = listOf(
-                    player.copy(availableCards = listOf(flash)),
-                    iaOpponentPlayer.copy(availableCards = listOf(batman))
-                ),
-                deck = deckHistory,
-                status = MatchStatus.IN_PROGRESS
-            )
-
-            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.IA)).thenReturn(iaOpponentUser)
-
-            assertThrows(InvalidTurnException::class.java) {
-                instance.nextDuel(0L.toString())
             }
         }
 
@@ -409,7 +404,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user))
             `when`(matchIntegrationMock.saveMatch(matchResult)).thenReturn(matchResult)
 
             val abortMatch = instance.abortMatch(0L.toString(), "tokenTest")
@@ -444,10 +439,75 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user.copy(token = "tokenTest2"))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(
+                listOf(user.copy(token = "tokenTest2"))
+            )
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.abortMatch(0L.toString(), "tokenTest")
+            }
+        }
+
+    }
+
+    @Nested
+    inner class MatchConfirmation {
+
+        @Test
+        fun `Confirm match when the match is pending`() {
+            val match = Match(
+                id = 0L,
+                players = listOf(player, humanOpponentPlayer),
+                deck = deckHistory,
+                status = MatchStatus.PENDING
+            )
+            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
+
+            instance.matchConfirmation("0", true, humanOpponentUser.token!!)
+            verify(matchIntegrationMock, times(1)).saveMatch(
+                match.copy(
+                    status = MatchStatus.IN_PROGRESS,
+                    players = match.players.map { it.startMatch() }
+                )
+            )
+        }
+
+        @Test
+        fun `Reject match when the match is pending`() {
+            val match = Match(
+                id = 0L,
+                players = listOf(player, humanOpponentPlayer),
+                deck = deckHistory,
+                status = MatchStatus.PENDING
+            )
+            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
+
+            instance.matchConfirmation("0", false, humanOpponentUser.token!!)
+            verify(matchIntegrationMock, times(1)).saveMatch(match.copy(status = MatchStatus.CANCELLED))
+        }
+
+        @Test
+        fun `Confirm match when the match is in progress`() {
+            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(
+                Match(
+                    id = 0L,
+                    players = listOf(player, humanOpponentPlayer),
+                    deck = deckHistory,
+                    status = MatchStatus.IN_PROGRESS
+                )
+            )
+
+            assertThrows(InvalidMatchException::class.java) {
+                instance.matchConfirmation("0", false, humanOpponentUser.token!!)
+            }
+        }
+
+        @Test
+        fun `Confirm match when the match not found`() {
+            `when`(matchIntegrationMock.getMatchById(0L)).thenThrow(ElementNotFoundException::class.java)
+
+            assertThrows(ElementNotFoundException::class.java) {
+                instance.matchConfirmation("0", true, "token")
             }
         }
 

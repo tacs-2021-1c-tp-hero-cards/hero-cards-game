@@ -4,7 +4,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundExcept
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
@@ -18,31 +17,45 @@ import org.springframework.stereotype.Service
 class MatchService(
     private val matchIntegration: MatchIntegration,
     private val deckService: DeckService,
-    private val userIntegration: UserIntegration
+    private val userIntegration: UserIntegration,
+    private val notificationClientService: NotificationClientService
 ) {
 
-    fun createMatch(humanUserIds: List<String>, iaUserIds: List<String>, deckId: String): Match {
+    fun createMatch(token: String, userId: String, userType: UserType, deckId: String): Match {
         val deck =
             deckService.searchDeck(deckId = deckId).firstOrNull() ?: throw ElementNotFoundException(
                 "deck",
                 "id",
                 deckId
             )
-        val players = buildPlayers(humanUserIds, iaUserIds, deck)
-        val newMatch = Match(players = players, deck = DeckHistory(deck), status = MatchStatus.IN_PROGRESS)
-        return matchIntegration.saveMatch(newMatch)
+        val players = buildPlayers(token, userId, userType, deck)
+        val newMatch = matchIntegration.saveMatch(
+            Match(
+                players = players,
+                deck = DeckHistory(deck),
+                status = if (userType == UserType.HUMAN) {
+                    MatchStatus.PENDING
+                } else {
+                    MatchStatus.IN_PROGRESS
+                }
+            )
+        )
+
+        notificationClientService.notifyCreateMatch(userId, userType, newMatch)
+
+        return newMatch
     }
 
-    fun buildPlayers(usersId: List<String>, iaUserIds: List<String>, deck: Deck): List<Player> {
-        val humanPlayers = usersId.map {
-            Player(user = userIntegration.getUserById(it.toLong(), UserType.HUMAN)).startMatch()
-        }
+    fun buildPlayers(token: String, userId: String, userType: UserType, deck: Deck): List<Player> {
 
-        val iaPlayers = iaUserIds.map {
-            Player(user = userIntegration.getUserById(it.toLong(), UserType.IA)).startMatch()
-        }
+        val player = Player(
+            user = userIntegration.searchHumanUserByIdUserNameFullNameOrToken(token = token).firstOrNull()
+                ?: throw ElementNotFoundException("human user", "token", token)
+        )
 
-        var players = humanPlayers.plus(iaPlayers)
+        val opponent = Player(user = userIntegration.getUserById(userId.toLong(), userType))
+
+        var players = listOf(player, opponent)
 
         deck.mixCards().cards.forEach {
             players = dealCards(players, it)
@@ -59,29 +72,36 @@ class MatchService(
 
     fun searchMatchById(matchId: String): Match = matchIntegration.getMatchById(matchId.toLong())
 
-    fun nextDuel(matchId: String, token: String? = null, duelType: DuelType? = null): Match {
+    fun nextDuel(matchId: String, token: String, duelType: DuelType? = null): Match {
         val match = searchMatchById(matchId)
         validateUserDuel(match, token)
-        val newMatch = match.resolveDuel(duelType).updateTurn().updateStatusMatch()
-        return matchIntegration.saveMatch(newMatch)
+        val newMatch = matchIntegration.saveMatch(match.resolveDuel(duelType).updateTurn().updateStatusMatch())
+        notificationClientService.notifyResultDuel(newMatch)
+        return newMatch
     }
 
     fun abortMatch(matchId: String, token: String): Match {
         val match = searchMatchById(matchId)
         validateUserDuel(match, token)
-        val newMatch = match.abortMatch()
-        return matchIntegration.saveMatch(newMatch)
+        val newMatch = matchIntegration.saveMatch(match.abortMatch())
+        notificationClientService.notifyAbort(token, newMatch)
+        return newMatch
     }
 
     private fun validateUserDuel(match: Match, token: String?) {
         val user = match.players.first().user
 
-        if (token == null && user.userType == UserType.HUMAN){
-            throw InvalidTurnException(userName = user.userName)
+        if (user.userType == UserType.HUMAN &&
+            userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id.toString()).first().token != token
+        ) {
+            throw InvalidTurnException(token!!)
         }
+    }
 
-        if (token != null && (userIntegration.getUserById(user.id!!, user.userType) as Human).token != token) {
-            throw InvalidTurnException(token)
-        }
+    fun matchConfirmation(matchId: String, confirmation: Boolean, token: String): Match {
+        val matchFound = searchMatchById(matchId)
+        val newMatch = matchIntegration.saveMatch(matchFound.confirmMatch(confirmation))
+        notificationClientService.notifyConfirmMatch(token, newMatch)
+        return newMatch
     }
 }

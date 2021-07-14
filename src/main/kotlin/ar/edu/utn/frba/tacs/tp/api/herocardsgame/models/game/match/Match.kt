@@ -65,7 +65,19 @@ data class Match(
 
     fun validateNotFinalizedOrCancelled() {
         if (this.status == MatchStatus.FINALIZED || this.status == MatchStatus.CANCELLED) {
-            throw InvalidMatchException(id!!)
+            throw InvalidMatchException(id!!, "finished")
+        }
+    }
+
+    fun confirmMatch(confirmation: Boolean): Match {
+        if (this.status != MatchStatus.PENDING) {
+            throw InvalidMatchException(id!!, this.status.name)
+        }
+
+        return if (confirmation) {
+            copy(players = players.map { it.startMatch() }, status = MatchStatus.IN_PROGRESS)
+        } else {
+            copy(status = MatchStatus.CANCELLED)
         }
     }
 
