@@ -58,7 +58,7 @@ class MatchesController(private val matchService: MatchService) :
         }
 
     @PatchMapping("/matches/{match-id}/confirmation")
-    fun matchConfirmation(
+    fun confirmMatch(
         @PathVariable("match-id") matchId: String,
         @RequestBody matchConfirmationRequest: MatchConfirmationRequest,
         @RequestHeader(value = "x-user-token") token: String
@@ -71,7 +71,7 @@ class MatchesController(private val matchService: MatchService) :
                 requestHeader = hashMapOf("x-user-token" to token),
                 body = null
             )
-            val response = matchService.matchConfirmation(matchId, matchConfirmationRequest.confirm)
+            val response = matchService.matchConfirmation(matchId, matchConfirmationRequest.confirm, token)
             reportResponse(HttpStatus.OK, response)
         } catch (e: ElementNotFoundException) {
             reportError(e, HttpStatus.BAD_REQUEST)

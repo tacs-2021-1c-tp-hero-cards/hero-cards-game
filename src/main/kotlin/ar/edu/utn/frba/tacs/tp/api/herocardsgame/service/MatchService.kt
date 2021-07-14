@@ -4,7 +4,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundExcept
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
@@ -73,37 +72,36 @@ class MatchService(
 
     fun searchMatchById(matchId: String): Match = matchIntegration.getMatchById(matchId.toLong())
 
-    fun nextDuel(matchId: String, token: String? = null, duelType: DuelType? = null): Match {
+    fun nextDuel(matchId: String, token: String, duelType: DuelType? = null): Match {
         val match = searchMatchById(matchId)
         validateUserDuel(match, token)
         val newMatch = matchIntegration.saveMatch(match.resolveDuel(duelType).updateTurn().updateStatusMatch())
-
         notificationClientService.notifyResultDuel(newMatch)
-
         return newMatch
     }
 
     fun abortMatch(matchId: String, token: String): Match {
         val match = searchMatchById(matchId)
         validateUserDuel(match, token)
-        val newMatch = match.abortMatch()
-        return matchIntegration.saveMatch(newMatch)
+        val newMatch = matchIntegration.saveMatch(match.abortMatch())
+        notificationClientService.notifyAbort(token, newMatch)
+        return newMatch
     }
 
     private fun validateUserDuel(match: Match, token: String?) {
         val user = match.players.first().user
 
-        if (user.userType == UserType.HUMAN && (userIntegration.getUserById(
-                user.id!!,
-                user.userType
-            ) as Human).token != token
+        if (user.userType == UserType.HUMAN &&
+            userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id.toString()).first().token != token
         ) {
             throw InvalidTurnException(token!!)
         }
     }
 
-    fun matchConfirmation(matchId: String, confirmation: Boolean): Match {
+    fun matchConfirmation(matchId: String, confirmation: Boolean, token: String): Match {
         val matchFound = searchMatchById(matchId)
-        return matchIntegration.saveMatch(matchFound.confirmMatch(confirmation))
+        val newMatch = matchIntegration.saveMatch(matchFound.confirmMatch(confirmation))
+        notificationClientService.notifyConfirmMatch(token, newMatch)
+        return newMatch
     }
 }

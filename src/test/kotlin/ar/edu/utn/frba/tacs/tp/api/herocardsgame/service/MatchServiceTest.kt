@@ -33,11 +33,17 @@ internal class MatchServiceTest {
     private val instance =
         MatchService(matchIntegrationMock, deckServiceMock, userIntegrationMock, notificationClientServiceMock)
 
-    private val user = Human(0L, "userName", "fullName", "password", token = "tokenTest")
+    private val user = Human(0L, "userName", "fullName", "password", "tokenTest")
     private val player = Player(0L, user = user)
 
     private val humanOpponentUser =
-        Human(1L, "humanOpponentUserName", "humanOpponentUserFullName", "humanOpponentUserPassword")
+        Human(
+            1L,
+            "humanOpponentUserName",
+            "humanOpponentUserFullName",
+            "humanOpponentUserPassword",
+            "humanOpponentUserToken"
+        )
     private val humanOpponentPlayer = Player(1L, user = humanOpponentUser)
 
     private val iaOpponentUser =
@@ -275,7 +281,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user))
             `when`(matchIntegrationMock.saveMatch(matchResult)).thenReturn(matchResult)
 
             val resultNextDuel = instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
@@ -329,7 +335,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user))
             `when`(matchIntegrationMock.saveMatch(matchResult)).thenReturn(matchResult)
 
             val resultNextDuel = instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
@@ -362,7 +368,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user.copy(token = "tokenTest2"))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user.copy(token = "tokenTest2")))
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
@@ -398,7 +404,7 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user))
             `when`(matchIntegrationMock.saveMatch(matchResult)).thenReturn(matchResult)
 
             val abortMatch = instance.abortMatch(0L.toString(), "tokenTest")
@@ -433,7 +439,9 @@ internal class MatchServiceTest {
             )
 
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user.copy(token = "tokenTest2"))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(
+                listOf(user.copy(token = "tokenTest2"))
+            )
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.abortMatch(0L.toString(), "tokenTest")
@@ -455,7 +463,7 @@ internal class MatchServiceTest {
             )
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
 
-            instance.matchConfirmation("0", true)
+            instance.matchConfirmation("0", true, humanOpponentUser.token!!)
             verify(matchIntegrationMock, times(1)).saveMatch(
                 match.copy(
                     status = MatchStatus.IN_PROGRESS,
@@ -474,7 +482,7 @@ internal class MatchServiceTest {
             )
             `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
 
-            instance.matchConfirmation("0", false)
+            instance.matchConfirmation("0", false, humanOpponentUser.token!!)
             verify(matchIntegrationMock, times(1)).saveMatch(match.copy(status = MatchStatus.CANCELLED))
         }
 
@@ -490,7 +498,7 @@ internal class MatchServiceTest {
             )
 
             assertThrows(InvalidMatchException::class.java) {
-                instance.matchConfirmation("0", false)
+                instance.matchConfirmation("0", false, humanOpponentUser.token!!)
             }
         }
 
@@ -499,10 +507,9 @@ internal class MatchServiceTest {
             `when`(matchIntegrationMock.getMatchById(0L)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.matchConfirmation("0", true)
+                instance.matchConfirmation("0", true, "token")
             }
         }
-
 
     }
 

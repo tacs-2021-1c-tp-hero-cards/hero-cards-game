@@ -11,6 +11,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NotifyResponse
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
@@ -62,7 +63,10 @@ internal class NotificationClientServiceTest {
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
                 .thenReturn(listOf(humanOpponentUser))
             instance.notifyCreateMatch("1", UserType.HUMAN, match)
-            verify(templateMock, times(1)).convertAndSend("/topic/user/humanToken", match)
+            verify(templateMock, times(1)).convertAndSend(
+                "/topic/user/humanToken/notifications",
+                NotifyResponse(match.id!!, humanOpponentUser)
+            )
         }
 
         @Test
@@ -85,6 +89,66 @@ internal class NotificationClientServiceTest {
     }
 
     @Nested
+    inner class NotifyConfirmMatch {
+
+        @Test
+        fun `Notify confirm match if opponent is human`() {
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
+                .thenReturn(listOf(user))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
+                .thenReturn(listOf(humanOpponentUser))
+
+            val token = humanOpponentUser.token!!
+            instance.notifyConfirmMatch(token, match)
+
+            verify(templateMock, times(1)).convertAndSend(
+                "/topic/user/$token/confirmations",
+                NotifyResponse(match.id!!, user)
+            )
+        }
+
+        @Test
+        fun `Notify reject match if opponent is human`() {
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
+                .thenReturn(listOf(user))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
+                .thenReturn(listOf(humanOpponentUser))
+
+            val token = humanOpponentUser.token!!
+            instance.notifyConfirmMatch(token, match.copy(status = MatchStatus.CANCELLED))
+
+            verify(templateMock, times(1)).convertAndSend(
+                "/topic/user/$token/rejections",
+                NotifyResponse(match.id!!, user)
+            )
+        }
+
+        @Test
+        fun `Notify confirm match if opponent is ia`() {
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
+                .thenReturn(listOf(user))
+
+            instance.notifyConfirmMatch(user.token!!, match.copy(players = listOf(player, iaOpponentPlayer)))
+
+            verifyNoInteractions(templateMock)
+        }
+
+        @Test
+        fun `Notify reject match if opponent is ia`() {
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
+                .thenReturn(listOf(user))
+
+            instance.notifyConfirmMatch(
+                user.token!!,
+                match.copy(players = listOf(player, iaOpponentPlayer), status = MatchStatus.CANCELLED)
+            )
+
+            verifyNoInteractions(templateMock)
+        }
+
+    }
+
+    @Nested
     inner class NotifyResultDuel {
 
         @Test
@@ -92,8 +156,6 @@ internal class NotificationClientServiceTest {
             val duelResult = DuelHistory(player, humanOpponentPlayer, DuelType.SPEED, DuelResult.WIN)
             val duelResultOpponent = DuelHistory(humanOpponentPlayer, player, DuelType.SPEED, DuelResult.LOSE)
 
-            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
-                .thenReturn(listOf(user))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
                 .thenReturn(listOf(humanOpponentUser))
 
@@ -104,25 +166,7 @@ internal class NotificationClientServiceTest {
                 )
             )
 
-            verify(templateMock, times(1)).convertAndSend("/topic/user/userToken", duelResult)
-            verify(templateMock, times(1)).convertAndSend("/topic/user/humanToken", duelResultOpponent)
-        }
-
-        @Test
-        fun `Notify result if player win against a ia`() {
-            val duelResult = DuelHistory(player, humanOpponentPlayer, DuelType.SPEED, DuelResult.WIN)
-
-            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
-                .thenReturn(listOf(user))
-
-            instance.notifyResultDuel(
-                match.copy(
-                    players = listOf(iaOpponentPlayer, player),
-                    duelHistoryList = listOf(duelResult)
-                )
-            )
-
-            verify(templateMock, times(1)).convertAndSend("/topic/user/userToken", duelResult)
+            verify(templateMock, times(1)).convertAndSend("/topic/user/humanToken/nextDuel", duelResultOpponent)
         }
 
         @Test
@@ -130,8 +174,6 @@ internal class NotificationClientServiceTest {
             val duelResult = DuelHistory(player, humanOpponentPlayer, DuelType.SPEED, DuelResult.LOSE)
             val duelResultOpponent = DuelHistory(humanOpponentPlayer, player, DuelType.SPEED, DuelResult.WIN)
 
-            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
-                .thenReturn(listOf(user))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
                 .thenReturn(listOf(humanOpponentUser))
 
@@ -142,25 +184,7 @@ internal class NotificationClientServiceTest {
                 )
             )
 
-            verify(templateMock, times(1)).convertAndSend("/topic/user/userToken", duelResult)
-            verify(templateMock, times(1)).convertAndSend("/topic/user/humanToken", duelResultOpponent)
-        }
-
-        @Test
-        fun `Notify result if player lose against a ia`() {
-            val duelResult = DuelHistory(player, humanOpponentPlayer, DuelType.SPEED, DuelResult.LOSE)
-
-            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
-                .thenReturn(listOf(user))
-
-            instance.notifyResultDuel(
-                match.copy(
-                    players = listOf(iaOpponentPlayer, player),
-                    duelHistoryList = listOf(duelResult)
-                )
-            )
-
-            verify(templateMock, times(1)).convertAndSend("/topic/user/userToken", duelResult)
+            verify(templateMock, times(1)).convertAndSend("/topic/user/humanToken/nextDuel", duelResultOpponent)
         }
 
         @Test
@@ -168,8 +192,6 @@ internal class NotificationClientServiceTest {
             val duelResult = DuelHistory(player, humanOpponentPlayer, DuelType.SPEED, DuelResult.TIE)
             val duelResultOpponent = DuelHistory(humanOpponentPlayer, player, DuelType.SPEED, DuelResult.TIE)
 
-            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
-                .thenReturn(listOf(user))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
                 .thenReturn(listOf(humanOpponentUser))
 
@@ -180,27 +202,39 @@ internal class NotificationClientServiceTest {
                 )
             )
 
-            verify(templateMock, times(1)).convertAndSend("/topic/user/userToken", duelResult)
-            verify(templateMock, times(1)).convertAndSend("/topic/user/humanToken", duelResultOpponent)
-        }
-
-        @Test
-        fun `Notify result if player tie against a ia`() {
-            val duelResult = DuelHistory(player, humanOpponentPlayer, DuelType.SPEED, DuelResult.TIE)
-
-            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
-                .thenReturn(listOf(user))
-
-            instance.notifyResultDuel(
-                match.copy(
-                    players = listOf(iaOpponentPlayer, player),
-                    duelHistoryList = listOf(duelResult)
-                )
-            )
-
-            verify(templateMock, times(1)).convertAndSend("/topic/user/userToken", duelResult)
+            verify(templateMock, times(1)).convertAndSend("/topic/user/humanToken/nextDuel", duelResultOpponent)
         }
 
     }
 
+    @Nested
+    inner class NotifyAbort {
+
+        @Test
+        fun `Notify abort match if opponent is human`() {
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
+                .thenReturn(listOf(user))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
+                .thenReturn(listOf(humanOpponentUser))
+
+            val token = humanOpponentUser.token!!
+            instance.notifyAbort(token, match)
+
+            verify(templateMock, times(1)).convertAndSend(
+                "/topic/user/$token/abortions",
+                NotifyResponse(match.id!!, user)
+            )
+        }
+
+        @Test
+        fun `Notify abort match if opponent is ia`() {
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "0"))
+                .thenReturn(listOf(user))
+
+            instance.notifyAbort(user.token!!, match.copy(players = listOf(player, iaOpponentPlayer)))
+
+            verifyNoInteractions(templateMock)
+        }
+
+    }
 }

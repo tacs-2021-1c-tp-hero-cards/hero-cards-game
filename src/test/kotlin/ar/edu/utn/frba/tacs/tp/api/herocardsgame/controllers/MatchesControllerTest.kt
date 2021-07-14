@@ -433,7 +433,7 @@ internal class MatchesControllerTest {
 
             val matchResponse = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
-            val response = instance.matchConfirmation("0", MatchConfirmationRequest(true), getUserNotTurn(matchResponse).token!!)
+            val response = instance.confirmMatch("0", MatchConfirmationRequest(true), getUserNotTurn(matchResponse).token!!)
             assertEquals(200, response.statusCodeValue)
             val match = response.body!!
             assertEquals(0L, match.id)
@@ -453,7 +453,7 @@ internal class MatchesControllerTest {
 
             instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
-            val response = instance.matchConfirmation("0", MatchConfirmationRequest(false), user.token!!)
+            val response = instance.confirmMatch("0", MatchConfirmationRequest(false), user.token!!)
             assertEquals(200, response.statusCodeValue)
             val match = response.body!!
             assertEquals(0L, match.id)
@@ -472,16 +472,16 @@ internal class MatchesControllerTest {
             dao.saveDeck(deck)
 
             val matchResponse = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
-            instance.matchConfirmation("0", MatchConfirmationRequest(true), getUserTurn(matchResponse).token!!)
+            instance.confirmMatch("0", MatchConfirmationRequest(true), getUserTurn(matchResponse).token!!)
 
-            val response = instance.matchConfirmation("0", MatchConfirmationRequest(false), getUserNotTurn(matchResponse).token!!)
+            val response = instance.confirmMatch("0", MatchConfirmationRequest(false), getUserNotTurn(matchResponse).token!!)
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }
 
         @Test
         fun `Confirm match when the match not found`() {
-            val response = instance.matchConfirmation("0", MatchConfirmationRequest(false), "token")
+            val response = instance.confirmMatch("0", MatchConfirmationRequest(false), "token")
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }
