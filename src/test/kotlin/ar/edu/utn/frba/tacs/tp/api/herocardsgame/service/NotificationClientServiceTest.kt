@@ -57,7 +57,7 @@ internal class NotificationClientServiceTest {
             instance.notifyCreateMatch("1", UserType.HUMAN, match)
             verify(templateMock, times(1)).convertAndSend(
                 "/topic/user/humanToken/notifications",
-                NotifyResponse(match.id!!, humanOpponentUser)
+                NotifyResponse(match.id!!, user)
             )
         }
 
@@ -102,7 +102,7 @@ internal class NotificationClientServiceTest {
             instance.notifyConfirmMatch(token, match)
 
             verify(templateMock, times(1)).convertAndSend(
-                "/topic/user/$token/confirmations",
+                "/topic/user/${user.token}/confirmations",
                 NotifyResponse(match.id!!, user)
             )
         }
@@ -131,7 +131,7 @@ internal class NotificationClientServiceTest {
             instance.notifyConfirmMatch(token, match.copy(status = MatchStatus.CANCELLED))
 
             verify(templateMock, times(1)).convertAndSend(
-                "/topic/user/$token/rejections",
+                "/topic/user/${user.token}/rejections",
                 NotifyResponse(match.id!!, user)
             )
         }
