@@ -39,7 +39,7 @@ class NotificationClientService(val userIntegration: UserIntegration, val templa
                         "rejections"
                     }
 
-                this.template.convertAndSend("/topic/user/$token/$destination", NotifyResponse(match.id!!, it))
+                this.template.convertAndSend("/topic/user/${it.token}/$destination", NotifyResponse(match.id!!, it))
             }
     }
 
