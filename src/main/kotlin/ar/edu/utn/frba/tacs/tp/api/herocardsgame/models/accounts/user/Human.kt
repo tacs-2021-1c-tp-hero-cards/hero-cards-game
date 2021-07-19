@@ -9,8 +9,8 @@ data class Human(
     val password: String,
     val token: String? = null,
     override val stats: Stats = Stats(),
-    override val userType: UserType = UserType.HUMAN,
-    val isAdmin: Boolean = false
+    val isAdmin: Boolean = false,
+    override val userType: UserType = UserType.HUMAN
 ) : User {
     override fun winMatch(): Human = copy(stats = stats.addWinMatch())
     override fun tieMatch(): Human = copy(stats = stats.addTieMatch())

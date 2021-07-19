@@ -5,7 +5,8 @@ plugins {
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     kotlin("jvm") version "1.4.32"
     kotlin("plugin.spring") version "1.4.32"
-    id("jacoco")
+    kotlin("plugin.allopen") version "1.4.32"
+    kotlin("plugin.jpa") version "1.4.32"
 }
 
 group = "ar.edu.utn.frba.tacs.tp.api"
@@ -18,11 +19,14 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
+    implementation("org.springframework.boot:spring-boot-starter")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
     implementation("com.google.code.gson", "gson", "2.8.6")
@@ -44,6 +48,8 @@ dependencies {
     implementation("org.webjars:stomp-websocket:2.3.3")
     implementation("org.webjars:bootstrap:3.3.7")
     implementation("org.webjars:jquery:3.1.1-1")
+
+    runtimeOnly("com.h2database:h2")
 }
 
 tasks.withType<KotlinCompile> {
@@ -53,18 +59,14 @@ tasks.withType<KotlinCompile> {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-    finalizedBy(tasks.jacocoTestReport)
+allOpen {
+    annotation("javax.persistence.Entity")
+    annotation("javax.persistence.Embeddable")
+    annotation("javax.persistence.MappedSuperclass")
 }
 
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-    reports {
-        xml.isEnabled = false
-        csv.isEnabled = false
-        html.destination = layout.buildDirectory.dir("jacocoHtml").get().asFile
-    }
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 tasks.withType<Test> {

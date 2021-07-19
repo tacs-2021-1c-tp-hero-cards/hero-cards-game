@@ -5,7 +5,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.MatchIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
@@ -54,7 +55,7 @@ class MatchService(
                 ?: throw ElementNotFoundException("human user", "token", token)
         )
 
-        val opponent = Player(user = userIntegration.getUserById(userId.toLong(), userType))
+        val opponent = Player(user = userIntegration.getUserById(userId.toLong()))
 
         var players = listOf(player, opponent)
 

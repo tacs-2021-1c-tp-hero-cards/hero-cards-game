@@ -9,12 +9,12 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
@@ -70,7 +70,7 @@ internal class MatchServiceTest {
         @Test
         fun `Create match with user that non exist`() {
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenThrow(ElementNotFoundException::class.java)
+            `when`(userIntegrationMock.getUserById(0L)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.createMatch("tokenTest", "1", UserType.HUMAN, 0L.toString())
@@ -90,7 +90,7 @@ internal class MatchServiceTest {
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
                 .thenReturn(listOf(user))
-            `when`(userIntegrationMock.getUserById(1L, UserType.HUMAN)).thenReturn(humanOpponentUser)
+            `when`(userIntegrationMock.getUserById(1L)).thenReturn(humanOpponentUser)
             `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id = 0L))
             val randomMatch = match.updateTurn()
             `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id = 0L))
@@ -117,7 +117,7 @@ internal class MatchServiceTest {
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
                 .thenReturn(listOf(user))
-            `when`(userIntegrationMock.getUserById(2L, UserType.IA)).thenReturn(iaOpponentUser)
+            `when`(userIntegrationMock.getUserById(2L)).thenReturn(iaOpponentUser)
             `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id = 0L))
             val randomMatch = match.updateTurn()
             `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id = 0L))
@@ -138,7 +138,7 @@ internal class MatchServiceTest {
         fun `Build human players with users and deck`() {
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
                 .thenReturn(listOf(user))
-            `when`(userIntegrationMock.getUserById(1L, UserType.HUMAN)).thenReturn(humanOpponentUser)
+            `when`(userIntegrationMock.getUserById(1L)).thenReturn(humanOpponentUser)
 
             val players = instance.buildPlayers("tokenTest", "1", UserType.HUMAN, deck)
 
@@ -157,7 +157,7 @@ internal class MatchServiceTest {
         fun `Build human and ia players with users and deck`() {
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
                 .thenReturn(listOf(user))
-            `when`(userIntegrationMock.getUserById(2L, UserType.IA)).thenReturn(iaOpponentUser)
+            `when`(userIntegrationMock.getUserById(2L)).thenReturn(iaOpponentUser)
 
             val players = instance.buildPlayers("tokenTest", "2", UserType.IA, deck)
 
@@ -174,8 +174,8 @@ internal class MatchServiceTest {
 
         @Test
         fun `Build players with a human that does not exist`() {
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
-            `when`(userIntegrationMock.getUserById(1L, UserType.HUMAN)).thenThrow(ElementNotFoundException::class.java)
+            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
+            `when`(userIntegrationMock.getUserById(1L)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.buildPlayers("tokenTest", "1", UserType.HUMAN, deck)
@@ -184,8 +184,8 @@ internal class MatchServiceTest {
 
         @Test
         fun `Build players with a ia that does not exist`() {
-            `when`(userIntegrationMock.getUserById(0L, UserType.HUMAN)).thenReturn(user)
-            `when`(userIntegrationMock.getUserById(2L, UserType.IA)).thenThrow(ElementNotFoundException::class.java)
+            `when`(userIntegrationMock.getUserById(0L)).thenReturn(user)
+            `when`(userIntegrationMock.getUserById(2L)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.buildPlayers("tokenTest", "2", UserType.IA, deck)

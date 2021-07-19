@@ -3,25 +3,23 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.*
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.CardEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckHistoryEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.DuelHistoryEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.MatchEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player.PlayerEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player.PlayerHistoryEntity
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.HumanEntity
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.IAEntity
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -53,14 +51,6 @@ internal class DaoTest {
 
     @Nested
     inner class CalculateId {
-
-        @Test
-        fun calculateIdToUser() {
-            instance = Dao(humanMap = hashMapOf(0L to HumanEntity(human = user), 1L to HumanEntity(human = user)))
-
-            val calculateId = instance.calculateId(user)
-            assertEquals(2, calculateId)
-        }
 
         @Test
         fun calculateIdToDeck() {
@@ -107,19 +97,6 @@ internal class DaoTest {
             assertEquals(4, calculateId)
         }
 
-        @Test
-        fun calculateIdToIA() {
-            instance = Dao(
-                iaMap = hashMapOf(
-                    0L to IAEntity(ia = ia),
-                    1L to IAEntity(ia = ia)
-                )
-            )
-
-            val calculateId = instance.calculateId(ia)
-            assertEquals(2, calculateId)
-        }
-
     }
 
     @Nested
@@ -145,195 +122,6 @@ internal class DaoTest {
 
             val calculateId = instance.calculateVersion(playerHistory)
             assertEquals(3, calculateId)
-        }
-
-    }
-
-    @Nested
-    inner class HumanEntityTest {
-
-        @Nested
-        inner class GetAllHuman {
-
-            @Test
-            fun `Get all users if non exist users in the database`() {
-                instance = Dao(humanMap = hashMapOf())
-
-                val allUser = instance.getAllHuman()
-                assertTrue(allUser.isEmpty())
-            }
-
-            @Test
-            fun `Get all users if exist users in the database`() {
-                val userEntity = HumanEntity(human = user)
-                instance = Dao(humanMap = hashMapOf(0L to userEntity))
-
-                val allUser = instance.getAllHuman()
-                assertEquals(1, allUser.size)
-
-                val found = allUser.first()
-                assertEquals(userEntity, found)
-            }
-
-        }
-
-        @Nested
-        inner class GetHumanById {
-
-            @Test
-            fun `Search user by id and exists`() {
-                val userEntity = HumanEntity(human = user)
-                instance = Dao(humanMap = hashMapOf(0L to userEntity))
-
-                val found = instance.getHumanById(0L)
-                assertEquals(userEntity, found)
-            }
-
-            @Test
-            fun `Search user by id and non exists`() {
-                instance = Dao(humanMap = hashMapOf())
-                assertNull(instance.getHumanById(0L))
-            }
-
-        }
-
-        @Nested
-        inner class SaveHuman {
-
-            @Test
-            fun `Save user with all fields defined`() {
-                instance = Dao()
-                instance.saveHuman(user)
-
-                val allUsers = instance.getAllHuman()
-                assertEquals(1, allUsers.size)
-
-                val foundUser = allUsers.first()
-                assertEquals(user.id, foundUser.id)
-                assertEquals(user.userName, foundUser.userName)
-                assertEquals(user.fullName, foundUser.fullName)
-                assertEquals(user.password, foundUser.password)
-                assertEquals(user.token, foundUser.token)
-                assertEquals(user.stats.winCount, foundUser.winCount)
-                assertEquals(user.stats.tieCount, foundUser.tieCount)
-                assertEquals(user.stats.loseCount, foundUser.loseCount)
-                assertEquals(user.stats.inProgressCount, foundUser.inProgressCount)
-            }
-
-            @Test
-            fun `Save admin with all fields defined`() {
-                instance = Dao()
-                instance.saveHuman(user.copy(isAdmin = true))
-
-                val allUsers = instance.getAllHuman()
-                assertEquals(1, allUsers.size)
-
-                val foundUser = allUsers.first()
-                assertEquals(user.id, foundUser.id)
-                assertEquals(user.userName, foundUser.userName)
-                assertEquals(user.fullName, foundUser.fullName)
-                assertEquals(user.password, foundUser.password)
-                assertEquals(user.token, foundUser.token)
-                assertEquals(user.stats.winCount, foundUser.winCount)
-                assertEquals(user.stats.tieCount, foundUser.tieCount)
-                assertEquals(user.stats.loseCount, foundUser.loseCount)
-                assertEquals(user.stats.inProgressCount, foundUser.inProgressCount)
-                assertTrue(foundUser.isAdmin)
-            }
-
-            @Test
-            fun `Save user without defined token`() {
-                instance = Dao()
-                instance.saveHuman(user.copy(token = null))
-
-                val allUsers = instance.getAllHuman()
-                assertEquals(1, allUsers.size)
-
-                val foundUser = allUsers.first()
-                assertEquals(user.id, foundUser.id)
-                assertEquals(user.userName, foundUser.userName)
-                assertEquals(user.fullName, foundUser.fullName)
-                assertEquals(user.password, foundUser.password)
-                assertNull(foundUser.token)
-                assertEquals(user.stats.winCount, foundUser.winCount)
-                assertEquals(user.stats.tieCount, foundUser.tieCount)
-                assertEquals(user.stats.loseCount, foundUser.loseCount)
-                assertEquals(user.stats.inProgressCount, foundUser.inProgressCount)
-            }
-
-        }
-
-    }
-
-    @Nested
-    inner class IAEntityTest {
-
-        @Nested
-        inner class GetAllIA {
-
-            @Test
-            fun `Get all ias if non exist ias in the database`() {
-                instance = Dao(iaMap = hashMapOf())
-
-                val allIA = instance.getAllIA()
-                assertTrue(allIA.isEmpty())
-            }
-
-            @Test
-            fun `Get all ias if exist ias in the database`() {
-                val iaEntity = IAEntity(ia = ia)
-                instance = Dao(iaMap = hashMapOf(0L to iaEntity))
-
-                val allIA = instance.getAllIA()
-                assertEquals(1, allIA.size)
-
-                val found = allIA.first()
-                assertEquals(iaEntity, found)
-            }
-
-        }
-
-        @Nested
-        inner class GetIAById {
-
-            @Test
-            fun `Search ia by id and exists`() {
-                val iaEntity = IAEntity(ia = ia)
-                instance = Dao(iaMap = hashMapOf(0L to iaEntity))
-
-                val found = instance.getIAById(0L)
-                assertEquals(iaEntity, found)
-            }
-
-            @Test
-            fun `Search ia by id and non exists`() {
-                instance = Dao(iaMap = hashMapOf())
-                assertNull(instance.getIAById(0L))
-            }
-
-        }
-
-        @Nested
-        inner class SaveIA {
-
-            @Test
-            fun `Save ia with all fields defined`() {
-                instance = Dao()
-                instance.saveIA(ia)
-
-                val allIA = instance.getAllIA()
-                assertEquals(1, allIA.size)
-
-                val foundIA = allIA.first()
-                assertEquals(ia.id, foundIA.id)
-                assertEquals(ia.userName, foundIA.userName)
-                assertEquals(ia.stats.winCount, foundIA.winCount)
-                assertEquals(ia.stats.tieCount, foundIA.tieCount)
-                assertEquals(ia.stats.loseCount, foundIA.loseCount)
-                assertEquals(ia.stats.inProgressCount, foundIA.inProgressCount)
-                assertEquals(ia.difficulty.name, foundIA.duelDifficulty)
-            }
-
         }
 
     }

@@ -4,7 +4,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.*
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Authentication
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.ActivateUserSessionRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateIARequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateUserRequest
@@ -87,7 +87,7 @@ class UsersController(
         @RequestParam(value = "user-name") userName: String? = null,
         @RequestParam(value = "full-name") fullName: String? = null,
         @RequestParam(value = "token") token: String? = null
-    ): ResponseEntity<List<Human>> {
+    ): ResponseEntity<List<User>> {
         reportRequest(
             method = RequestMethod.GET,
             path = "/users/human/search",
@@ -132,7 +132,7 @@ class UsersController(
         @RequestParam(value = "user-id") userId: String? = null,
         @RequestParam(value = "user-name") userName: String? = null,
         @RequestParam(value = "difficulty") difficulty: String? = null
-    ): ResponseEntity<List<IA>> {
+    ): ResponseEntity<List<User>> {
         reportRequest(
             method = RequestMethod.GET,
             path = "/users/ia/search",

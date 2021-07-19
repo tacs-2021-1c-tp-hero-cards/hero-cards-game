@@ -1,20 +1,25 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.*
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidDifficultyException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidHumanUserException
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidIAUserException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.User
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.UserFactory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.UserRepository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.HashService
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import org.springframework.stereotype.Component
 
 @Component
-class UserIntegration(private val dao: Dao) {
+class UserIntegration(private val factory: UserFactory, private val repository: UserRepository) {
 
     fun createUser(userName: String, fullName: String, isAdmin: Boolean, password: String): User {
-        if (dao.getAllHuman().any { it.userName == userName && it.fullName == fullName }) {
+        if (repository.findHumanByIdAndUserNameAndFullNameAndToken(userName = userName, fullName = fullName)
+                .isNotEmpty()
+        ) {
             throw InvalidHumanUserException(userName, fullName)
         }
 
@@ -22,7 +27,7 @@ class UserIntegration(private val dao: Dao) {
     }
 
     fun createUser(userName: String, difficulty: String): User {
-        if (dao.getAllIA().any { it.userName == userName }) {
+        if (repository.findIAByUserNameAndDifficulty(userName, difficulty) != null) {
             throw InvalidIAUserException(userName, difficulty)
         }
 
@@ -34,37 +39,23 @@ class UserIntegration(private val dao: Dao) {
     }
 
     fun activateUserSession(userName: String, password: String): Human {
-        val user = dao.getAllHuman().find { it.userName == userName && it.password == password }
+        val user = repository.findHumanByUserNameAndPassword(userName, password)?.toHumanModel()
             ?: throw ElementNotFoundException("user", "userName", userName)
-
-        return saveUser(
-            user.toModel().copy(token = HashService.calculateToken(user.id, userName, user.fullName))
-        ) as Human
+        return saveUser(user.copy(token = HashService.calculateToken(user.id!!, userName, user.fullName))) as Human
     }
 
     fun disableUserSession(token: String) {
-        val user = dao.getAllHuman().find { it.token == token }
-            ?: throw ElementNotFoundException("user", "token", token)
-
-        saveUser(user.toModel().copy(token = null))
+        val user =
+            repository.findHumanByToken(token)?.toHumanModel() ?: throw ElementNotFoundException("user", "token", token)
+        saveUser(user.copy(token = null))
     }
 
-    fun getUserById(id: Long, userType: UserType): User =
-        if (userType == UserType.HUMAN) {
-            dao.getHumanById(id)?.toModel() ?: throw ElementNotFoundException("human user", "id", id.toString())
-        } else {
-            dao.getIAById(id)?.toModel() ?: throw ElementNotFoundException("ia user", "id", id.toString())
-        }
+    fun getUserById(id: Long): User =
+        repository.getById(id)?.toModel() ?: throw ElementNotFoundException("user", "id", id.toString())
 
+    fun getAllUser(): List<User> = repository.findAll().map { it.toModel() }
 
-    fun getAllUser(): List<User> =
-        dao.getAllHuman().map { it.toModel() }.plus(dao.getAllIA().map { it.toModel() })
-
-    fun saveUser(user: User): User =
-        when (user) {
-            is Human -> dao.saveHuman(user).toModel()
-            else -> dao.saveIA(user as IA).toModel()
-        }
+    fun saveUser(user: User) = repository.save(factory.toEntity(user)).toModel()
 
     fun searchHumanUserByIdUserNameFullNameOrToken(
         id: String? = null,
@@ -72,25 +63,11 @@ class UserIntegration(private val dao: Dao) {
         fullName: String? = null,
         token: String? = null,
     ): List<Human> =
-        dao.getAllHuman()
-            .asSequence()
-            .filter { userName.isNullOrBlank() || it.userName.equals(userName, true) }
-            .filter { fullName.isNullOrBlank() || it.fullName.equals(fullName, true) }
-            .filter { id.isNullOrBlank() || it.id.toString() == id }
-            .filter { token.isNullOrBlank() || token == it.token }
-            .map { it.toModel() }
-            .toList()
+        repository.findHumanByIdAndUserNameAndFullNameAndToken(id, userName, fullName, token).map { it.toHumanModel() }
 
     fun searchIAUserByIdUserNameFullNameOrToken(
         id: String? = null,
         userName: String? = null,
         difficulty: String? = null
-    ): List<IA> =
-        dao.getAllIA()
-            .asSequence()
-            .filter { userName.isNullOrBlank() || it.userName.equals(userName, true) }
-            .filter { id.isNullOrBlank() || it.id.toString() == id }
-            .filter { difficulty.isNullOrBlank() || it.duelDifficulty.equals(difficulty, true) }
-            .map { it.toModel() }
-            .toList()
+    ): List<User> = repository.findIAByIdAndUserNameAndDifficulty(id, userName, difficulty).map { it.toModel() }
 }

@@ -6,33 +6,42 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidHumanUserExcep
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidIAUserException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.UserFactory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.UserRepository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.runner.RunWith
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.test.context.junit4.SpringRunner
 
+@RunWith(SpringRunner::class)
+@DataJpaTest
 internal class UserIntegrationTest {
 
-    lateinit var dao: Dao
     lateinit var instance: UserIntegration
+    lateinit var factory: UserFactory
 
-    private val userId = 0L
+    @Autowired
+    lateinit var repository: UserRepository
+    
     private val userName = "userNameTest"
     private val fullName = "fullNameTest"
     private val password = "passwordTest"
     private val token = "tokenTest"
     private val difficulty = IADifficulty.HARD
 
-    private val human = Human(id = userId, userName = userName, fullName = fullName, password = password, token = token)
-    private val ia = IA(id = userId, userName = userName, difficulty = difficulty)
+    private val human =
+        Human(id = 1L, userName = userName, fullName = fullName, password = password, token = token)
+    private val ia = IA(id = 2L, userName = userName, difficulty = difficulty)
 
     @BeforeEach
     fun init() {
-        dao = Dao()
-        instance = UserIntegration(dao)
+        factory = UserFactory()
+        instance = UserIntegration(factory, repository)
     }
 
     @Nested
@@ -42,52 +51,51 @@ internal class UserIntegrationTest {
         fun `Create new human`() {
             val user = instance.createUser(userName, fullName, false, password)
 
-            val allUser = dao.getAllHuman().map { it.toModel() }
+            val allUser = repository.findAllBy()
             assertEquals(1, allUser.size)
-
             val userFound = allUser.first()
             assertEquals(user, userFound)
-            assertFalse(userFound.isAdmin)
-
         }
 
         @Test
         fun `Create new admin`() {
             val user = instance.createUser(userName, fullName, true, password)
 
-            val allUser = dao.getAllHuman().map { it.toModel() }
+            val allUser = repository.findAllBy()
             assertEquals(1, allUser.size)
-
             val userFound = allUser.first()
             assertEquals(user, userFound)
-            assertTrue(userFound.isAdmin)
         }
 
         @Test
         fun `Create new human if another human has same userName but different fullName`() {
-            dao.saveHuman(human.copy(fullName = "fullNameTest2"))
+            val user = human.copy(fullName = "fullNameTest2")
+            repository.save(factory.toEntity(user))
 
-            val user = instance.createUser(userName, fullName, false, password)
+            val newUser = instance.createUser(userName, fullName, false, password)
 
-            val allUser = dao.getAllHuman().map { it.toModel() }
+            val allUser = repository.findAllBy()
             assertEquals(2, allUser.size)
             assertTrue(allUser.contains(user))
+            assertTrue(allUser.contains(newUser))
         }
 
         @Test
         fun `Create new human if another human has same fullName but different userName`() {
-            dao.saveHuman(human.copy(userName = "userNameTest2"))
+            val user = human.copy(userName = "userNameTest2")
+            repository.save(factory.toEntity(user))
 
-            val user = instance.createUser(userName, fullName, false, password)
+            val newUser = instance.createUser(userName, fullName, false, password)
 
-            val allUser = dao.getAllHuman().map { it.toModel() }
+            val allUser = repository.findAllBy().map { it.toModel() }
             assertEquals(2, allUser.size)
             assertTrue(allUser.contains(user))
+            assertTrue(allUser.contains(newUser))
         }
 
         @Test
         fun `Create human and it already exists`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             assertThrows(InvalidHumanUserException::class.java) {
                 instance.createUser(userName, fullName, false, password)
@@ -103,14 +111,14 @@ internal class UserIntegrationTest {
         fun `Create new ia`() {
             val user = instance.createUser(userName, difficulty.name)
 
-            val allUser = dao.getAllIA().map { it.toModel() }
+            val allUser = repository.findAllBy()
             assertEquals(1, allUser.size)
             assertTrue(allUser.contains(user))
         }
 
         @Test
         fun `Create ia and it already exists`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
 
             assertThrows(InvalidIAUserException::class.java) {
                 instance.createUser(userName, difficulty.name)
@@ -131,12 +139,12 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Activate session of an existing user`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             instance.activateUserSession(userName, password)
 
-            val foundUser = dao.getAllHuman().first().toModel()
-            assertEquals(userId, foundUser.id)
+            val foundUser = repository.findAllBy().first() as Human
+            assertEquals(1L, foundUser.id)
             assertEquals(userName, foundUser.userName)
             assertEquals(fullName, foundUser.fullName)
             assertEquals(password, foundUser.password)
@@ -151,7 +159,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Non activate section if only username matches`() {
-            dao.saveHuman(human.copy(password = "passwordTest2"))
+            repository.save(factory.toEntity(human.copy(password = "passwordTest2")))
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.activateUserSession(userName, password)
@@ -160,7 +168,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Non activate section if only password matches`() {
-            dao.saveHuman(human.copy(userName = "userNameTest2"))
+            repository.save(factory.toEntity(human.copy(userName = "userNameTest2")))
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.activateUserSession(userName, password)
@@ -181,15 +189,15 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Disable session of an existing user`() {
-            dao.saveHuman(human.copy(token = token))
+            repository.save(factory.toEntity(human.copy(token = token)))
 
             instance.disableUserSession(token)
 
-            val allUser = dao.getAllHuman()
+            val allUser = repository.findAllBy()
             assertEquals(1, allUser.size)
 
-            val foundUser = allUser.first().toModel()
-            assertEquals(userId, foundUser.id)
+            val foundUser = allUser.first() as Human
+            assertEquals(1L, foundUser.id)
             assertEquals(userName, foundUser.userName)
             assertEquals(fullName, foundUser.fullName)
             assertEquals(password, foundUser.password)
@@ -204,7 +212,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Non disable section if token does not match`() {
-            dao.saveHuman(human.copy(token = "tokenTest2"))
+            repository.save(factory.toEntity(human.copy(token = "tokenTest2")))
 
             assertThrows(ElementNotFoundException::class.java) {
                 instance.disableUserSession(token)
@@ -225,25 +233,25 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Get human by id`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
-            val userById = instance.getUserById(userId, UserType.HUMAN)
+            val userById = instance.getUserById(1L)
             assertEquals(human, userById)
         }
 
         @Test
         fun `Get human by id but not exist`() {
-            dao.saveHuman(human.copy(id = 1L))
+            repository.save(factory.toEntity(human.copy(id = 1L)))
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getUserById(userId, UserType.HUMAN)
+                instance.getUserById(1L)
             }
         }
 
         @Test
         fun `Get human by id but no human exists in the system`() {
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getUserById(userId, UserType.HUMAN)
+                instance.getUserById(1L)
             }
         }
 
@@ -254,25 +262,25 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Get ia by id`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
 
-            val userById = instance.getUserById(userId, UserType.IA)
+            val userById = instance.getUserById(1L)
             assertEquals(ia, userById)
         }
 
         @Test
         fun `Get ia by id but not exist`() {
-            dao.saveIA(ia.copy(id = 1L))
+            repository.save(factory.toEntity(ia.copy(id = 1L)))
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getUserById(userId, UserType.IA)
+                instance.getUserById(1L)
             }
         }
 
         @Test
         fun `Get ia by id but no ia exists in the system`() {
             assertThrows(ElementNotFoundException::class.java) {
-                instance.getUserById(userId, UserType.IA)
+                instance.getUserById(1L)
             }
         }
 
@@ -280,15 +288,17 @@ internal class UserIntegrationTest {
 
     @Test
     fun getAllUser() {
-        dao.saveHuman(human)
-        dao.saveHuman(human.copy(id = 1L))
-        dao.saveIA(ia)
-        dao.saveIA(ia.copy(id = 1L))
+        repository.save(factory.toEntity(human.copy(id = 1L)))
+        repository.save(factory.toEntity(human.copy(id = 2L)))
+        repository.save(factory.toEntity(ia.copy(id = 3L)))
+        repository.save(factory.toEntity(ia.copy(id = 4L)))
 
         val allUser = instance.getAllUser()
         assertEquals(4, allUser.size)
-        assertTrue(allUser.contains(human))
-        assertTrue(allUser.contains(ia))
+        assertTrue(allUser.contains(human.copy(id = 1L)))
+        assertTrue(allUser.contains(human.copy(id = 2L)))
+        assertTrue(allUser.contains(ia.copy(id = 3L)))
+        assertTrue(allUser.contains(ia.copy(id = 4L)))
     }
 
     @Nested
@@ -298,11 +308,11 @@ internal class UserIntegrationTest {
         fun `Save user type human`() {
             instance.saveUser(human.copy(token = token))
 
-            val allUser = dao.getAllHuman()
-            assertEquals(1, dao.getAllHuman().size)
+            val allUser = repository.findAllBy()
+            assertEquals(1, allUser.size)
 
-            val foundUser = allUser.first().toModel()
-            assertEquals(userId, foundUser.id)
+            val foundUser = allUser.first() as Human
+            assertEquals(1L, foundUser.id)
             assertEquals(userName, foundUser.userName)
             assertEquals(fullName, foundUser.fullName)
             assertEquals(password, foundUser.password)
@@ -319,11 +329,13 @@ internal class UserIntegrationTest {
         fun `Save user type ia`() {
             instance.saveUser(ia)
 
-            val allUser = dao.getAllIA()
-            assertEquals(1, dao.getAllIA().size)
+            repository.findAllBy()
 
-            val foundUser = allUser.first().toModel()
-            assertEquals(userId, foundUser.id)
+            val allUser = repository.findAllBy()
+            assertEquals(1, allUser.size)
+
+            val foundUser = allUser.first() as IA
+            assertEquals(1L, foundUser.id)
             assertEquals(userName, foundUser.userName)
             assertEquals(difficulty, foundUser.difficulty)
 
@@ -341,17 +353,17 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by id and find one`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
-            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(id = userId.toString())
+            val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(id = 1L.toString())
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(human))
+            assertEquals(human ,usersFound.first())
         }
 
         @Test
         fun `Search user by id and can't find any`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(id = "1")
 
@@ -367,27 +379,27 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by userName and find one`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(userName = "userNameTest")
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(human))
+            assertEquals(human ,usersFound.first())
         }
 
         @Test
         fun `Search user by userName ignoreCase and find one`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(userName = "USERNAMETEST")
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(human))
+            assertEquals(human ,usersFound.first())
         }
 
         @Test
         fun `Search user by userName and can't find any`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
 
@@ -403,27 +415,27 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by fullName and find one`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(fullName = "fullNameTest")
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(human))
+            assertEquals(human ,usersFound.first())
         }
 
         @Test
         fun `Search user by fullName ignoreCase and find one`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(fullName = "FULLNAMETEST")
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(human))
+            assertEquals(human ,usersFound.first())
         }
 
         @Test
         fun `Search user by fullName and can't find any`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(fullName = "fullNameTest2")
 
@@ -439,17 +451,17 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by token and find one`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(token = token.toString())
 
             assertEquals(1, usersFound.size)
-            assertTrue(usersFound.contains(human))
+            assertEquals(human ,usersFound.first())
         }
 
         @Test
         fun `Search user by token and can't find any`() {
-            dao.saveHuman(human)
+            repository.save(factory.toEntity(human))
 
             val usersFound = instance.searchHumanUserByIdUserNameFullNameOrToken(token = "token-test")
 
@@ -463,9 +475,9 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by id and find one`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
 
-            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(id = userId.toString())
+            val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(id = 1L.toString())
 
             assertEquals(1, usersFound.size)
             assertTrue(usersFound.contains(ia))
@@ -473,7 +485,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by id and can't find any`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
 
             val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(id = "1")
 
@@ -489,7 +501,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by userName and find one`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
 
             val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(userName = "userNameTest")
 
@@ -499,7 +511,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by userName ignoreCase and find one`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
 
             val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(userName = "USERNAMETEST")
 
@@ -509,7 +521,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by userName and can't find any`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
 
             val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(userName = "userNameTest2")
 
@@ -525,7 +537,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by difficulty and find one`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
 
             val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(difficulty = "HARD")
 
@@ -535,7 +547,7 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by difficulty ignoreCase and find one`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
 
             val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(difficulty = "hard")
 
@@ -545,7 +557,9 @@ internal class UserIntegrationTest {
 
         @Test
         fun `Search user by difficulty and can't find any`() {
-            dao.saveIA(ia)
+            repository.save(factory.toEntity(ia))
+
+            repository.save(factory.toEntity(ia))
 
             val usersFound = instance.searchIAUserByIdUserNameFullNameOrToken(difficulty = "hards")
 

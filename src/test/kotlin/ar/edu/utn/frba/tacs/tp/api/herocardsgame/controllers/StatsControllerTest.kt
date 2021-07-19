@@ -3,8 +3,8 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.UserFactory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.UserRepository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.StatsService
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import org.junit.jupiter.api.Assertions.*
@@ -15,7 +15,8 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 
 internal class StatsControllerTest {
 
-    private lateinit var dao: Dao
+    private lateinit var userFactory: UserFactory
+    private lateinit var userRepository: UserRepository
     private lateinit var instance: StatsController
 
     private var human = Human(userName = "humanName", fullName = "fullName", password = "password")
@@ -28,12 +29,14 @@ internal class StatsControllerTest {
         context.register(StatsController::class.java)
         context.register(StatsService::class.java)
         context.register(UserIntegration::class.java)
-        context.register(Dao::class.java)
+        context.register(UserRepository::class.java)
+        context.register(UserFactory::class.java)
 
         context.refresh()
         context.start()
 
-        dao = context.getBean(Dao::class.java)
+        userFactory = context.getBean(UserFactory::class.java)
+        userRepository = context.getBean(UserRepository::class.java)
         instance = context.getBean(StatsController::class.java)
     }
 
@@ -49,8 +52,8 @@ internal class StatsControllerTest {
 
         @Test
         fun `User not play any match`() {
-            dao.saveHuman(human)
-
+            userRepository.save(userFactory.toEntity(human))
+            
             val response = instance.getStatsByUser("0", "HUMAN")
             assertEquals(200, response.statusCodeValue)
             val stats = response.body!!
@@ -66,7 +69,7 @@ internal class StatsControllerTest {
 
         @Test
         fun `User plays multiple matches`() {
-            dao.saveHuman(human.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch())
+            userRepository.save(userFactory.toEntity(human.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch()))
 
             val response = instance.getStatsByUser("0", "HUMAN")
             assertEquals(200, response.statusCodeValue)
@@ -95,7 +98,7 @@ internal class StatsControllerTest {
 
         @Test
         fun `User not play any match`() {
-            dao.saveIA(ia)
+            userRepository.save(userFactory.toEntity(ia))
 
             val response = instance.getStatsByUser("0", "IA")
             assertEquals(200, response.statusCodeValue)
@@ -112,7 +115,7 @@ internal class StatsControllerTest {
 
         @Test
         fun `User plays multiple matches`() {
-            dao.saveIA(ia.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch())
+            userRepository.save(userFactory.toEntity(ia.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch()))
 
             val response = instance.getStatsByUser("0", "IA")
             assertEquals(200, response.statusCodeValue)
@@ -141,9 +144,9 @@ internal class StatsControllerTest {
 
         @Test
         fun `Users plays multiple matches`() {
-            dao.saveHuman(human.startMatch().loseMatch().tieMatch())
-            dao.saveIA(ia.winMatch())
-            dao.saveHuman(human.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch())
+            userRepository.save(userFactory.toEntity(human.startMatch().loseMatch().tieMatch()))
+            userRepository.save(userFactory.toEntity(ia.winMatch()))
+            userRepository.save(userFactory.toEntity(human.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch()))
 
             val response = instance.getScoreBoards()
             assertEquals(200, response.statusCodeValue)

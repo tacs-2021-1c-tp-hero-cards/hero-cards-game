@@ -1,11 +1,9 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.service
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidUserTypeException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -21,30 +19,21 @@ internal class StatsServiceTest {
     private val human = Human(0L, "humanName", "fullName", "password")
     private val ia = IA(0L, "iaName", difficulty = IADifficulty.HARD)
 
-    @Test
-    fun `Can't build statistics with non-existent user type`(){
-        assertThrows(InvalidUserTypeException::class.java) {
-            instance.buildUserStats("0", "ROBOT")
-        }
-    }
-
     @Nested
     inner class BuildHumanStats {
 
         @Test
         fun `User not exist`() {
-            `when`(userServiceMock.getUserById(0L, UserType.HUMAN)).thenThrow(ElementNotFoundException::class.java)
-
             assertThrows(ElementNotFoundException::class.java) {
-                instance.buildUserStats("0", "HUMAN")
+                instance.buildUserStats("0")
             }
         }
 
         @Test
         fun `User not play any match`() {
-            `when`(userServiceMock.getUserById(0L, UserType.HUMAN)).thenReturn(human)
+            `when`(userServiceMock.getUserById(0L)).thenReturn(human)
 
-            val stats = instance.buildUserStats("0", "HUMAN")
+            val stats = instance.buildUserStats("0")
             assertEquals("humanName", stats.userName)
             assertEquals(0, stats.inProgressCount)
             assertEquals(0, stats.loseCount)
@@ -56,11 +45,11 @@ internal class StatsServiceTest {
 
         @Test
         fun `User plays multiple matches`() {
-            `when`(userServiceMock.getUserById(0L, UserType.HUMAN)).thenReturn(
+            `when`(userServiceMock.getUserById(0L)).thenReturn(
                 human.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch()
             )
 
-            val stats = instance.buildUserStats("0", "HUMAN")
+            val stats = instance.buildUserStats("0")
             assertEquals("humanName", stats.userName)
             assertEquals(1, stats.inProgressCount)
             assertEquals(2, stats.loseCount)
@@ -77,18 +66,18 @@ internal class StatsServiceTest {
 
         @Test
         fun `User not exist`() {
-            `when`(userServiceMock.getUserById(0L, UserType.IA)).thenThrow(ElementNotFoundException::class.java)
+            `when`(userServiceMock.getUserById(0L)).thenThrow(ElementNotFoundException::class.java)
 
             assertThrows(ElementNotFoundException::class.java) {
-                instance.buildUserStats("0", "IA")
+                instance.buildUserStats("0")
             }
         }
 
         @Test
         fun `User not play any match`() {
-            `when`(userServiceMock.getUserById(0L, UserType.IA)).thenReturn(ia)
+            `when`(userServiceMock.getUserById(0L)).thenReturn(ia)
 
-            val stats = instance.buildUserStats("0", "IA")
+            val stats = instance.buildUserStats("0")
             assertEquals("iaName", stats.userName)
             assertEquals(0, stats.inProgressCount)
             assertEquals(0, stats.loseCount)
@@ -100,11 +89,11 @@ internal class StatsServiceTest {
 
         @Test
         fun `User plays multiple matches`() {
-            `when`(userServiceMock.getUserById(0L, UserType.IA)).thenReturn(
+            `when`(userServiceMock.getUserById(0L)).thenReturn(
                 ia.startMatch().loseMatch().loseMatch().tieMatch().winMatch().winMatch()
             )
 
-            val stats = instance.buildUserStats("0", "IA")
+            val stats = instance.buildUserStats("0")
             assertEquals("iaName", stats.userName)
             assertEquals(1, stats.inProgressCount)
             assertEquals(2, stats.loseCount)

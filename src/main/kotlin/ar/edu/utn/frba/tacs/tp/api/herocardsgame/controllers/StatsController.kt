@@ -38,7 +38,7 @@ class StatsController(val statsService: StatsService) :
                 pathVariables = hashMapOf("user-id" to userId, "user-type" to userType)
             )
 
-            val response = statsService.buildUserStats(userId, userType)
+            val response = statsService.buildUserStats(userId)
             reportResponse(HttpStatus.OK, response)
         } catch (e: ElementNotFoundException) {
             reportError(e, HttpStatus.NOT_FOUND)
