@@ -97,13 +97,15 @@ internal class NotificationClientServiceTest {
                 .thenReturn(listOf(user))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
                 .thenReturn(listOf(humanOpponentUser))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = "humanToken"))
+                .thenReturn(listOf(humanOpponentUser))
 
             val token = humanOpponentUser.token!!
             instance.notifyConfirmMatch(token, match)
 
             verify(templateMock, times(1)).convertAndSend(
                 "/topic/user/${user.token}/confirmations",
-                NotifyResponse(match.id!!, user)
+                NotifyResponse(match.id!!, humanOpponentUser)
             )
         }
 
@@ -126,13 +128,15 @@ internal class NotificationClientServiceTest {
                 .thenReturn(listOf(user))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
                 .thenReturn(listOf(humanOpponentUser))
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = "humanToken"))
+                .thenReturn(listOf(humanOpponentUser))
 
             val token = humanOpponentUser.token!!
             instance.notifyConfirmMatch(token, match.copy(status = MatchStatus.CANCELLED))
 
             verify(templateMock, times(1)).convertAndSend(
                 "/topic/user/${user.token}/rejections",
-                NotifyResponse(match.id!!, user)
+                NotifyResponse(match.id!!, humanOpponentUser)
             )
         }
 

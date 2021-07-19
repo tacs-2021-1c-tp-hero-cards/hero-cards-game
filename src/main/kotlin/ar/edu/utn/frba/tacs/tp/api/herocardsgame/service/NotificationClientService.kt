@@ -39,7 +39,9 @@ class NotificationClientService(val userIntegration: UserIntegration, val templa
                         "rejections"
                     }
 
-                this.template.convertAndSend("/topic/user/${it.token}/$destination", NotifyResponse(match.id!!, it))
+                val oponent = userIntegration.searchHumanUserByIdUserNameFullNameOrToken(token = token).first()
+
+                this.template.convertAndSend("/topic/user/${it.token}/$destination", NotifyResponse(match.id!!, oponent))
             }
     }
 
