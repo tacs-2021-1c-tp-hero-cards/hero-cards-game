@@ -18,8 +18,10 @@ class NotificationClientService(val userIntegration: UserIntegration, val templa
                 ?: throw ElementNotFoundException("human user", "id", userId)
             val token = user.token
 
+            val oponent = if (match.opponent.user.id.toString() != userId) match.opponent.user else match.player.user
+
             if (token != null) {
-                this.template.convertAndSend("/topic/user/$token/notifications", NotifyResponse(match.id!!, user))
+                this.template.convertAndSend("/topic/user/$token/notifications", NotifyResponse(match.id!!, oponent))
             }
         }
     }
@@ -37,7 +39,9 @@ class NotificationClientService(val userIntegration: UserIntegration, val templa
                         "rejections"
                     }
 
-                this.template.convertAndSend("/topic/user/$token/$destination", NotifyResponse(match.id!!, it))
+                val oponent = userIntegration.searchHumanUserByIdUserNameFullNameOrToken(token = token).first()
+
+                this.template.convertAndSend("/topic/user/${it.token}/$destination", NotifyResponse(match.id!!, oponent))
             }
     }
 
