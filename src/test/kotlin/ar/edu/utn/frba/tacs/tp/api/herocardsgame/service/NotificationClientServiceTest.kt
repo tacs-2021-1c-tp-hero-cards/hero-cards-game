@@ -11,6 +11,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NotifyDuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NotifyResponse
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
@@ -184,7 +186,7 @@ internal class NotificationClientServiceTest {
         @Test
         fun `Notify result if player win against a human with token`() {
             val duelResult = DuelHistory(player, humanOpponentPlayer, DuelType.SPEED, DuelResult.WIN)
-            val duelResultOpponent = DuelHistory(humanOpponentPlayer, player, DuelType.SPEED, DuelResult.LOSE)
+            val duelResultOpponent = NotifyDuelResult(match.id, PlayerHistory(humanOpponentPlayer), PlayerHistory(player), DuelType.SPEED, DuelResult.LOSE)
 
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
                 .thenReturn(listOf(humanOpponentUser))
@@ -213,7 +215,7 @@ internal class NotificationClientServiceTest {
         @Test
         fun `Notify result if player lose against a human with token`() {
             val duelResult = DuelHistory(player, humanOpponentPlayer, DuelType.SPEED, DuelResult.LOSE)
-            val duelResultOpponent = DuelHistory(humanOpponentPlayer, player, DuelType.SPEED, DuelResult.WIN)
+            val duelResultOpponent = NotifyDuelResult(match.id, PlayerHistory(humanOpponentPlayer), PlayerHistory(player), DuelType.SPEED, DuelResult.WIN)
 
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
                 .thenReturn(listOf(humanOpponentUser))
@@ -250,7 +252,7 @@ internal class NotificationClientServiceTest {
         @Test
         fun `Notify result if player tie against a human with token`() {
             val duelResult = DuelHistory(player, humanOpponentPlayer, DuelType.SPEED, DuelResult.TIE)
-            val duelResultOpponent = DuelHistory(humanOpponentPlayer, player, DuelType.SPEED, DuelResult.TIE)
+            val duelResultOpponent = NotifyDuelResult(match.id, PlayerHistory(humanOpponentPlayer), PlayerHistory(player), DuelType.SPEED, DuelResult.TIE)
 
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(id = "1"))
                 .thenReturn(listOf(humanOpponentUser))

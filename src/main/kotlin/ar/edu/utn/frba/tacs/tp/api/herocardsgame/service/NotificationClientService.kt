@@ -5,6 +5,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NotifyDuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NotifyResponse
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
@@ -52,11 +53,14 @@ class NotificationClientService(val userIntegration: UserIntegration, val templa
                 .filter { it.token != null }
                 .map {
                     val duelResult = match.duelHistoryList.last()
-                    val opponentDuelResult = duelResult.copy(
+                    val opponentDuelResult = NotifyDuelResult(
+                        matchId = match.id,
                         player = duelResult.opponent,
                         opponent = duelResult.player,
-                        duelResult = duelResult.duelResult.calculateOppositeResult()
+                        duelResult = duelResult.duelResult.calculateOppositeResult(),
+                        duelType = duelResult.duelType
                     )
+
                     this.template.convertAndSend("/topic/user/${it.token}/nextDuel", opponentDuelResult)
                 }
         }
