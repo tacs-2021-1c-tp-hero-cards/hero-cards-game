@@ -11,7 +11,7 @@ data class DeckHistoryEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
     val name: String,
-    val cardIds: String,
+    val cardIds: String
 ) {
     constructor(deckHistory: DeckHistory) : this(
         id =  deckHistory.deckVersion,

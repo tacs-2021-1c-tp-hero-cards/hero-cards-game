@@ -11,10 +11,10 @@ class MatchFactory(private val userFactory: UserFactory) {
     fun toEntity(match: Match) =
         MatchEntity(
             id = match.id,
-            playerUser = userFactory.toEntity(match.player.user),
+            player = listOf(userFactory.toEntity(match.player.user),userFactory.toEntity(match.opponent.user)),
+            playerIdTurn = match.player.user.id!!,
             playerAvailableCardIds = match.player.availableCards.joinToString(separator = ",") { it.id.toString() },
             playerPrizeCardIds = match.player.prizeCards.joinToString(separator = ",") { it.id.toString() },
-            opponentUser = userFactory.toEntity(match.opponent.user),
             opponentAvailableCardIds = match.opponent.availableCards.joinToString(
                 separator =
                 ","

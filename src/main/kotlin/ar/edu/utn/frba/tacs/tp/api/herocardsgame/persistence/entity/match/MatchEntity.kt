@@ -14,12 +14,11 @@ data class MatchEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-    @ManyToOne
-    val playerUser: UserEntity,
+    @ManyToMany(cascade = [CascadeType.MERGE])
+    val player: List<UserEntity>,
+    val playerIdTurn: Long,
     val playerAvailableCardIds: String,
     val playerPrizeCardIds: String,
-    @ManyToOne
-    val opponentUser: UserEntity,
     val opponentAvailableCardIds: String,
     val opponentPrizeCardIds: String,
     val deckId: Long,
@@ -31,8 +30,8 @@ data class MatchEntity(
     val duelHistory: List<DuelHistoryEntity>
 ){
     fun toModel(cardModels: List<Card>): Match {
-        val playerModel = toPlayerModel(playerUser, playerAvailableCardIds, playerPrizeCardIds, cardModels)
-        val opponentModel = toPlayerModel(opponentUser, opponentAvailableCardIds, opponentPrizeCardIds, cardModels)
+        val playerModel = toPlayerModel(player.first { it.id == playerIdTurn }, playerAvailableCardIds, playerPrizeCardIds, cardModels)
+        val opponentModel = toPlayerModel(player.first { it.id != playerIdTurn }, opponentAvailableCardIds, opponentPrizeCardIds, cardModels)
         val deckHistoryModel = deckHistory.toModel(deckId, cardModels)
         val duelHistoryModel = duelHistory.map { it.toModel(cardModels) }
         return Match(id, playerModel, opponentModel, deckHistoryModel, status, duelHistoryModel)
