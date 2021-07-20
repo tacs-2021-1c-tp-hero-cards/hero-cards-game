@@ -32,7 +32,7 @@ class DeckService(
 
     fun searchDeck(deckId: String? = null, deckName: String? = null): List<Deck> {
         log.info("Search deck with id: $deckId or deckName: $deckName")
-        return deckIntegration.getDeckByIdOrName(deckId?.toLong(), deckName)
+        return deckIntegration.getDeckByIdOrName(deckId, deckName)
     }
 
     fun updateDeck(deckId: String, name: String?, cardIds: List<String>): Deck {

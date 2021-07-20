@@ -44,12 +44,12 @@ internal class MatchesControllerTest {
     private lateinit var userRepository: UserRepository
     private lateinit var superHeroIntegrationMock: SuperHeroIntegration
     private lateinit var instance: MatchesController
-    
+
     private val batman = BuilderContextUtils.buildBatman()
     private val batmanII = BuilderContextUtils.buildBatmanII()
 
     private val deck =
-        Deck(id = 0L, version = 0L, name = "name", cards = listOf(batman, batmanII))
+        Deck(id = 0L, name = "name", cards = listOf(batman, batmanII))
 
     private val deckHistory = DeckHistory(deck)
 
@@ -112,10 +112,10 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Create match with 2 humans and 2 cards`() {
-            
+
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val response = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
             assertEquals(201, response.statusCodeValue)
@@ -130,7 +130,7 @@ internal class MatchesControllerTest {
         fun `Create match with human and ia and 2 cards`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(iaOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val response = instance.createMatch(CreateMatchRequest("2", "IA", "0"), "token")
             assertEquals(201, response.statusCodeValue)
@@ -159,7 +159,7 @@ internal class MatchesControllerTest {
 
         @Test
         fun `Not create match by empty users`() {
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val response = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
             assertEquals(400, response.statusCodeValue)
@@ -170,7 +170,7 @@ internal class MatchesControllerTest {
         fun `Not create match by invalid user id`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val response = instance.createMatch(CreateMatchRequest("2", "IA", "0"), "token")
             assertEquals(400, response.statusCodeValue)
@@ -186,7 +186,7 @@ internal class MatchesControllerTest {
         fun `Play next duel with type COMBAT`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val matchResult = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -207,11 +207,11 @@ internal class MatchesControllerTest {
         fun `Play next duel when userType is IA`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(iaOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             var matchResult = instance.createMatch(CreateMatchRequest("2", "IA", "0"), "token").body!!
 
-            if(matchResult.player.user.userType != UserType.IA){
+            if (matchResult.player.user.userType != UserType.IA) {
                 matchResult = matchResult.copy(player = matchResult.opponent, opponent = matchResult.player)
                 dao.saveMatch(matchResult)
             }
@@ -243,7 +243,7 @@ internal class MatchesControllerTest {
         fun `Not play next duel by invalid match id`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -256,7 +256,7 @@ internal class MatchesControllerTest {
         fun `Not play next duel by match is CANCELLED`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
             instance.abortMatch("0", "token")
@@ -270,7 +270,7 @@ internal class MatchesControllerTest {
         fun `Not play next duel by not is user turn`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val matchResult = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -288,7 +288,7 @@ internal class MatchesControllerTest {
         fun `Search match by valid match id`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -305,7 +305,7 @@ internal class MatchesControllerTest {
         fun `Not search match by invalid match id`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -331,7 +331,7 @@ internal class MatchesControllerTest {
         fun `Abort match by match id`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val matchResponse = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -341,8 +341,8 @@ internal class MatchesControllerTest {
             assertEquals(0L, match.id)
             assertEquals(deckHistory, match.deck)
             assertEquals(MatchStatus.CANCELLED, match.status)
-            assertTrue(match.player.user.stats.loseCount == 1 )
-            assertTrue(match.opponent.user.stats.winCount == 1 )
+            assertTrue(match.player.user.stats.loseCount == 1)
+            assertTrue(match.opponent.user.stats.winCount == 1)
         }
 
         @Test
@@ -356,7 +356,7 @@ internal class MatchesControllerTest {
         fun `Not abort match by invalid match id`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -369,7 +369,7 @@ internal class MatchesControllerTest {
         fun `Not abort match by match is CANCELLED`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
             instance.abortMatch("0", "token2")
@@ -383,7 +383,7 @@ internal class MatchesControllerTest {
         fun `Not abort match by not is user turn`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val matchResponse = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -402,7 +402,7 @@ internal class MatchesControllerTest {
         fun `Confirm match when the match is pending`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val matchResponse = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -415,17 +415,17 @@ internal class MatchesControllerTest {
             assertEquals(MatchStatus.IN_PROGRESS, match.status)
 
             val playerStats = match.player.user.stats
-            assertTrue(playerStats.winCount == 0 && playerStats.tieCount == 0 && playerStats.loseCount == 0 && playerStats.inProgressCount == 1 )
+            assertTrue(playerStats.winCount == 0 && playerStats.tieCount == 0 && playerStats.loseCount == 0 && playerStats.inProgressCount == 1)
 
             val opponentStats = match.player.user.stats
-            assertTrue(opponentStats.winCount == 0 && opponentStats.tieCount == 0 && opponentStats.loseCount == 0 && opponentStats.inProgressCount == 1 )
+            assertTrue(opponentStats.winCount == 0 && opponentStats.tieCount == 0 && opponentStats.loseCount == 0 && opponentStats.inProgressCount == 1)
         }
 
         @Test
         fun `Reject match when the match is pending`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
 
@@ -437,17 +437,17 @@ internal class MatchesControllerTest {
             assertEquals(MatchStatus.CANCELLED, match.status)
 
             val playerStats = match.player.user.stats
-            assertTrue(playerStats.winCount == 0 && playerStats.tieCount == 0 && playerStats.loseCount == 0 && playerStats.inProgressCount == 0 )
+            assertTrue(playerStats.winCount == 0 && playerStats.tieCount == 0 && playerStats.loseCount == 0 && playerStats.inProgressCount == 0)
 
             val opponentStats = match.player.user.stats
-            assertTrue(opponentStats.winCount == 0 && opponentStats.tieCount == 0 && opponentStats.loseCount == 0 && opponentStats.inProgressCount == 0 )
+            assertTrue(opponentStats.winCount == 0 && opponentStats.tieCount == 0 && opponentStats.loseCount == 0 && opponentStats.inProgressCount == 0)
         }
 
         @Test
         fun `Confirm match when the match is in progress`() {
             userRepository.save(userFactory.toEntity(user))
             userRepository.save(userFactory.toEntity(humanOpponent))
-            dao.saveDeck(deck)
+            //dao.saveDeck(deck)
 
             val matchResponse = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
             instance.confirmMatch("0", MatchConfirmationRequest(true), getUserTurn(matchResponse).token!!)

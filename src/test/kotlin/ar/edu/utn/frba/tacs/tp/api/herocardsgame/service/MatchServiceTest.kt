@@ -52,7 +52,7 @@ internal class MatchServiceTest {
 
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
-    private val deck = Deck(0L, 0L, "nameDeck", listOf(batman, batman))
+    private val deck = Deck(0L, "nameDeck", listOf(batman, batman))
     private val deckHistory = DeckHistory(deck)
 
     @Nested

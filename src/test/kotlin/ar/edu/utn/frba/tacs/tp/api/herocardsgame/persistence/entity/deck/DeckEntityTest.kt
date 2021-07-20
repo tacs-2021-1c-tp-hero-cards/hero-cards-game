@@ -16,90 +16,61 @@ internal class DeckEntityTest {
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
     private val cards: List<Card> = listOf(batman, flash)
-    private val cardsId: List<Long> = listOf(69L, 2L)
-    private val deckHistoryList = listOf(DeckHistory(id, version, name, cards))
+    private val cardsId: String = "69,2"
+    private val deckHistory = DeckHistory(id, version, name, cards)
 
     @Nested
     inner class ToEntity {
 
         @Test
-        fun `Build entity without id with model with id`() {
-            val model = Deck(id, version, name, cards)
-
-            val entity = DeckEntity(deck = model)
-            assertEquals(id, entity.id)
-            assertEquals(version, entity.version)
-            assertEquals(name, entity.name)
-            assertEquals(cardsId, entity.cardIds)
-            assertTrue(entity.deckHistoryIds.isEmpty())
-        }
-
-        @Test
         fun `Build entity with id`() {
-            val model = Deck(null, null, name, cards)
-
-            val entity = DeckEntity(id = id, version = version, deck = model)
-            assertEquals(id, entity.id)
-            assertEquals(version, entity.version)
-            assertEquals(name, entity.name)
-            assertEquals(cardsId, entity.cardIds)
-            assertTrue(entity.deckHistoryIds.isEmpty())
-        }
-
-        @Test
-        fun `Build entity without version with model with version`() {
-            val model = Deck(id, version, name, cards)
+            val model = Deck(id, name, cards)
 
             val entity = DeckEntity(deck = model)
             assertEquals(id, entity.id)
-            assertEquals(version, entity.version)
             assertEquals(name, entity.name)
             assertEquals(cardsId, entity.cardIds)
-            assertTrue(entity.deckHistoryIds.isEmpty())
+            assertTrue(entity.deckHistory.isEmpty())
         }
 
         @Test
-        fun `Build entity with version`() {
-            val model = Deck(null, null, name, cards)
+        fun `Build entity without id`() {
+            val model = Deck(null, name, cards)
 
-            val entity = DeckEntity(id = id, version = version, deck = model)
-            assertEquals(id, entity.id)
-            assertEquals(version, entity.version)
+            val entity = DeckEntity(deck = model)
+            assertNull(entity.id)
             assertEquals(name, entity.name)
             assertEquals(cardsId, entity.cardIds)
-            assertTrue(entity.deckHistoryIds.isEmpty())
+            assertTrue(entity.deckHistory.isEmpty())
         }
 
         @Test
         fun `Build entity with deck historty`() {
-            val model = Deck(id, 1L, "newName", cards, deckHistoryList)
+            val model = Deck(id,  "newName", cards, listOf(deckHistory))
 
             val entity = DeckEntity(deck = model)
             assertEquals(id, entity.id)
-            assertEquals(1L, entity.version)
             assertEquals("newName", entity.name)
             assertEquals(cardsId, entity.cardIds)
 
-            val deckHistoryIds = entity.deckHistoryIds
-            assertTrue(deckHistoryIds.contains(version))
+            val deckHistoryIds = entity.deckHistory
+            assertTrue(deckHistoryIds.contains(DeckHistoryEntity(deckHistory)))
         }
 
     }
 
     @Test
     fun toModel() {
-        val entity = DeckEntity(deck = Deck(0L, 1L, "newName", cards, deckHistoryList))
+        val entity = DeckEntity(deck = Deck(0L, "newName", cards, listOf(deckHistory)))
 
-        val model = entity.toModel(listOf(batman, flash), deckHistoryList)
+        val model = entity.toModel(listOf(batman, flash))
         assertEquals(id, model.id)
-        assertEquals(1L, model.version)
         assertEquals("newName", model.name)
         assertTrue(model.cards.contains(batman))
         assertTrue(model.cards.contains(flash))
 
         val deckHistory = model.deckHistoryList.first()
-        assertEquals(id, deckHistory.id)
-        assertEquals(version, deckHistory.version)
+        assertEquals(id, deckHistory.deckId)
         assertEquals(name, deckHistory.name)
         assertTrue(deckHistory.cards.contains(batman))
         assertTrue(deckHistory.cards.contains(flash))

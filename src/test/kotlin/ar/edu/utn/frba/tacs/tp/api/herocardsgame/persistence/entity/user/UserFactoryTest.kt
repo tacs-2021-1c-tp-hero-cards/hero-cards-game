@@ -5,8 +5,9 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 
 internal class UserFactoryTest {
 
@@ -51,7 +52,7 @@ internal class UserFactoryTest {
                     IA(null, userName, Stats(winCount, tieCount, loseCount, inProgressCount), iADifficulty)
 
                 val entity = instance.toEntity(model)
-                assertEquals(1L, entity.id)
+                assertNull(entity.id)
                 assertEquals(userName, entity.userName)
                 assertEquals(winCount, entity.winCount)
                 assertEquals(tieCount, entity.tieCount)
@@ -73,7 +74,7 @@ internal class UserFactoryTest {
                     tieCount,
                     loseCount,
                     inProgressCount,
-                    iADifficulty.name
+                    difficulty = iADifficulty.name
                 )
 
             val model = instance.toModel(entity) as IA
@@ -160,7 +161,7 @@ internal class UserFactoryTest {
                     )
 
                 val entity = instance.toEntity(model)
-                assertEquals(1L, entity.id)
+                assertNull(entity.id)
                 assertEquals(userName, entity.userName)
                 assertEquals(fullName, entity.fullName)
                 assertEquals(password, entity.password)
@@ -185,7 +186,7 @@ internal class UserFactoryTest {
                 )
 
                 val entity = instance.toEntity(model)
-                assertEquals(1L, entity.id)
+                assertNull(entity.id)
                 assertEquals(userName, entity.userName)
                 assertEquals(fullName, entity.fullName)
                 assertEquals(password, entity.password)
@@ -212,7 +213,8 @@ internal class UserFactoryTest {
                         winCount, tieCount, loseCount, inProgressCount,
                         fullName,
                         password,
-                        token
+                        token,
+                        false
                     )
 
                 val model = entity.toModel() as Human

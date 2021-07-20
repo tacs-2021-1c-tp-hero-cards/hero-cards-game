@@ -27,7 +27,7 @@ class UserIntegration(private val factory: UserFactory, private val repository: 
     }
 
     fun createUser(userName: String, difficulty: String): User {
-        if (repository.findIAByUserNameAndDifficulty(userName, difficulty) != null) {
+        if (repository.findIAByIdAndUserNameAndDifficulty(userName = userName, difficulty = difficulty).isNotEmpty()) {
             throw InvalidIAUserException(userName, difficulty)
         }
 
@@ -55,7 +55,8 @@ class UserIntegration(private val factory: UserFactory, private val repository: 
 
     fun getAllUser(): List<User> = repository.findAll().map { it.toModel() }
 
-    fun saveUser(user: User) = repository.save(factory.toEntity(user)).toModel()
+    fun saveUser(user: User) =
+        repository.save(factory.toEntity(user)).toModel()
 
     fun searchHumanUserByIdUserNameFullNameOrToken(
         id: String? = null,

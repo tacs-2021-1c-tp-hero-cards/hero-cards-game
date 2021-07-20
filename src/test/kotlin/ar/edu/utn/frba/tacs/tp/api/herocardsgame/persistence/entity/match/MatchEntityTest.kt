@@ -2,7 +2,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.*
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
@@ -12,7 +12,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistor
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class MatchEntityTest {
@@ -41,7 +42,7 @@ internal class MatchEntityTest {
 
     private val opponent = Player(1L, userOpponent, listOf(flash), emptyList())
 
-    private val deck = Deck(0L, 0L, "deckName", listOf(batman, flash))
+    private val deck = Deck(0L, "deckName", listOf(batman, flash))
     private val deckHistory = DeckHistory(deck)
 
     private val duelHistory =

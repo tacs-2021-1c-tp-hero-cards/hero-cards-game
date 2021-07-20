@@ -70,7 +70,7 @@ internal class DecksControllerTest {
             val response = instance.getDecks()
             assertEquals(200, response.statusCodeValue)
             assertEquals(
-                Deck(0L, 0L, "deckNameTest", listOf(batmanII)),
+                Deck(0L, "deckNameTest", listOf(batmanII)),
                 response.body!!.first()
             )
         }
@@ -95,7 +95,7 @@ internal class DecksControllerTest {
             val response = instance.getDeckByIdOrName("0", null)
             assertEquals(200, response.statusCodeValue)
             assertEquals(
-                Deck(0L, 0L, "deckNameTest", listOf(batmanII)),
+                Deck(0L, "deckNameTest", listOf(batmanII)),
                 response.body!!.first()
             )
         }
@@ -118,7 +118,7 @@ internal class DecksControllerTest {
             val response = instance.getDeckByIdOrName(null, "deckNameTest")
             assertEquals(200, response.statusCodeValue)
             assertEquals(
-                Deck(0L, 0L, "deckNameTest", listOf(batmanII)),
+                Deck(0L, "deckNameTest", listOf(batmanII)),
                 response.body!!.first()
             )
         }
@@ -141,7 +141,7 @@ internal class DecksControllerTest {
             val response = instance.getDeckByIdOrName("0", "deckNameTest")
             assertEquals(200, response.statusCodeValue)
             assertEquals(
-                Deck(0L, 0L, "deckNameTest", listOf(batmanII)),
+                Deck(0L, "deckNameTest", listOf(batmanII)),
                 response.body!!.first()
             )
         }
@@ -186,7 +186,7 @@ internal class DecksControllerTest {
 
             val response = instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
             assertEquals(201, response.statusCodeValue)
-            assertEquals(Deck(0L, 0L, "deckNameTest", listOf(batmanII)), response.body!!)
+            assertEquals(Deck(0L, "deckNameTest", listOf(batmanII)), response.body!!)
         }
 
         @Test
@@ -221,7 +221,6 @@ internal class DecksControllerTest {
             assertEquals(
                 Deck(
                     0L,
-                    1L,
                     "deckNameTest2",
                     listOf(batmanII),
                     listOf(DeckHistory(0L, 0L, "deckNameTest", listOf(batmanII)))
@@ -240,7 +239,6 @@ internal class DecksControllerTest {
             assertEquals(
                 Deck(
                     0L,
-                    1L,
                     "deckNameTest",
                     listOf(batmanII),
                     listOf(DeckHistory(0L, 0L, "deckNameTest", listOf(batmanII)))
@@ -259,7 +257,6 @@ internal class DecksControllerTest {
             assertEquals(
                 Deck(
                     0L,
-                    1L,
                     "deckNameTest2",
                     listOf(batmanII),
                     listOf(DeckHistory(0L, 0L, "deckNameTest", listOf(batmanII)))

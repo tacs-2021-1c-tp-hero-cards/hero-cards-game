@@ -1,14 +1,17 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
 @Table(name = "USER")
 data class UserEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long?,
+    @GeneratedValue
+    val id: Long? = null,
 
     val userName: String,
     val userType: String,

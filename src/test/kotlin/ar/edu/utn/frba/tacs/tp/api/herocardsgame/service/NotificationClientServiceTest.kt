@@ -18,7 +18,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
@@ -45,7 +45,7 @@ internal class NotificationClientServiceTest {
         IA(2L, "iaOpponentUserName", difficulty = IADifficulty.HARD)
     private val iaOpponentPlayer =
         Player(2L, user = iaOpponentUser, availableCards = listOf(batman), prizeCards = listOf(flash))
-    private val deckHistory = DeckHistory(Deck(0L, 0L, "nameDeck", listOf(batman, flash)))
+    private val deckHistory = DeckHistory(Deck(0L, "nameDeck", listOf(batman, flash)))
 
     private val match = Match(0L, player, humanOpponentPlayer, deckHistory, MatchStatus.IN_PROGRESS)
 

@@ -3,23 +3,25 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.mock
 
 internal class MatchIntegrationTest {
 
@@ -44,8 +46,8 @@ internal class MatchIntegrationTest {
     private val iaOpponent = Player(2L, iaUserOpponent, listOf(batmanII))
     private val iaOpponentHistory = PlayerHistory(2L, 2L, batmanII)
 
-    private val deck = Deck(0L, 1L, "deckNameTest", listOf(batman, batmanII))
-    private val deckHistory = DeckHistory(deck.copy(version = 0L))
+    private val deck = Deck(0L, "deckNameTest", listOf(batman, batmanII))
+    private val deckHistory = DeckHistory(deck)
     private val duelHistoryWithHuman =
         DuelHistory(0L, playerHistory, humanOpponentHistory, DuelType.SPEED, DuelResult.WIN)
     private val duelHistoryWithIA =
@@ -166,7 +168,7 @@ internal class MatchIntegrationTest {
 
             val found = dao.getMatchById(matchWithHuman.id!!)!!
             assertEquals(matchWithHuman.id, found.id)
-            assertEquals(matchWithHuman.deck.id, found.deckId)
+            assertEquals(matchWithHuman.deck.deckId, found.deckId)
             assertEquals(matchWithHuman.status.name, found.status)
 
             assertEquals(player.id, found.playerId)
@@ -186,7 +188,7 @@ internal class MatchIntegrationTest {
 
             val found = dao.getMatchById(matchWithIA.id!!)!!
             assertEquals(matchWithIA.id, found.id)
-            assertEquals(matchWithIA.deck.id, found.deckId)
+            assertEquals(matchWithIA.deck.deckId, found.deckId)
             assertEquals(matchWithIA.status.name, found.status)
             assertEquals(player.id, found.playerId)
             assertEquals(iaOpponent.id, found.opponentId)

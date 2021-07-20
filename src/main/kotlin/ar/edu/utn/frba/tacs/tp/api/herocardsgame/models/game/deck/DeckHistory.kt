@@ -3,10 +3,10 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 
 data class DeckHistory(
-    val id: Long,
-    val version: Long,
+    val deckId: Long,
+    val deckVersion: Long? = null,
     val name: String,
     val cards: List<Card> = emptyList()
 ) {
-    constructor(deck: Deck) : this(deck.id!!, deck.version!!, deck.name, deck.cards)
+    constructor(deck: Deck) : this(deckId = deck.id!!, name = deck.name, cards = deck.cards)
 }

@@ -4,15 +4,12 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.CardEntity
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckEntity
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckHistoryEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.DuelHistoryEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.MatchEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.player.PlayerEntity
@@ -33,7 +30,6 @@ internal class DaoTest {
     private val flash = BuilderContextUtils.buildFlash()
     private val batmanII = BuilderContextUtils.buildBatmanII()
 
-    private val deck = Deck(0L, 1L, "deckNewName", listOf(batman, batmanII, flash))
     private val deckHistory = DeckHistory(0L, 0L, "deckName", listOf(batman, batmanII, flash))
 
     private val user = Human(0L, "userName", "fullName", "password", "token", Stats())
@@ -51,14 +47,6 @@ internal class DaoTest {
 
     @Nested
     inner class CalculateId {
-
-        @Test
-        fun calculateIdToDeck() {
-            instance = Dao(deckMap = hashMapOf(0L to DeckEntity(deck = deck)))
-
-            val calculateId = instance.calculateId(deck)
-            assertEquals(1, calculateId)
-        }
 
         @Test
         fun calculateIdToMatch() {
@@ -101,14 +89,6 @@ internal class DaoTest {
 
     @Nested
     inner class CalculateVersion {
-
-        @Test
-        fun calculateVersionToDeck() {
-            instance = Dao(deckHistoryMap = hashMapOf(0L to DeckHistoryEntity(deckHistory)))
-
-            val calculateId = instance.calculateVersion(deckHistory)
-            assertEquals(1, calculateId)
-        }
 
         @Test
         fun calculateVersionToPlayerHistory() {
@@ -214,190 +194,6 @@ internal class DaoTest {
     }
 
     @Nested
-    inner class DeckEntityTest {
-
-        @Nested
-        inner class GetAllDeck {
-
-            @Test
-            fun `Get all decks if non exist decks in the database`() {
-                instance = Dao(deckMap = hashMapOf())
-
-                val allDeck = instance.getAllDeck()
-                assertTrue(allDeck.isEmpty())
-            }
-
-            @Test
-            fun `Get all decks if exist decks in the database`() {
-                val deckEntity = DeckEntity(deck = deck)
-                instance = Dao(deckMap = hashMapOf(0L to deckEntity))
-
-                val allDeck = instance.getAllDeck()
-                assertEquals(1, allDeck.size)
-
-                val found = allDeck.first()
-                assertEquals(deckEntity, found)
-            }
-
-        }
-
-        @Nested
-        inner class GetAllDeckHistory {
-
-            @Test
-            fun `Get all deck history if non exist deck history in the database`() {
-                instance = Dao(deckHistoryMap = hashMapOf())
-
-                val allDeckHistory = instance.getAllDeckHistory()
-                assertTrue(allDeckHistory.isEmpty())
-            }
-
-            @Test
-            fun `Get all deck history if exist deck history in the database`() {
-                val deckHistoryEntity = DeckHistoryEntity(deckHistory)
-                instance = Dao(deckHistoryMap = hashMapOf(0L to deckHistoryEntity))
-
-                val allDeckHistory = instance.getAllDeckHistory()
-                assertEquals(1, allDeckHistory.size)
-
-                val found = allDeckHistory.first()
-                assertEquals(deckHistoryEntity, found)
-            }
-
-        }
-
-        @Nested
-        inner class GetDeckById {
-
-            @Test
-            fun `Search deck by id and exists`() {
-                val deckEntity = DeckEntity(deck = deck)
-                instance = Dao(deckMap = hashMapOf(0L to deckEntity))
-
-                val found = instance.getDeckById(0L)
-                assertEquals(deckEntity, found)
-            }
-
-            @Test
-            fun `Search deck by id and non exists`() {
-                instance = Dao(deckMap = hashMapOf())
-                assertNull(instance.getDeckById(0L))
-            }
-
-        }
-
-        @Nested
-        inner class GetDeckHistoryById {
-
-            @Test
-            fun `Search deck history by id and exists`() {
-                val deckHistoryEntity = DeckHistoryEntity(deckHistory)
-                instance = Dao(deckHistoryMap = hashMapOf(0L to deckHistoryEntity))
-
-                val found = instance.getDeckHistoryById(0L)
-                assertTrue(found.contains(deckHistoryEntity))
-            }
-
-            @Test
-            fun `Search deck history by id and non exists`() {
-                instance = Dao(deckHistoryMap = hashMapOf())
-                assertTrue(instance.getDeckHistoryById(0L).isEmpty())
-            }
-
-        }
-
-        @Nested
-        inner class GetDeckHistoryByVersion {
-
-            @Test
-            fun `Search deck history by version and exists`() {
-                val deckHistoryEntity = DeckHistoryEntity(deckHistory)
-                instance = Dao(deckHistoryMap = hashMapOf(0L to deckHistoryEntity))
-
-                val found = instance.getDeckHistoryByVersion(0L)
-                assertEquals(deckHistoryEntity, found)
-            }
-
-            @Test
-            fun `Search deck history by version and non exists`() {
-                instance = Dao(deckHistoryMap = hashMapOf())
-                assertNull(instance.getDeckHistoryByVersion(0L))
-            }
-
-        }
-
-        @Test
-        fun saveDeck() {
-            instance = Dao()
-            instance.saveDeck(deck)
-
-            val allDecks = instance.getAllDeck()
-            assertEquals(1, allDecks.size)
-
-            val foundDeck = allDecks.first()
-            assertEquals(deck.id, foundDeck.id)
-            assertEquals(deck.version, foundDeck.version)
-            assertEquals(deck.name, foundDeck.name)
-
-            val cards = foundDeck.cardIds
-            assertTrue(cards.contains(batman.id))
-            assertTrue(cards.contains(batmanII.id))
-            assertTrue(cards.contains(flash.id))
-        }
-
-        @Nested
-        inner class SaveDeckHistory {
-
-            @Test
-            fun `Save history and it already exists`() {
-                instance = Dao(deckHistoryMap = hashMapOf(0L to DeckHistoryEntity(deckHistory)))
-                instance.saveDeckHistory(deckHistory)
-
-                val allDeckHistory = instance.getAllDeckHistory()
-                assertEquals(1, allDeckHistory.size)
-
-                val foundDeckHistory = allDeckHistory.first()
-                assertEquals(deckHistory.id, foundDeckHistory.id)
-                assertEquals(deckHistory.name, foundDeckHistory.name)
-
-                val cards = foundDeckHistory.cardIds
-                assertTrue(cards.contains(batman.id))
-                assertTrue(cards.contains(batmanII.id))
-                assertTrue(cards.contains(flash.id))
-            }
-
-            @Test
-            fun `Save history that did not exist`() {
-                instance = Dao(deckHistoryMap = hashMapOf())
-                instance.saveDeckHistory(deckHistory)
-
-                val allDeckHistory = instance.getAllDeckHistory()
-                assertEquals(1, allDeckHistory.size)
-
-                val foundDeckHistory = allDeckHistory.first()
-                assertEquals(deckHistory.id, foundDeckHistory.id)
-                assertEquals(deckHistory.name, foundDeckHistory.name)
-
-                val cards = foundDeckHistory.cardIds
-                assertTrue(cards.contains(batman.id))
-                assertTrue(cards.contains(batmanII.id))
-                assertTrue(cards.contains(flash.id))
-            }
-
-        }
-
-        @Test
-        fun deleteDeck() {
-            instance = Dao()
-            instance.saveDeck(deck)
-            instance.deleteDeck(deck.id!!)
-
-            val allDecks = instance.getAllDeck()
-            assertTrue(allDecks.isEmpty())
-        }
-    }
-
-    @Nested
     inner class PlayerEntityTest {
 
         @Nested
@@ -496,7 +292,7 @@ internal class DaoTest {
             val foundMatch = instance.getMatchById(match.id!!)!!
             assertEquals(match.id, foundMatch.id)
             assertEquals(match.status.name, foundMatch.status)
-            assertEquals(match.deck.id, foundMatch.deckId)
+            assertEquals(match.deck.deckId, foundMatch.deckId)
 
             assertEquals(player.id, foundMatch.playerId)
             assertEquals(opponentPlayer.id, foundMatch.opponentId)
