@@ -25,7 +25,7 @@ class UserRepositoryTest @Autowired constructor(
     private val humanUserEntity =
         UserEntity(
             userName = userName,
-            userType = UserType.HUMAN.name,
+            userType = UserType.HUMAN,
             winCount = 3,
             tieCount = 2,
             loseCount = 1,
@@ -39,12 +39,12 @@ class UserRepositoryTest @Autowired constructor(
     private val iaUserEntity =
         UserEntity(
             userName = userName,
-            userType = UserType.IA.name,
+            userType = UserType.IA,
             winCount = 0,
             tieCount = 1,
             loseCount = 2,
             inProgressCount = 3,
-            difficulty = difficulty.name
+            difficulty = difficulty
         )
 
     @Nested

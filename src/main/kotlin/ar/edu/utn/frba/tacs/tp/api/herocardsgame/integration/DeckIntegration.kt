@@ -8,15 +8,15 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.DeckRepo
 import org.springframework.stereotype.Component
 
 @Component
-class DeckIntegration(private val cardIntegration: CardIntegration, private val deckRepository: DeckRepository) {
+class DeckIntegration(private val cardIntegration: CardIntegration, private val repository: DeckRepository) {
 
     fun getDeckById(id: Long): Deck {
-        val deckEntity = deckRepository.getById(id) ?: throw ElementNotFoundException("deck", "id", id.toString())
+        val deckEntity = repository.getById(id) ?: throw ElementNotFoundException("deck", "id", id.toString())
         return deckEntity.toModel(getAllCardByDeckEntity(deckEntity))
     }
 
     fun getDeckByIdOrName(id: String? = null, name: String? = null): List<Deck> {
-        val deckEntities = deckRepository.findDeckByIdAndName(id, name)
+        val deckEntities = repository.findDeckByIdAndName(id, name)
         return deckEntities.map { it.toModel(getAllCardByDeckEntity(it)) }
     }
 
@@ -27,12 +27,12 @@ class DeckIntegration(private val cardIntegration: CardIntegration, private val 
             .distinct()
 
         deck.cards.map { cardIntegration.saveCard(it) }
-        return deckRepository.save(DeckEntity(deck)).toModel(allCards)
+        return repository.save(DeckEntity(deck)).toModel(allCards)
     }
 
     fun deleteDeck(id: Long) {
-        deckRepository.getById(id) ?: throw ElementNotFoundException("deck", "id", id.toString())
-        deckRepository.deleteById(id)
+        repository.getById(id) ?: throw ElementNotFoundException("deck", "id", id.toString())
+        repository.deleteById(id)
     }
 
     private fun getAllCardByDeckEntity(deckEntity: DeckEntity): List<Card> {

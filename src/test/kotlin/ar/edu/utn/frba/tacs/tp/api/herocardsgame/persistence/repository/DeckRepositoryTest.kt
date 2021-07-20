@@ -3,8 +3,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckHistoryEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -60,7 +59,7 @@ class DeckRepositoryTest @Autowired constructor(
             entityManager.persist(deckEntity)
 
             val found = instance.findDeckByIdAndName((deckEntity.id!! + 1).toString(), "nameTest2")
-            assertNull(found)
+            assertTrue(found.isEmpty())
         }
 
         @Test
@@ -68,7 +67,7 @@ class DeckRepositoryTest @Autowired constructor(
             entityManager.persist(deckEntity)
 
             val found = instance.findDeckByIdAndName(deckEntity.id.toString(), "nameTest2")
-            assertNull(found)
+            assertTrue(found.isEmpty())
         }
 
         @Test
@@ -76,7 +75,7 @@ class DeckRepositoryTest @Autowired constructor(
             entityManager.persist(deckEntity)
 
             val found = instance.findDeckByIdAndName((deckEntity.id!! +1).toString(), name)
-            assertNull(found)
+            assertTrue(found.isEmpty())
         }
 
         @Test
@@ -84,7 +83,7 @@ class DeckRepositoryTest @Autowired constructor(
             entityManager.persist(deckEntity)
 
             val found = instance.findDeckByIdAndName(deckEntity.id.toString(), name)
-            assertEquals(deckEntity, found)
+            assertTrue(found.contains(deckEntity))
         }
 
     }

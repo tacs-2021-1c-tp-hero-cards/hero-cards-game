@@ -34,7 +34,7 @@ internal class MatchServiceTest {
         MatchService(matchIntegrationMock, deckServiceMock, userIntegrationMock, notificationClientServiceMock)
 
     private val user = Human(0L, "userName", "fullName", "password", "tokenTest")
-    private val player = Player(0L, user = user)
+    private val player = Player(user)
 
     private val humanOpponentUser =
         Human(
@@ -44,11 +44,11 @@ internal class MatchServiceTest {
             "humanOpponentUserPassword",
             "humanOpponentUserToken"
         )
-    private val humanOpponentPlayer = Player(1L, user = humanOpponentUser)
+    private val humanOpponentPlayer = Player(humanOpponentUser)
 
     private val iaOpponentUser =
         IA(2L, "iaOpponentUserName", difficulty = IADifficulty.HARD)
-    private val iaOpponentPlayer = Player(2L, user = iaOpponentUser)
+    private val iaOpponentPlayer = Player(iaOpponentUser)
 
     private val batman = BuilderContextUtils.buildBatman()
     private val flash = BuilderContextUtils.buildFlash()
@@ -83,8 +83,8 @@ internal class MatchServiceTest {
                 Match(
                     deck = deckHistory,
                     status = MatchStatus.PENDING,
-                    player = player.copy(id = null, availableCards = listOf(batman)),
-                    opponent = humanOpponentPlayer.copy(id = null, availableCards = listOf(batman))
+                    player = player.copy(availableCards = listOf(batman)),
+                    opponent = humanOpponentPlayer.copy(availableCards = listOf(batman))
                 )
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
@@ -110,8 +110,8 @@ internal class MatchServiceTest {
                 Match(
                     deck = deckHistory,
                     status = MatchStatus.IN_PROGRESS,
-                    player = player.copy(id = null, availableCards = listOf(batman)),
-                    opponent = iaOpponentPlayer.copy(id = null, availableCards = listOf(batman))
+                    player = player.copy(availableCards = listOf(batman)),
+                    opponent = iaOpponentPlayer.copy(availableCards = listOf(batman))
                 )
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))

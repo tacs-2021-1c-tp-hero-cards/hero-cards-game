@@ -5,7 +5,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import org.springframework.stereotype.Component
 
 @Component
@@ -15,7 +14,7 @@ class UserFactory {
         val userEntity = UserEntity(
             id = user.id,
             userName = user.userName,
-            userType = user.userType.name,
+            userType = user.userType,
             winCount = user.stats.winCount,
             tieCount = user.stats.tieCount,
             loseCount = user.stats.loseCount,
@@ -38,17 +37,17 @@ class UserFactory {
         )
 
     private fun toIAEntity(userEntity: UserEntity, ia: IA): UserEntity =
-        userEntity.copy(difficulty = ia.difficulty.name)
+        userEntity.copy(difficulty = ia.difficulty)
 
     fun toModel(userEntity: UserEntity): User =
-        if (userEntity.userType == UserType.HUMAN.name) {
+        if (userEntity.userType == UserType.HUMAN) {
             toHumanModel(userEntity)
         } else {
             toIAModel(userEntity)
         }
 
     private fun toIAModel(userEntity: UserEntity): IA =
-        IA(userEntity.id, userEntity.userName, toStatsModel(userEntity), IADifficulty.valueOf(userEntity.difficulty!!))
+        IA(userEntity.id, userEntity.userName, toStatsModel(userEntity), userEntity.difficulty!!)
 
     private fun toHumanModel(userEntity: UserEntity): Human =
         Human(

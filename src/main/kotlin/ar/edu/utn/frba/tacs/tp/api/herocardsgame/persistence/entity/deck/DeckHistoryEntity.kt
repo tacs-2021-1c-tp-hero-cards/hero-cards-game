@@ -8,7 +8,7 @@ import javax.persistence.*
 @Table(name = "DECK_HISTORY")
 data class DeckHistoryEntity(
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
     val name: String,
     val cardIds: String,

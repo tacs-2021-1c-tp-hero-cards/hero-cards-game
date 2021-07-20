@@ -1,20 +1,20 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.Table
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
+import javax.persistence.*
 
 @Entity
 @Table(name = "USER")
 data class UserEntity(
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
     val userName: String,
-    val userType: String,
+    @Enumerated(value = EnumType.STRING)
+    val userType: UserType,
     val winCount: Int,
     val tieCount: Int,
     val loseCount: Int,
@@ -25,7 +25,8 @@ data class UserEntity(
     val token: String? = null,
     val isAdmin: Boolean? = null,
 
-    val difficulty: String? = null
+    @Enumerated(value = EnumType.STRING)
+    val difficulty: IADifficulty? = null
 ){
     fun toModel() = UserFactory().toModel(this)
 

@@ -1,19 +1,15 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.Stats
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckHistoryEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.UserEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 internal class MatchEntityTest {
@@ -31,69 +27,77 @@ internal class MatchEntityTest {
     private val tieCount: Int = 0
     private val loseCount: Int = 2
     private val inProgressCount: Int = 4
+    private val iADifficulty = IADifficulty.HARD
 
-    private val user =
-        Human(0L, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
+    private val deckName = "deckName"
+    private val matchStatus = MatchStatus.IN_PROGRESS
 
-    private val player = Player(0L, user, listOf(batman), emptyList())
+    private val duelType = DuelType.SPEED
+    private val duelResult = DuelResult.TIE
 
-    private val userOpponent =
-        Human(1L, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
+    private val iaEntity =
+        UserEntity(
+            id,
+            userName,
+            UserType.IA,
+            winCount,
+            tieCount,
+            loseCount,
+            inProgressCount,
+            difficulty = iADifficulty
+        )
 
-    private val opponent = Player(1L, userOpponent, listOf(flash), emptyList())
+    private val humanEntity =
+        UserEntity(
+            id,
+            userName,
+            UserType.HUMAN,
+            winCount, tieCount, loseCount, inProgressCount,
+            fullName,
+            password,
+            token,
+            false
+        )
 
-    private val deck = Deck(0L, "deckName", listOf(batman, flash))
-    private val deckHistory = DeckHistory(deck)
+    private val deckHistory =
+        DeckHistoryEntity(name = deckName, cardIds = batman.id.toString() + "," + flash.id.toString())
 
-    private val duelHistory =
-        DuelHistory(0L, PlayerHistory(player), PlayerHistory(opponent), DuelType.POWER, DuelResult.WIN)
-
-    @Test
-    fun toEntityWithId() {
-        val model = Match(id, player, opponent, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
-
-        val entity = MatchEntity(match = model)
-        assertEquals(id, entity.id)
-        assertEquals(id, entity.deckId)
-        assertEquals(0L, entity.playerId)
-        assertEquals(1L, entity.opponentId)
-        assertEquals(MatchStatus.IN_PROGRESS.name, entity.status)
-        assertTrue(entity.duelHistoryIds.contains(0L))
-    }
-
-    @Test
-    fun toEntityWithOutId() {
-        val model = Match(null, player, opponent, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
-
-        val entity = MatchEntity(1L, model)
-        assertEquals(1L, entity.id)
-        assertEquals(id, entity.deckId)
-        assertEquals(0L, entity.playerId)
-        assertEquals(1L, entity.opponentId)
-        assertEquals(MatchStatus.IN_PROGRESS.name, entity.status)
-        assertTrue(entity.duelHistoryIds.contains(0L))
-    }
+    private val duelHistory = DuelHistoryEntity(
+        playerAvailableCardIds = batman.id.toString(),
+        playerPrizeCardIds = flash.id.toString(),
+        opponentAvailableCardIds = flash.id.toString(),
+        opponentPrizeCardIds = batman.id.toString(),
+        duelType = duelType,
+        duelResult = duelResult
+    )
 
     @Test
     fun toModel() {
         val entity =
             MatchEntity(
                 id,
-                Match(null, player, opponent, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
+                humanEntity,
+                batman.id.toString(),
+                flash.id.toString(),
+                iaEntity,
+                flash.id.toString(),
+                batman.id.toString(),
+                0L,
+                deckHistory,
+                matchStatus,
+                duelHistory = listOf(duelHistory)
             )
 
-        val model = entity.toModel(player, opponent, deckHistory, listOf(duelHistory))
+        val model = entity.toModel(listOf(batman, flash))
         assertEquals(id, model.id)
-        assertEquals(deckHistory, model.deck)
+        assertEquals(deckHistory.toModel(id, listOf(batman, flash)), model.deck)
         assertEquals(MatchStatus.IN_PROGRESS, model.status)
-        assertEquals(player, model.player)
-        assertEquals(opponent, model.opponent)
+        assertEquals(humanEntity.toModel(), model.player.user)
+        assertEquals(iaEntity.toModel(), model.opponent.user)
 
         val duelHistory = model.duelHistoryList.first()
-        assertEquals(0L, duelHistory.id)
-        assertEquals(PlayerHistory(player), duelHistory.player)
-        assertEquals(PlayerHistory(opponent), duelHistory.opponent)
-        assertEquals(DuelType.POWER, duelHistory.duelType)
-        assertEquals(DuelResult.WIN, duelHistory.duelResult)
+        assertNull(duelHistory.id)
+        assertEquals(duelType, duelHistory.duelType)
+        assertEquals(duelResult, duelHistory.duelResult)
     }
 }

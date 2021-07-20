@@ -3,7 +3,8 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -21,9 +22,9 @@ internal class PlayerTest {
     @BeforeEach
     fun init() {
         human = Human(0L, "userName", "fullName", "password")
-        player = Player(id = 0L, user = human, availableCards = listOf(batman))
+        player = Player(user = human, availableCards = listOf(batman))
         humanOpponent = Human(1L, "userName2", "fullName2", "password2")
-        opponent = Player(id = 1L, user = human)
+        opponent = Player(human)
     }
 
     @Nested
@@ -120,14 +121,12 @@ internal class PlayerTest {
             val resultPlayers = winPlayer.calculateWinPlayer(loseOpponent)
 
             val win = resultPlayers.first()
-            assertEquals(0L, win.id)
             assertEquals(0, win.user.stats.inProgressCount)
             assertEquals(1, win.user.stats.winCount)
             assertEquals(0, win.user.stats.loseCount)
             assertEquals(0, win.user.stats.tieCount)
 
             val lose = resultPlayers.last()
-            assertEquals(1L, lose.id)
             assertEquals(0, lose.user.stats.inProgressCount)
             assertEquals(0, lose.user.stats.winCount)
             assertEquals(1, lose.user.stats.loseCount)
@@ -142,14 +141,12 @@ internal class PlayerTest {
             val resultPlayers = loseOpponent.calculateWinPlayer(winPlayer)
 
             val lose = resultPlayers.first()
-            assertEquals(0L, lose.id)
             assertEquals(0, lose.user.stats.inProgressCount)
             assertEquals(0, lose.user.stats.winCount)
             assertEquals(1, lose.user.stats.loseCount)
             assertEquals(0, lose.user.stats.tieCount)
 
             val win = resultPlayers.last()
-            assertEquals(1L, win.id)
             assertEquals(0, win.user.stats.inProgressCount)
             assertEquals(1, win.user.stats.winCount)
             assertEquals(0, win.user.stats.loseCount)
@@ -164,14 +161,12 @@ internal class PlayerTest {
             val resultPlayers = tiePlayer.calculateWinPlayer(tieOpponent)
 
             val tie = resultPlayers.first()
-            assertEquals(0L, tie.id)
             assertEquals(0, tie.user.stats.inProgressCount)
             assertEquals(0, tie.user.stats.winCount)
             assertEquals(0, tie.user.stats.loseCount)
             assertEquals(1, tie.user.stats.tieCount)
 
             val otherTie = resultPlayers.last()
-            assertEquals(1L, otherTie.id)
             assertEquals(0, otherTie.user.stats.inProgressCount)
             assertEquals(0, otherTie.user.stats.winCount)
             assertEquals(0, otherTie.user.stats.loseCount)

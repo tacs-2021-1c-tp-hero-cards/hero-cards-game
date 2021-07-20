@@ -43,7 +43,7 @@ internal class UserFactoryTest {
                 assertEquals(tieCount, entity.tieCount)
                 assertEquals(loseCount, entity.loseCount)
                 assertEquals(inProgressCount, entity.inProgressCount)
-                assertEquals(iADifficulty.name, entity.difficulty)
+                assertEquals(iADifficulty, entity.difficulty)
             }
 
             @Test
@@ -58,7 +58,7 @@ internal class UserFactoryTest {
                 assertEquals(tieCount, entity.tieCount)
                 assertEquals(loseCount, entity.loseCount)
                 assertEquals(inProgressCount, entity.inProgressCount)
-                assertEquals(iADifficulty.name, entity.difficulty)
+                assertEquals(iADifficulty, entity.difficulty)
             }
 
         }
@@ -69,12 +69,12 @@ internal class UserFactoryTest {
                 UserEntity(
                     id,
                     userName,
-                    UserType.IA.name,
+                    UserType.IA,
                     winCount,
                     tieCount,
                     loseCount,
                     inProgressCount,
-                    difficulty = iADifficulty.name
+                    difficulty = iADifficulty
                 )
 
             val model = instance.toModel(entity) as IA
@@ -209,7 +209,7 @@ internal class UserFactoryTest {
                     UserEntity(
                         id,
                         userName,
-                        UserType.HUMAN.name,
+                        UserType.HUMAN,
                         winCount, tieCount, loseCount, inProgressCount,
                         fullName,
                         password,
@@ -238,7 +238,7 @@ internal class UserFactoryTest {
                     UserEntity(
                         id,
                         userName,
-                        UserType.HUMAN.name,
+                        UserType.HUMAN,
                         winCount, tieCount, loseCount, inProgressCount,
                         fullName,
                         password,

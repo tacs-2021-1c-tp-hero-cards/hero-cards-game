@@ -34,17 +34,17 @@ internal class NotificationClientServiceTest {
     private val flash = BuilderContextUtils.buildFlash()
 
     private val user = Human(0L, "userName", "fullName", "password", "userToken")
-    private val player = Player(0L, user = user, availableCards = listOf(batman), prizeCards = listOf(flash))
+    private val player = Player(user = user, availableCards = listOf(batman), prizeCards = listOf(flash))
 
     private val humanOpponentUser =
         Human(1L, "humanOpponentUserName", "humanOpponentUserFullName", "humanOpponentUserPassword", "humanToken")
     private val humanOpponentPlayer =
-        Player(1L, user = humanOpponentUser, availableCards = listOf(batman), prizeCards = listOf(flash))
+        Player(user = humanOpponentUser, availableCards = listOf(batman), prizeCards = listOf(flash))
 
     private val iaOpponentUser =
         IA(2L, "iaOpponentUserName", difficulty = IADifficulty.HARD)
     private val iaOpponentPlayer =
-        Player(2L, user = iaOpponentUser, availableCards = listOf(batman), prizeCards = listOf(flash))
+        Player(user = iaOpponentUser, availableCards = listOf(batman), prizeCards = listOf(flash))
     private val deckHistory = DeckHistory(Deck(0L, "nameDeck", listOf(batman, flash)))
 
     private val match = Match(0L, player, humanOpponentPlayer, deckHistory, MatchStatus.IN_PROGRESS)

@@ -1,57 +1,25 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.MatchFactory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.MatchRepository
 import org.springframework.stereotype.Component
 
 @Component
 class MatchIntegration(
-    private val dao: Dao,
-    private val deckIntegration: DeckIntegration,
-    private val playerIntegration: PlayerIntegration
+    private val cardIntegration: CardIntegration,
+    private val factory: MatchFactory,
+    private val repository: MatchRepository
 ) {
 
     fun getMatchById(id: Long): Match {
-        val matchEntity = dao.getMatchById(id) ?: throw ElementNotFoundException("match", "id", id.toString())
-        val player = playerIntegration.getPlayerById(matchEntity.playerId)
-        val opponent = playerIntegration.getPlayerById(matchEntity.opponentId)
-        val deck = deckIntegration.getDeckById(matchEntity.deckId).searchDeckVersion(matchEntity.deckVersion)
-        val duelHistoryList = matchEntity.duelHistoryIds.map { getDuelHistoryById(it) }
-
-        return matchEntity.toModel(player, opponent, deck, duelHistoryList)
+        val matchEntity = repository.getById(id) ?: throw ElementNotFoundException("match", "id", id.toString())
+        val cards = matchEntity.deckHistory.cardIds.split(",").map { cardIntegration.getCardById(it) }
+        return matchEntity.toModel(cards)
     }
 
-    private fun getDuelHistoryById(id: Long): DuelHistory {
-        val duelHistoryEntity =
-            dao.getDuelHistoryById(id) ?: throw ElementNotFoundException("duelHistory", "id", id.toString())
-        val playerHistory = playerIntegration.getPlayerHistoryByVersion(duelHistoryEntity.playerVersion)
-        val opponentHistory = playerIntegration.getPlayerHistoryByVersion(duelHistoryEntity.opponentVersion)
-
-        return duelHistoryEntity.toModel(playerHistory, opponentHistory)
-    }
-
-    fun saveMatch(match: Match): Match {
-        val savedPlayer = playerIntegration.savePlayer(match.player)
-        val savedOpponent = playerIntegration.savePlayer(match.opponent)
-        val savedDuelHistoryList = match.duelHistoryList.map { saveDuelHistory(it) }
-
-        return dao.saveMatch(
-            match.copy(
-                player = savedPlayer,
-                opponent = savedOpponent,
-                duelHistoryList = savedDuelHistoryList
-            )
-        ).toModel(savedPlayer, savedOpponent, match.deck, savedDuelHistoryList)
-    }
-
-    private fun saveDuelHistory(duelHistory: DuelHistory): DuelHistory {
-        val savedPlayerHistory = playerIntegration.savePlayerHistory(duelHistory.player)
-        val savedOpponentHistory = playerIntegration.savePlayerHistory(duelHistory.opponent)
-
-        return dao.saveDuelHistory(duelHistory.copy(player = savedPlayerHistory, opponent = savedOpponentHistory))
-            .toModel(savedPlayerHistory, savedOpponentHistory)
-    }
+    fun saveMatch(match: Match): Match =
+        repository.save(factory.toEntity(match)).toModel(match.deck.cards)
 
 }

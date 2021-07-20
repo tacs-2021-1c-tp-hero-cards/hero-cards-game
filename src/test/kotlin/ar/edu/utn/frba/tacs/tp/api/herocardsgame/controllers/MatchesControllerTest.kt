@@ -68,7 +68,6 @@ internal class MatchesControllerTest {
         context.register(MatchesController::class.java)
         context.register(MatchService::class.java)
         context.register(MatchIntegration::class.java)
-        context.register(PlayerIntegration::class.java)
         context.register(CardIntegration::class.java)
         context.register(CardMapper::class.java)
         context.register(CharacterMapper::class.java)
@@ -213,7 +212,7 @@ internal class MatchesControllerTest {
 
             if (matchResult.player.user.userType != UserType.IA) {
                 matchResult = matchResult.copy(player = matchResult.opponent, opponent = matchResult.player)
-                dao.saveMatch(matchResult)
+                //dao.saveMatch(matchResult)
             }
 
             val response = instance.nextDuel("0", NextDuelRequest(null), user.token!!)

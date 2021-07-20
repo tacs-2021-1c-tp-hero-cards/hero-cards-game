@@ -4,6 +4,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundExcept
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.UserIntegration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -23,13 +24,6 @@ internal class StatsServiceTest {
     inner class BuildHumanStats {
 
         @Test
-        fun `User not exist`() {
-            assertThrows(ElementNotFoundException::class.java) {
-                instance.buildUserStats("0")
-            }
-        }
-
-        @Test
         fun `User not play any match`() {
             `when`(userServiceMock.getUserById(0L)).thenReturn(human)
 
@@ -40,7 +34,7 @@ internal class StatsServiceTest {
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.totalPoint)
-            assertEquals("HUMAN", stats.userType)
+            assertEquals(UserType.HUMAN, stats.userType)
         }
 
         @Test
@@ -56,7 +50,7 @@ internal class StatsServiceTest {
             assertEquals(1, stats.tieCount)
             assertEquals(2, stats.winCount)
             assertEquals(7, stats.totalPoint)
-            assertEquals("HUMAN", stats.userType)
+            assertEquals(UserType.HUMAN, stats.userType)
         }
 
     }
@@ -84,7 +78,7 @@ internal class StatsServiceTest {
             assertEquals(0, stats.tieCount)
             assertEquals(0, stats.winCount)
             assertEquals(0, stats.totalPoint)
-            assertEquals("IA", stats.userType)
+            assertEquals(UserType.IA, stats.userType)
         }
 
         @Test
@@ -100,7 +94,7 @@ internal class StatsServiceTest {
             assertEquals(1, stats.tieCount)
             assertEquals(2, stats.winCount)
             assertEquals(7, stats.totalPoint)
-            assertEquals("IA", stats.userType)
+            assertEquals(UserType.IA, stats.userType)
         }
 
     }
@@ -134,7 +128,7 @@ internal class StatsServiceTest {
             assertEquals(1, firstStats.tieCount)
             assertEquals(2, firstStats.winCount)
             assertEquals(7, firstStats.totalPoint)
-            assertEquals("IA", firstStats.userType)
+            assertEquals(UserType.IA, firstStats.userType)
 
             val secondStats = allStats[1]
             assertEquals("humanName", secondStats.userName)
@@ -143,7 +137,7 @@ internal class StatsServiceTest {
             assertEquals(0, secondStats.tieCount)
             assertEquals(1, secondStats.winCount)
             assertEquals(3, secondStats.totalPoint)
-            assertEquals("HUMAN", secondStats.userType)
+            assertEquals(UserType.HUMAN, secondStats.userType)
 
             val lastStats = allStats.last()
             assertEquals("humanName", lastStats.userName)
@@ -152,7 +146,7 @@ internal class StatsServiceTest {
             assertEquals(1, lastStats.tieCount)
             assertEquals(0, lastStats.winCount)
             assertEquals(1, lastStats.totalPoint)
-            assertEquals("HUMAN", lastStats.userType)
+            assertEquals(UserType.HUMAN, lastStats.userType)
         }
 
     }

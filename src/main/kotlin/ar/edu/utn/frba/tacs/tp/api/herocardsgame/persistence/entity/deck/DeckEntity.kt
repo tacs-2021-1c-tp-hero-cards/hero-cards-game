@@ -8,12 +8,11 @@ import javax.persistence.*
 @Table(name = "DECK")
 data class DeckEntity(
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
     val name: String,
     val cardIds: String,
     @OneToMany(cascade = [CascadeType.ALL])
-    @JoinColumn(name = "DECK_ID")
     val deckHistory: List<DeckHistoryEntity>
 ){
     constructor(deck: Deck) : this(

@@ -32,7 +32,7 @@ internal class UserIntegrationTest {
     private val humanUserEntity =
         UserEntity(
             userName = userName,
-            userType = UserType.HUMAN.name,
+            userType = UserType.HUMAN,
             winCount = 0,
             tieCount = 0,
             loseCount = 0,
@@ -47,12 +47,12 @@ internal class UserIntegrationTest {
     private val iaUserEntity =
         UserEntity(
             userName = userName,
-            userType = UserType.IA.name,
+            userType = UserType.IA,
             winCount = 0,
             tieCount = 0,
             loseCount = 0,
             inProgressCount = 0,
-            difficulty = difficulty.name
+            difficulty = difficulty
         )
 
     @Nested

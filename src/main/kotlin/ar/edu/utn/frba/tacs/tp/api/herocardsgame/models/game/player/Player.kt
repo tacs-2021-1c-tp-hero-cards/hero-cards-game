@@ -4,7 +4,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.User
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 
 data class Player(
-    val id: Long? = null,
     val user: User,
     val availableCards: List<Card> = emptyList(),
     val prizeCards: List<Card> = emptyList()
