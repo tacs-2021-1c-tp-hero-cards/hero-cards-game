@@ -1,9 +1,9 @@
 spring:
   datasource:
-    driver-class-name: "org.h2.Driver"
-    url: "jdbc:h2:file:./data/testdb"
-    username: "sa"
-    password: "sa"
+    driver-class-name: "com.mysql.jdbc.Driver"
+    url: "jdbc:mysql://${MYSQL_HOST:localhost}:3306/hero-cards-game"
+    username: "root"
+    password: "secret"
   jpa:
     hibernate:
       ddl-auto: update
@@ -11,4 +11,4 @@ spring:
     generate-ddl: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.MySQL5Dialect
