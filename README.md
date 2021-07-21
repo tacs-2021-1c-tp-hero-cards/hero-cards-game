@@ -14,5 +14,4 @@
 
 ## Instrucciones para iniciar la aplicación con Docker
 * Ejecutar estos comandos en el directorio donde se clonó el proyecto:
-  - `gradle clean build`
-  - `sudo docker-compose up`
+  - `docker-compose up`
