@@ -49,7 +49,7 @@ dependencies {
     implementation("org.webjars:bootstrap:3.3.7")
     implementation("org.webjars:jquery:3.1.1-1")
 
-    runtimeOnly("com.h2database:h2")
+    runtimeOnly("mysql:mysql-connector-java")
 }
 
 tasks.withType<KotlinCompile> {
