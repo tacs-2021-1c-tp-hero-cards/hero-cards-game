@@ -82,10 +82,10 @@ class MatchRepositoryTest @Autowired constructor(
     )
     private val matchEntity =
         MatchEntity(
-            playerUser = humanEntity,
+            player = listOf(humanEntity, iaEntity),
+            playerIdTurn = humanEntity.id!!,
             playerAvailableCardIds = batman.id.toString(),
             playerPrizeCardIds = flash.id.toString(),
-            opponentUser = iaEntity,
             opponentAvailableCardIds = flash.id.toString(),
             opponentPrizeCardIds = batman.id.toString(),
             deckId = 0L,

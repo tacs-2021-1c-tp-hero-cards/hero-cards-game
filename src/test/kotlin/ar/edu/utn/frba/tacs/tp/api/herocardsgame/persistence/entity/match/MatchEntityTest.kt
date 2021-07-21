@@ -76,10 +76,10 @@ internal class MatchEntityTest {
         val entity =
             MatchEntity(
                 id,
-                humanEntity,
+                listOf(humanEntity, iaEntity),
+                humanEntity.id!!,
                 batman.id.toString(),
                 flash.id.toString(),
-                iaEntity,
                 flash.id.toString(),
                 batman.id.toString(),
                 0L,
