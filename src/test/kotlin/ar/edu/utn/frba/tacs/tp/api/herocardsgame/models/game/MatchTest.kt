@@ -1,9 +1,9 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game
 
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
@@ -11,7 +11,6 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -486,6 +485,45 @@ internal class MatchTest {
                         status = MatchStatus.IN_PROGRESS
                     ).confirmMatch(true)
             }
+        }
+
+    }
+
+    @Nested
+    inner class ConfirmMatchAutomatic{
+
+        @Test
+        fun `Confirm match automatic when opponent is IA`(){
+            val result = Match(
+                player = player,
+                opponent = iaOpponent,
+                deck = deckMock,
+                status = MatchStatus.PENDING
+            ).confirmMatchAutomatic(UserType.IA)
+
+            assertEquals(MatchStatus.IN_PROGRESS, result.status)
+
+            val playerStat = result.player.user.stats
+            assertTrue(playerStat.winCount == 0 && playerStat.tieCount == 0 && playerStat.loseCount == 0 && playerStat.inProgressCount == 1)
+            val opponentStat = result.opponent.user.stats
+            assertTrue(opponentStat.winCount == 0 && opponentStat.tieCount == 0 && opponentStat.loseCount == 0 && opponentStat.inProgressCount == 1)
+        }
+
+        @Test
+        fun `Not confirm match automatic when opponent is IA`(){
+            val result = Match(
+                player = player,
+                opponent = humanOpponent,
+                deck = deckMock,
+                status = MatchStatus.PENDING
+            ).confirmMatchAutomatic(UserType.HUMAN)
+
+            assertEquals(MatchStatus.PENDING, result.status)
+
+            val playerStat = result.player.user.stats
+            assertTrue(playerStat.winCount == 0 && playerStat.tieCount == 0 && playerStat.loseCount == 0 && playerStat.inProgressCount == 0)
+            val opponentStat = result.opponent.user.stats
+            assertTrue(opponentStat.winCount == 0 && opponentStat.tieCount == 0 && opponentStat.loseCount == 0 && opponentStat.inProgressCount == 0)
         }
 
     }

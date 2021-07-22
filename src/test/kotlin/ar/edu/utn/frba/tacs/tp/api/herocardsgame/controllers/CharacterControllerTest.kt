@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
+import org.mockito.Mockito.mock
 import org.springframework.context.annotation.Bean
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
 
@@ -42,7 +43,7 @@ internal class CharacterControllerTest {
     }
 
     @Bean
-    fun getSuperHeroClientBean(): SuperHeroClient = Mockito.mock(SuperHeroClient::class.java)
+    fun getSuperHeroClientBean(): SuperHeroClient = mock(SuperHeroClient::class.java)
 
     @Nested
     inner class GetCharacter {

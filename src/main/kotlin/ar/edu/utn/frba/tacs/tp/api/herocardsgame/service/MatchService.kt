@@ -35,12 +35,8 @@ class MatchService(
                 player = players.first(),
                 opponent = players.last(),
                 deck = DeckHistory(deck),
-                status = if (userType == UserType.HUMAN) {
-                    MatchStatus.PENDING
-                } else {
-                    MatchStatus.IN_PROGRESS
-                }
-            )
+                status = MatchStatus.PENDING
+            ).confirmMatchAutomatic(userType)
         )
 
         notificationClientService.notifyCreateMatch(userId, userType, newMatch)

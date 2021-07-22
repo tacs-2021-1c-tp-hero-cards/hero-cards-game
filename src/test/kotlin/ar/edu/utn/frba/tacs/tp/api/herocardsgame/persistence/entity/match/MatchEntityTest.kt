@@ -37,7 +37,7 @@ internal class MatchEntityTest {
 
     private val iaEntity =
         UserEntity(
-            id,
+            id + 1,
             userName,
             UserType.IA,
             winCount,
@@ -97,7 +97,7 @@ internal class MatchEntityTest {
 
         val duelHistory = model.duelHistoryList.first()
         assertNull(duelHistory.id)
-        assertEquals(duelType, duelHistory.duelType)
+        assertEquals(duelType   , duelHistory.duelType)
         assertEquals(duelResult, duelHistory.duelResult)
     }
 }

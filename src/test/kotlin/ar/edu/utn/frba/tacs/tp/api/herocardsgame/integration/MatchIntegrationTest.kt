@@ -86,7 +86,7 @@ internal class MatchIntegrationTest {
         MatchEntity(
             id,
             listOf(humanEntity,iaEntity),
-            humanEntity.id!!,
+            id,
             batman.id.toString(),
             flash.id.toString(),
             flash.id.toString(),
