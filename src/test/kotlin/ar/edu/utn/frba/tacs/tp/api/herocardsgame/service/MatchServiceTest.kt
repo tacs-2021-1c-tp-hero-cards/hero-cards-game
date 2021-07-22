@@ -110,17 +110,18 @@ internal class MatchServiceTest {
                 Match(
                     deck = deckHistory,
                     status = MatchStatus.IN_PROGRESS,
-                    player = player.copy(availableCards = listOf(batman)),
-                    opponent = iaOpponentPlayer.copy(availableCards = listOf(batman))
+                    player = player.copy(availableCards = listOf(batman)).startMatch(),
+                    opponent = iaOpponentPlayer.copy(availableCards = listOf(batman)).startMatch()
                 )
 
             `when`(deckServiceMock.searchDeck(0L.toString())).thenReturn(listOf(deck))
             `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken(token = user.token))
                 .thenReturn(listOf(user))
             `when`(userIntegrationMock.getUserById(2L)).thenReturn(iaOpponentUser)
-            `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id = 0L))
+
+            `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id=0L))
             val randomMatch = match.updateTurn()
-            `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id = 0L))
+            `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id=0L))
 
             val result = instance.createMatch("tokenTest", "2", UserType.IA, 0L.toString())
 

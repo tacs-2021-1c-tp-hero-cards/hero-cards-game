@@ -22,7 +22,7 @@ data class MatchEntity(
     val opponentAvailableCardIds: String,
     val opponentPrizeCardIds: String,
     val deckId: Long,
-    @OneToOne(cascade = [CascadeType.ALL])
+    @ManyToOne(cascade = [CascadeType.MERGE])
     val deckHistory: DeckHistoryEntity,
     @Enumerated(value = EnumType.STRING)
     val status: MatchStatus,

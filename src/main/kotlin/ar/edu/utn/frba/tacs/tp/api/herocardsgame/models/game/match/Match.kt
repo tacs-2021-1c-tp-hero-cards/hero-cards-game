@@ -2,6 +2,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
@@ -80,5 +81,12 @@ data class Match(
             copy(status = MatchStatus.CANCELLED)
         }
     }
+
+    fun confirmMatchAutomatic(userType: UserType): Match =
+        if (userType == UserType.IA) {
+            copy(player = player.startMatch(), opponent = opponent.startMatch(), status = MatchStatus.IN_PROGRESS)
+        } else {
+            this
+        }
 
 }

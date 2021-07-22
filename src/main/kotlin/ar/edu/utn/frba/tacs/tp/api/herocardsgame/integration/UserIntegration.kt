@@ -64,7 +64,8 @@ class UserIntegration(private val factory: UserFactory, private val repository: 
         fullName: String? = null,
         token: String? = null,
     ): List<Human> =
-        repository.findHumanByIdAndUserNameAndFullNameAndToken(id, userName, fullName, token).map { it.toHumanModel() }
+        repository.findHumanByIdAndUserNameAndFullNameAndToken(id, userName, fullName, token)
+            .map { it.toHumanModel() }
 
     fun searchIAUserByIdUserNameFullNameOrToken(
         id: String? = null,
