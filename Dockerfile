@@ -4,7 +4,7 @@ COPY . /workspace/
 
 WORKDIR /workspace
 
-RUN gradle build
+RUN gradle build -x test
 
 RUN cp build/libs/hero-cards-game-0.0.1-SNAPSHOT.jar /opt/hero-cards-api.jar
 
