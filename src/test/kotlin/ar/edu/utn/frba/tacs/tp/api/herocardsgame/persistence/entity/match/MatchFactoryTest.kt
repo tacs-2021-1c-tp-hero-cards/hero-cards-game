@@ -37,11 +37,11 @@ internal class MatchFactoryTest {
 
     private val user =
         Human(0L, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
-    private val player = Player(user, listOf(batman), emptyList())
+    private val player = Player(user, true, listOf(batman), emptyList())
 
     private val userOpponent =
         Human(1L, userName, fullName, password, token, Stats(winCount, tieCount, loseCount, inProgressCount))
-    private val opponent = Player(userOpponent, listOf(flash), emptyList())
+    private val opponent = Player(userOpponent, false, listOf(flash), emptyList())
 
     private val deck = Deck(0L, "deckName", listOf(batman, flash))
     private val deckHistory = DeckHistory(deck)
@@ -64,23 +64,25 @@ internal class MatchFactoryTest {
         assertEquals(DeckHistoryEntity(deckHistory), entity.deckHistory)
         assertEquals(MatchStatus.IN_PROGRESS, entity.status)
         assertTrue(entity.duelHistory.contains(DuelHistoryEntity(duelHistory)))
+        assertEquals(user.id, entity.playerIdCreatedMatch)
     }
 
     @Test
     fun toEntityWithOutId() {
-        val model = Match(null, player, opponent, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
+        val model = Match(null, opponent, player, deckHistory, MatchStatus.IN_PROGRESS, listOf(duelHistory))
 
         val entity = instance.toEntity(model)
         assertNull(entity.id)
         assertTrue(entity.player.contains(userFactory.toEntity(user)))
         assertTrue(entity.player.contains(userFactory.toEntity(userOpponent)))
-        assertEquals(batman.id.toString(), entity.playerAvailableCardIds)
+        assertEquals(flash.id.toString(), entity.playerAvailableCardIds)
         assertEquals("", entity.playerPrizeCardIds)
-        assertEquals(flash.id.toString(), entity.opponentAvailableCardIds)
+        assertEquals(batman.id.toString(), entity.opponentAvailableCardIds)
         assertEquals("", entity.opponentPrizeCardIds)
         assertEquals(id, entity.deckId)
         assertEquals(DeckHistoryEntity(deckHistory), entity.deckHistory)
         assertEquals(MatchStatus.IN_PROGRESS, entity.status)
         assertTrue(entity.duelHistory.contains(DuelHistoryEntity(duelHistory)))
+        assertEquals(user.id, entity.playerIdCreatedMatch)
     }
 }

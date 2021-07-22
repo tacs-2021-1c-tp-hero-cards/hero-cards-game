@@ -5,6 +5,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 
 data class Player(
     val user: User,
+    val createdMatch: Boolean = false,
     val availableCards: List<Card> = emptyList(),
     val prizeCards: List<Card> = emptyList()
 ) {

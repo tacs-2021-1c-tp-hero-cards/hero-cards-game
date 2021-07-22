@@ -83,6 +83,7 @@ class MatchRepositoryTest @Autowired constructor(
         MatchEntity(
             player = listOf(humanEntity, iaEntity),
             playerIdTurn = id + 1L,
+            playerIdCreatedMatch = id + 1L,
             playerAvailableCardIds = batman.id.toString(),
             playerPrizeCardIds = flash.id.toString(),
             opponentAvailableCardIds = flash.id.toString(),

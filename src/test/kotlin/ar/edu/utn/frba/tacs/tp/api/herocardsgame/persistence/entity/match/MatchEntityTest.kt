@@ -8,8 +8,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class MatchEntityTest {
@@ -78,6 +77,7 @@ internal class MatchEntityTest {
                 id,
                 listOf(humanEntity, iaEntity),
                 humanEntity.id!!,
+                humanEntity.id!!,
                 batman.id.toString(),
                 flash.id.toString(),
                 flash.id.toString(),
@@ -93,7 +93,9 @@ internal class MatchEntityTest {
         assertEquals(deckHistory.toModel(id, listOf(batman, flash)), model.deck)
         assertEquals(MatchStatus.IN_PROGRESS, model.status)
         assertEquals(humanEntity.toModel(), model.player.user)
+        assertTrue(model.player.createdMatch)
         assertEquals(iaEntity.toModel(), model.opponent.user)
+        assertFalse(model.opponent.createdMatch)
 
         val duelHistory = model.duelHistoryList.first()
         assertNull(duelHistory.id)

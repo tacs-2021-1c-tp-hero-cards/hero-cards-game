@@ -85,8 +85,9 @@ internal class MatchIntegrationTest {
     private val matchEntity =
         MatchEntity(
             id,
-            listOf(humanEntity,iaEntity),
+            listOf(humanEntity, iaEntity),
             id,
+            id + 1,
             batman.id.toString(),
             flash.id.toString(),
             flash.id.toString(),

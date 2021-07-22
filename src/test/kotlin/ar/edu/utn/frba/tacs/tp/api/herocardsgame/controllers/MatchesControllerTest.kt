@@ -131,7 +131,7 @@ internal class MatchesControllerTest {
         fun `Create match with 2 humans and 2 cards`() {
             val matchEntity = matchFactory.toEntity(
                 Match(
-                    player = Player(user).copy(availableCards = listOf(batman)),
+                    player = Player(user, true).copy(availableCards = listOf(batman)),
                     opponent = Player(humanOpponent).copy(availableCards = listOf(batman)),
                     deck = deckHistory,
                     status = MatchStatus.PENDING,
@@ -177,7 +177,7 @@ internal class MatchesControllerTest {
         fun `Create match with human and ia and 2 cards`() {
             val matchEntity = matchFactory.toEntity(
                 Match(
-                    player = Player(user).startMatch().copy(availableCards = listOf(batman)),
+                    player = Player(user, true).startMatch().copy(availableCards = listOf(batman)),
                     opponent = Player(iaOpponent).startMatch().copy(availableCards = listOf(batman)),
                     deck = deckHistory,
                     status = MatchStatus.IN_PROGRESS,
@@ -249,7 +249,7 @@ internal class MatchesControllerTest {
                 Match(
                     id = 0,
                     player = Player(user).startMatch().copy(availableCards = listOf(batman)),
-                    opponent = Player(humanOpponent).startMatch().copy(availableCards = listOf(batman)),
+                    opponent = Player(humanOpponent, true).startMatch().copy(availableCards = listOf(batman)),
                     deck = deckHistory,
                     status = MatchStatus.IN_PROGRESS,
                     duelHistoryList = emptyList()
@@ -259,7 +259,7 @@ internal class MatchesControllerTest {
             val newMatchEntity = matchFactory.toEntity(
                 Match(
                     id = 0,
-                    player = Player(humanOpponent).startMatch().tieMatch()
+                    player = Player(humanOpponent, true).startMatch().tieMatch()
                         .copy(availableCards = emptyList(), prizeCards = listOf(batman)),
                     opponent = Player(user).startMatch().tieMatch()
                         .copy(availableCards = emptyList(), prizeCards = listOf(batman)),
@@ -300,7 +300,7 @@ internal class MatchesControllerTest {
                 Match(
                     id = 0,
                     player = Player(iaOpponent).startMatch().copy(availableCards = listOf(batman)),
-                    opponent = Player(user).startMatch().copy(availableCards = listOf(batman)),
+                    opponent = Player(user, true).startMatch().copy(availableCards = listOf(batman)),
                     deck = deckHistory,
                     status = MatchStatus.IN_PROGRESS,
                     duelHistoryList = emptyList()
@@ -312,7 +312,7 @@ internal class MatchesControllerTest {
                     id = 0,
                     opponent = Player(iaOpponent).startMatch().tieMatch()
                         .copy(availableCards = emptyList(), prizeCards = listOf(batman)),
-                    player = Player(user).startMatch().tieMatch()
+                    player = Player(user, true).startMatch().tieMatch()
                         .copy(availableCards = emptyList(), prizeCards = listOf(batman)),
                     deck = deckHistory,
                     status = MatchStatus.FINALIZED,

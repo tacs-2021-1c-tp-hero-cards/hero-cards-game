@@ -17,6 +17,7 @@ data class MatchEntity(
     @ManyToMany(cascade = [CascadeType.MERGE])
     val player: List<UserEntity>,
     val playerIdTurn: Long,
+    val playerIdCreatedMatch: Long,
     val playerAvailableCardIds: String,
     val playerPrizeCardIds: String,
     val opponentAvailableCardIds: String,
@@ -28,10 +29,20 @@ data class MatchEntity(
     val status: MatchStatus,
     @OneToMany(cascade = [CascadeType.ALL])
     val duelHistory: List<DuelHistoryEntity>
-){
+) {
     fun toModel(cardModels: List<Card>): Match {
-        val playerModel = toPlayerModel(player.first { it.id == playerIdTurn }, playerAvailableCardIds, playerPrizeCardIds, cardModels)
-        val opponentModel = toPlayerModel(player.first { it.id != playerIdTurn }, opponentAvailableCardIds, opponentPrizeCardIds, cardModels)
+        val playerModel = toPlayerModel(
+            player.first { it.id == playerIdTurn },
+            playerAvailableCardIds,
+            playerPrizeCardIds,
+            cardModels
+        )
+        val opponentModel = toPlayerModel(
+            player.first { it.id != playerIdTurn },
+            opponentAvailableCardIds,
+            opponentPrizeCardIds,
+            cardModels
+        )
         val deckHistoryModel = deckHistory.toModel(deckId, cardModels)
         val duelHistoryModel = duelHistory.map { it.toModel(cardModels) }
         return Match(id, playerModel, opponentModel, deckHistoryModel, status, duelHistoryModel)
@@ -51,7 +62,7 @@ data class MatchEntity(
             .filterNot { it.isBlank() }
             .map { cardId -> cardModels.first { card -> card.id == cardId.toLong() } }
 
-        return Player(user.toModel(), availableCards, priceCards)
+        return Player(user.toModel(), user.id == playerIdCreatedMatch, availableCards, priceCards)
     }
 
 }

@@ -11,8 +11,9 @@ class MatchFactory(private val userFactory: UserFactory) {
     fun toEntity(match: Match) =
         MatchEntity(
             id = match.id,
-            player = listOf(userFactory.toEntity(match.player.user),userFactory.toEntity(match.opponent.user)),
+            player = listOf(userFactory.toEntity(match.player.user), userFactory.toEntity(match.opponent.user)),
             playerIdTurn = match.player.user.id!!,
+            playerIdCreatedMatch = getPlayerIdCreatedMatch(match),
             playerAvailableCardIds = match.player.availableCards.joinToString(separator = ",") { it.id.toString() },
             playerPrizeCardIds = match.player.prizeCards.joinToString(separator = ",") { it.id.toString() },
             opponentAvailableCardIds = match.opponent.availableCards.joinToString(
@@ -25,4 +26,12 @@ class MatchFactory(private val userFactory: UserFactory) {
             status = match.status,
             duelHistory = match.duelHistoryList.map { DuelHistoryEntity(it) }
         )
+
+    private fun getPlayerIdCreatedMatch(match: Match): Long =
+        if (match.player.createdMatch) {
+            match.player.user.id!!
+        } else {
+            match.opponent.user.id!!
+        }
+
 }

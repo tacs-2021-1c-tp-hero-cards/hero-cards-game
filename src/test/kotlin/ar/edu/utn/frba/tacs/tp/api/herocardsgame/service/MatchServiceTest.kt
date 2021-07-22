@@ -34,7 +34,7 @@ internal class MatchServiceTest {
         MatchService(matchIntegrationMock, deckServiceMock, userIntegrationMock, notificationClientServiceMock)
 
     private val user = Human(0L, "userName", "fullName", "password", "tokenTest")
-    private val player = Player(user)
+    private val player = Player(user, true)
 
     private val humanOpponentUser =
         Human(
@@ -146,10 +146,12 @@ internal class MatchServiceTest {
             assertEquals(2, players.size)
 
             val player1 = players.first { it.user == user }
+            assertTrue(player1.createdMatch)
             val availableCards1 = player1.availableCards
             assertEquals(1, availableCards1.size)
 
             val player2 = players.first { it.user == humanOpponentUser }
+            assertFalse(player2.createdMatch)
             val availableCards2 = player2.availableCards
             assertEquals(1, availableCards2.size)
         }
@@ -165,10 +167,12 @@ internal class MatchServiceTest {
             assertEquals(2, players.size)
 
             val player1 = players.first { it.user == user }
+            assertTrue(player1.createdMatch)
             val availableCards1 = player1.availableCards
             assertEquals(1, availableCards1.size)
 
             val player2 = players.first { it.user == iaOpponentUser }
+            assertFalse(player2.createdMatch)
             val availableCards2 = player2.availableCards
             assertEquals(1, availableCards2.size)
         }

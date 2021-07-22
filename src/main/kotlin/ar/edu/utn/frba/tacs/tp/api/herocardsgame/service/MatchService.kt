@@ -48,7 +48,7 @@ class MatchService(
 
         val player = Player(
             user = userIntegration.searchHumanUserByIdUserNameFullNameOrToken(token = token).firstOrNull()
-                ?: throw ElementNotFoundException("human user", "token", token)
+                ?: throw ElementNotFoundException("human user", "token", token), true
         )
 
         val opponent = Player(user = userIntegration.getUserById(userId.toLong()))
