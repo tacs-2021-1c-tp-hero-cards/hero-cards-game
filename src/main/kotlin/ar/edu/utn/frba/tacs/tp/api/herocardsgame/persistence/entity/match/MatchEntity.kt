@@ -9,7 +9,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.UserEnt
 import javax.persistence.*
 
 @Entity
-@Table(name = "MATCH")
+@Table(name = "MATCHES")
 data class MatchEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,7 @@ data class MatchEntity(
     val opponentAvailableCardIds: String,
     val opponentPrizeCardIds: String,
     val deckId: Long,
-    @ManyToOne(cascade = [CascadeType.MERGE])
+    @ManyToOne(cascade = [CascadeType.ALL])
     val deckHistory: DeckHistoryEntity,
     @Enumerated(value = EnumType.STRING)
     val status: MatchStatus,

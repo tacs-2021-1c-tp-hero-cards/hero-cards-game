@@ -72,7 +72,8 @@ class MatchService(
 
     fun nextDuel(matchId: String, token: String, duelType: DuelType? = null): Match {
         val match = searchMatchById(matchId)
-        validateUserTurn(match, token)
+        val isIA = duelType == null
+        validateUserTurn(match, token, isIA)
         val newMatch = matchIntegration.saveMatch(match.resolveDuel(duelType).updateTurn().updateStatusMatch())
         notificationClientService.notifyResultDuel(newMatch)
         return newMatch
@@ -86,10 +87,11 @@ class MatchService(
         return newMatch
     }
 
-    private fun validateUserTurn(match: Match, token: String?) {
+    private fun validateUserTurn(match: Match, token: String?, isIA: Boolean = false) {
         val user = match.player.user
         if (user.userType == UserType.HUMAN &&
-            userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id.toString()).first().token != token
+            (userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id.toString()).first().token != token ||
+                    isIA)
         ) {
             throw InvalidTurnException(token!!)
         }
