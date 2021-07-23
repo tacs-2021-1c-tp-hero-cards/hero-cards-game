@@ -22,4 +22,21 @@ class MatchIntegration(
     fun saveMatch(match: Match): Match =
         repository.save(factory.toEntity(match)).toModel(match.deck.cards)
 
+    fun findMatchByUserId(userId: Long, onlyCreatedByUser: Boolean): List<Match> {
+        val matchesFound = if (onlyCreatedByUser) {
+            repository.findMatchByCreatedUserId(userId)
+        } else {
+            repository.findMatchByUserId(userId)
+        }
+
+        val allCardByMatchesEntity =
+            matchesFound.flatMap { it.deckHistory.cardIds.split(",") }
+                .distinct()
+                .map { cardIntegration.getCardById(it) }
+
+        return matchesFound.map { it.toModel(allCardByMatchesEntity) }
+    }
+
+
 }
+

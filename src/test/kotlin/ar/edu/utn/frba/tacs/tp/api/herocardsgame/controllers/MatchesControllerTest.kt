@@ -666,6 +666,86 @@ internal class MatchesControllerTest {
 
     }
 
+    @Nested
+    inner class GetMatchByUserId {
+
+        @Test
+        fun `Search match by user id only those created by the user`() {
+            val matchEntity = matchFactory.toEntity(
+                Match(
+                    id = 0L,
+                    player = Player(user).copy(availableCards = listOf(batman)),
+                    opponent = Player(humanOpponent).copy(availableCards = listOf(batman)),
+                    deck = deckHistory,
+                    status = MatchStatus.IN_PROGRESS,
+                    duelHistoryList = emptyList()
+                )
+            )
+
+            `when`(matchRepositoryMock.findMatchByCreatedUserId(0L)).thenReturn(listOf(matchEntity))
+            val response = instance.getMatchByUserId("0", true)
+            assertEquals(200, response.statusCodeValue)
+
+            val founds = response.body!!
+            assertEquals(1, founds.size)
+
+            val first = founds.first()
+            assertEquals(0L, first.matchId)
+            assertEquals(MatchStatus.IN_PROGRESS, first.matchStatus)
+            assertEquals(humanOpponent, first.userOpponent)
+            assertFalse(first.isMatchCreatedByUser)
+        }
+
+        @Test
+        fun `Search match by user id only those created by the user but there no`() {
+            `when`(matchRepositoryMock.findMatchByCreatedUserId(0L)).thenReturn(emptyList())
+
+            val response = instance.getMatchByUserId("0", true)
+            assertEquals(200, response.statusCodeValue)
+            val matchUserResponse = response.body!!
+            assertTrue(matchUserResponse.isEmpty())
+        }
+
+        @Test
+        fun `Search match by user id no matter who created them`() {
+            val matchEntity = matchFactory.toEntity(
+                Match(
+                    id = 0L,
+                    player = Player(user).copy(availableCards = listOf(batman)),
+                    opponent = Player(humanOpponent).copy(availableCards = listOf(batman)),
+                    deck = deckHistory,
+                    status = MatchStatus.IN_PROGRESS,
+                    duelHistoryList = emptyList()
+                )
+            )
+
+            `when`(matchRepositoryMock.findMatchByUserId(0L)).thenReturn(listOf(matchEntity))
+
+            val response = instance.getMatchByUserId("0", false)
+            assertEquals(200, response.statusCodeValue)
+            val founds = response.body!!
+            assertEquals(1, founds.size)
+
+            val first = founds.first()
+            assertEquals(0L, first.matchId)
+            assertEquals(MatchStatus.IN_PROGRESS, first.matchStatus)
+            assertEquals(humanOpponent, first.userOpponent)
+            assertFalse(first.isMatchCreatedByUser)
+        }
+
+        @Test
+        fun `Search match by user id Search match but there no`() {
+            `when`(matchRepositoryMock.findMatchByUserId(0L)).thenReturn(emptyList())
+
+            val response = instance.getMatchByUserId("0", false)
+            assertEquals(200, response.statusCodeValue)
+            val matchUserResponse = response.body!!
+            assertTrue(matchUserResponse.isEmpty())
+        }
+
+
+    }
+
     private fun validatePlayers(user: User, user2: User, match: Match) {
         val player = match.player
         val opponent = match.opponent

@@ -3,6 +3,7 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckHistoryEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.DuelHistoryEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.MatchEntity
@@ -14,8 +15,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelResult
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.IADifficulty
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
@@ -87,7 +87,7 @@ internal class MatchIntegrationTest {
             id,
             listOf(humanEntity, iaEntity),
             id,
-            id + 1,
+            id,
             batman.id.toString(),
             flash.id.toString(),
             flash.id.toString(),
@@ -129,6 +129,63 @@ internal class MatchIntegrationTest {
 
         instance.saveMatch(matchEntity.toModel(listOf(batman, flash)))
         verify(repositoryMock, times(1)).save(matchEntity)
+    }
+
+    @Nested
+    inner class FindMatchByUserId{
+
+        @Test
+        fun `Search games by creator user`() {
+            `when`(repositoryMock.findMatchByCreatedUserId(0L)).thenReturn(listOf(matchEntity))
+            `when`(cardIntegrationMock.getCardById("69")).thenReturn(batman)
+            `when`(cardIntegrationMock.getCardById("2")).thenReturn(flash)
+
+            val founds = instance.findMatchByUserId(0L, true)
+            assertEquals(1, founds.size)
+
+            val first = founds.first()
+            assertEquals(id, first.id)
+            assertEquals(
+                Player(humanEntity.toModel(), true).copy(
+                    prizeCards = listOf(flash),
+                    availableCards = listOf(batman)
+                ), first.player
+            )
+            assertEquals(
+                Player(iaEntity.toModel()).copy(availableCards = listOf(flash), prizeCards = listOf(batman)),
+                first.opponent
+            )
+            assertEquals(deckHistory.toModel(0L, listOf(batman, flash)), first.deck)
+            assertEquals(matchStatus, first.status)
+            assertTrue(first.duelHistoryList.contains(duelHistory.toModel(listOf(batman, flash))))
+        }
+
+        @Test
+        fun `Search for games regardless of the creator user`() {
+            `when`(repositoryMock.findMatchByUserId(0L)).thenReturn(listOf(matchEntity))
+            `when`(cardIntegrationMock.getCardById("69")).thenReturn(batman)
+            `when`(cardIntegrationMock.getCardById("2")).thenReturn(flash)
+
+            val founds = instance.findMatchByUserId(0L, false)
+            assertEquals(1, founds.size)
+
+            val first = founds.first()
+            assertEquals(id, first.id)
+            assertEquals(
+                Player(humanEntity.toModel(), true).copy(
+                    prizeCards = listOf(flash),
+                    availableCards = listOf(batman)
+                ), first.player
+            )
+            assertEquals(
+                Player(iaEntity.toModel()).copy(availableCards = listOf(flash), prizeCards = listOf(batman)),
+                first.opponent
+            )
+            assertEquals(deckHistory.toModel(0L, listOf(batman, flash)), first.deck)
+            assertEquals(matchStatus, first.status)
+            assertTrue(first.duelHistoryList.contains(duelHistory.toModel(listOf(batman, flash))))
+        }
+
     }
 
 }

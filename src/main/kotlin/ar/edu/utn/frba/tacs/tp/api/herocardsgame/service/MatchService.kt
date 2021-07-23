@@ -11,6 +11,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.MatchUserResponse
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.duel.DuelType
 import org.springframework.stereotype.Service
 
@@ -72,7 +73,7 @@ class MatchService(
 
     fun nextDuel(matchId: String, token: String, duelType: DuelType? = null): Match {
         val match = searchMatchById(matchId)
-        validateUserTurn(match, token)
+        validateUserTurn(match, token, duelType == null)
         val newMatch = matchIntegration.saveMatch(match.resolveDuel(duelType).updateTurn().updateStatusMatch())
         notificationClientService.notifyResultDuel(newMatch)
         return newMatch
@@ -86,10 +87,11 @@ class MatchService(
         return newMatch
     }
 
-    private fun validateUserTurn(match: Match, token: String?) {
+    private fun validateUserTurn(match: Match, token: String?, isIA: Boolean = false) {
         val user = match.player.user
         if (user.userType == UserType.HUMAN &&
-            userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id.toString()).first().token != token
+            (userIntegration.searchHumanUserByIdUserNameFullNameOrToken(user.id.toString())
+                .first().token != token || isIA)
         ) {
             throw InvalidTurnException(token!!)
         }
@@ -101,4 +103,12 @@ class MatchService(
         notificationClientService.notifyConfirmMatch(token, newMatch)
         return newMatch
     }
+
+    fun searchMatchByUserId(userId: String, onlyCreatedByUser: Boolean): List<MatchUserResponse> =
+        matchIntegration.findMatchByUserId(userId.toLong(), onlyCreatedByUser)
+            .map {
+                val opponent = if (it.player.user.id == userId.toLong()) it.opponent else it.player
+                MatchUserResponse(it, opponent)
+            }
+
 }

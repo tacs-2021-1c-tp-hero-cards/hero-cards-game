@@ -7,6 +7,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateMatchRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.MatchConfirmationRequest
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.MatchUserResponse
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.NextDuelRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.service.MatchService
 import org.springframework.http.HttpStatus
@@ -122,5 +123,21 @@ class MatchesController(private val matchService: MatchService) :
         reportError(e, HttpStatus.BAD_REQUEST)
     } catch (e: ElementNotFoundException) {
         reportError(e, HttpStatus.NOT_FOUND)
+    }
+
+    @GetMapping("/users/{user-id}/matches")
+    fun getMatchByUserId(
+        @PathVariable("user-id") userId: String,
+        @RequestParam(value = "only-created-by-user") onlyCreatedByUser: Boolean?
+    ): ResponseEntity<List<MatchUserResponse>> {
+        reportRequest(
+            method = RequestMethod.GET,
+            path = "/users/user-id}/matches",
+            pathVariables = hashMapOf("user-id" to userId),
+            requestParams = hashMapOf("only-created-by-user" to onlyCreatedByUser.toString()),
+            body = null
+        )
+        val response = matchService.searchMatchByUserId(userId, onlyCreatedByUser ?: false)
+        return reportResponse(HttpStatus.OK, response)
     }
 }

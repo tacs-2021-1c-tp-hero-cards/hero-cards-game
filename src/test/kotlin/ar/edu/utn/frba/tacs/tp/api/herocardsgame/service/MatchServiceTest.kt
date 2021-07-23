@@ -119,9 +119,9 @@ internal class MatchServiceTest {
                 .thenReturn(listOf(user))
             `when`(userIntegrationMock.getUserById(2L)).thenReturn(iaOpponentUser)
 
-            `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id=0L))
+            `when`(matchIntegrationMock.saveMatch(match)).thenReturn(match.copy(id = 0L))
             val randomMatch = match.updateTurn()
-            `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id=0L))
+            `when`(matchIntegrationMock.saveMatch(randomMatch)).thenReturn(randomMatch.copy(id = 0L))
 
             val result = instance.createMatch("tokenTest", "2", UserType.IA, 0L.toString())
 
@@ -289,22 +289,22 @@ internal class MatchServiceTest {
 
             val match = Match(
                 0L,
-                player.copy(availableCards = listOf(flash)).startMatch(),
-                humanOpponentPlayer.copy(availableCards = listOf(batman)).startMatch(),
+                iaOpponentPlayer.copy(availableCards = listOf(flash)).startMatch(),
+                player.copy(availableCards = listOf(batman)).startMatch(),
                 deckHistory,
                 MatchStatus.IN_PROGRESS
             )
 
             val matchResult = match.copy(
-                player = humanOpponentPlayer.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch()
+                player = player.copy(availableCards = emptyList(), prizeCards = emptyList()).startMatch()
                     .loseMatch(),
-                opponent = player.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch()
+                opponent = iaOpponentPlayer.copy(availableCards = emptyList(), prizeCards = listOf(batman, flash)).startMatch()
                     .winMatch(),
                 status = MatchStatus.FINALIZED,
                 duelHistoryList = listOf(
                     DuelHistory(
-                        player.copy(availableCards = listOf(flash)),
-                        humanOpponentPlayer.copy(availableCards = listOf(batman)),
+                        iaOpponentPlayer.copy(availableCards = listOf(flash)),
+                        player.copy(availableCards = listOf(batman)),
                         DuelType.SPEED,
                         DuelResult.WIN
                     )
@@ -351,6 +351,24 @@ internal class MatchServiceTest {
 
             assertThrows(InvalidTurnException::class.java) {
                 instance.nextDuel(0L.toString(), "tokenTest", DuelType.SPEED)
+            }
+        }
+
+        @Test
+        fun `IA user without the turn plays next duel`() {
+            val match = Match(
+                0L,
+                player.copy(availableCards = listOf(flash)),
+                iaOpponentPlayer.copy(availableCards = listOf(batman)),
+                deckHistory,
+                MatchStatus.IN_PROGRESS
+            )
+
+            `when`(matchIntegrationMock.getMatchById(0L)).thenReturn(match)
+            `when`(userIntegrationMock.searchHumanUserByIdUserNameFullNameOrToken("0")).thenReturn(listOf(user))
+
+            assertThrows(InvalidTurnException::class.java) {
+                instance.nextDuel(0L.toString(), "tokenTest", null)
             }
         }
 
@@ -467,6 +485,72 @@ internal class MatchServiceTest {
                 instance.matchConfirmation("0", true, "token")
             }
         }
+
+    }
+
+    @Nested
+    inner class SearchMatchByUserId {
+
+        @Test
+        fun `Search match by user id only those created by the user`() {
+            val match =
+                Match(
+                    id = 1L,
+                    deck = deckHistory,
+                    status = MatchStatus.PENDING,
+                    player = player.copy(availableCards = listOf(batman)),
+                    opponent = humanOpponentPlayer.copy(availableCards = listOf(batman))
+                )
+
+            `when`(matchIntegrationMock.findMatchByUserId(0L, true)).thenReturn(listOf(match))
+            val founds = instance.searchMatchByUserId("0", true)
+            assertEquals(1, founds.size)
+
+            val first = founds.first()
+            assertEquals(1L, first.matchId)
+            assertEquals(MatchStatus.PENDING, first.matchStatus)
+            assertEquals(humanOpponentUser, first.userOpponent)
+            assertTrue(first.isMatchCreatedByUser)
+        }
+
+        @Test
+        fun `Search match by user id only those created by the user but there no`() {
+            `when`(matchIntegrationMock.findMatchByUserId(0L, true)).thenReturn(emptyList())
+
+            val founds = instance.searchMatchByUserId("0", true)
+            assertTrue(founds.isEmpty())
+        }
+
+        @Test
+        fun `Search match by user id no matter who created them`() {
+            val match =
+                Match(
+                    id = 1L,
+                    deck = deckHistory,
+                    status = MatchStatus.IN_PROGRESS,
+                    player = player.copy(availableCards = listOf(batman), createdMatch = false),
+                    opponent = humanOpponentPlayer.copy(availableCards = listOf(batman), createdMatch = true)
+                )
+
+            `when`(matchIntegrationMock.findMatchByUserId(0L, false)).thenReturn(listOf(match))
+            val founds = instance.searchMatchByUserId("0", false)
+            assertEquals(1, founds.size)
+
+            val first = founds.first()
+            assertEquals(1L, first.matchId)
+            assertEquals(MatchStatus.IN_PROGRESS, first.matchStatus)
+            assertEquals(humanOpponentUser, first.userOpponent)
+            assertFalse(first.isMatchCreatedByUser)
+        }
+
+        @Test
+        fun `Search match by user id Search match but there no`() {
+            `when`(matchIntegrationMock.findMatchByUserId(0L, false)).thenReturn(emptyList())
+
+            val founds = instance.searchMatchByUserId("0", false)
+            assertTrue(founds.isEmpty())
+        }
+
 
     }
 
