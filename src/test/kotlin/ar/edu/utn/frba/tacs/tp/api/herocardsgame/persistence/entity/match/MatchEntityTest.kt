@@ -64,8 +64,10 @@ internal class MatchEntityTest {
     private val duelHistory = DuelHistoryEntity(
         playerAvailableCardIds = batman.id.toString(),
         playerPrizeCardIds = flash.id.toString(),
+        playerUserName = "player",
         opponentAvailableCardIds = flash.id.toString(),
         opponentPrizeCardIds = batman.id.toString(),
+        opponentUserName = "opponent",
         duelType = duelType,
         duelResult = duelResult
     )
@@ -99,7 +101,7 @@ internal class MatchEntityTest {
 
         val duelHistory = model.duelHistoryList.first()
         assertNull(duelHistory.id)
-        assertEquals(duelType   , duelHistory.duelType)
+        assertEquals(duelType, duelHistory.duelType)
         assertEquals(duelResult, duelHistory.duelResult)
     }
 }

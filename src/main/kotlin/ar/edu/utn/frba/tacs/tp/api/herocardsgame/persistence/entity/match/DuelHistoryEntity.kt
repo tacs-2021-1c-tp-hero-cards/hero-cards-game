@@ -15,8 +15,10 @@ data class DuelHistoryEntity(
     val id: Long? = null,
     val playerAvailableCardIds: String,
     val playerPrizeCardIds: String,
+    val playerUserName: String,
     val opponentAvailableCardIds: String,
     val opponentPrizeCardIds: String,
+    val opponentUserName: String,
     @Enumerated(value = EnumType.STRING)
     val duelType: DuelType,
     @Enumerated(value = EnumType.STRING)
@@ -26,21 +28,25 @@ data class DuelHistoryEntity(
         id = duelHistory.id,
         playerAvailableCardIds = duelHistory.player.availableCards.joinToString(separator = ",") { it.id.toString() },
         playerPrizeCardIds = duelHistory.player.prizeCards.joinToString(separator = ",") { it.id.toString() },
+        playerUserName = duelHistory.player.userName,
         opponentAvailableCardIds = duelHistory.opponent.availableCards.joinToString(separator = ",") { it.id.toString() },
         opponentPrizeCardIds = duelHistory.opponent.prizeCards.joinToString(separator = ",") { it.id.toString() },
+        opponentUserName = duelHistory.opponent.userName,
         duelType = duelHistory.duelType,
         duelResult = duelHistory.duelResult
     )
 
     fun toModel(cardModels: List<Card>): DuelHistory {
-        val player = toPlayerHistoryModel(playerAvailableCardIds, playerPrizeCardIds, cardModels)
-        val opponent = toPlayerHistoryModel(opponentAvailableCardIds, opponentPrizeCardIds, cardModels)
+        val player = toPlayerHistoryModel(playerAvailableCardIds, playerPrizeCardIds, playerUserName, cardModels)
+        val opponent =
+            toPlayerHistoryModel(opponentAvailableCardIds, opponentPrizeCardIds, opponentUserName, cardModels)
         return DuelHistory(id, player, opponent, duelType, duelResult)
     }
 
     private fun toPlayerHistoryModel(
         availableCardIds: String,
         prizeCardIds: String,
+        userName: String,
         cardModels: List<Card>
     ): PlayerHistory {
         val availableCards = availableCardIds.split(",")
@@ -51,7 +57,7 @@ data class DuelHistoryEntity(
             .filterNot { it.isBlank() }
             .map { cardId -> cardModels.first { card -> card.id == cardId.toLong() } }
 
-        return PlayerHistory(availableCards.first(), availableCards, prizeCards)
+        return PlayerHistory(availableCards.first(), userName, availableCards, prizeCards)
     }
 
 }

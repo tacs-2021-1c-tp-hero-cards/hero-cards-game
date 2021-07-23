@@ -18,8 +18,8 @@ internal class DuelHistoryEntityTest {
     private val batmanId = batman.id.toString()
 
     private val id: Long = 0L
-    private val player = PlayerHistory(flash, listOf(flash))
-    private val opponent = PlayerHistory(batman, listOf(batman))
+    private val player = PlayerHistory(flash, "player", listOf(flash))
+    private val opponent = PlayerHistory(batman, "opponent", listOf(batman))
     private val duelType = DuelType.SPEED
     private val duelResult = DuelResult.WIN
 
@@ -38,6 +38,8 @@ internal class DuelHistoryEntityTest {
             assertEquals("", entity.opponentPrizeCardIds)
             assertEquals(duelType, entity.duelType)
             assertEquals(duelResult, entity.duelResult)
+            assertEquals("player", entity.playerUserName)
+            assertEquals("opponent", entity.opponentUserName)
         }
 
         @Test
@@ -52,6 +54,8 @@ internal class DuelHistoryEntityTest {
             assertEquals("", entity.opponentPrizeCardIds)
             assertEquals(duelType, entity.duelType)
             assertEquals(duelResult, entity.duelResult)
+            assertEquals("player", entity.playerUserName)
+            assertEquals("opponent", entity.opponentUserName)
         }
 
     }
@@ -61,8 +65,10 @@ internal class DuelHistoryEntityTest {
         val entity = DuelHistoryEntity(
             playerAvailableCardIds = flashId,
             playerPrizeCardIds = "",
+            playerUserName = "player",
             opponentAvailableCardIds = batmanId,
             opponentPrizeCardIds = "",
+            opponentUserName = "opponent",
             duelType = duelType,
             duelResult = duelResult
         )

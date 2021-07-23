@@ -16,6 +16,7 @@ class MatchFactory(private val userFactory: UserFactory) {
             playerIdCreatedMatch = getPlayerIdCreatedMatch(match),
             playerAvailableCardIds = match.player.availableCards.joinToString(separator = ",") { it.id.toString() },
             playerPrizeCardIds = match.player.prizeCards.joinToString(separator = ",") { it.id.toString() },
+
             opponentAvailableCardIds = match.opponent.availableCards.joinToString(
                 separator =
                 ","

@@ -77,8 +77,10 @@ internal class MatchIntegrationTest {
     private val duelHistory = DuelHistoryEntity(
         playerAvailableCardIds = batman.id.toString(),
         playerPrizeCardIds = flash.id.toString(),
+        playerUserName = humanEntity.userName,
         opponentAvailableCardIds = flash.id.toString(),
         opponentPrizeCardIds = batman.id.toString(),
+        opponentUserName = humanEntity.userName,
         duelType = duelType,
         duelResult = duelResult
     )
