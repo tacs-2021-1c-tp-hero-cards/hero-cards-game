@@ -13,7 +13,6 @@ abstract class RestClient(
     private var protocol: String = "https://",
     private var host: String = "superheroapi.com",
     private var baseUrl: String = "/api/",
-    //private var accessToken: String = System.getenv("ACCESS_TOKEN")
     private var accessToken: String = "10225693555586194"
 ) {
 

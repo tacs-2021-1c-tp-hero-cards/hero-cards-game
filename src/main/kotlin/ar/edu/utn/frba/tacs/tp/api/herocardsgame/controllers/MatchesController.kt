@@ -3,7 +3,6 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.controllers
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.ElementNotFoundException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidMatchException
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.exception.InvalidTurnException
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateMatchRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.MatchConfirmationRequest
@@ -50,7 +49,7 @@ class MatchesController(private val matchService: MatchService) :
             val response = matchService.createMatch(
                 token,
                 createMatchRequest.userId,
-                UserType.getUserType(createMatchRequest.userType),
+                createMatchRequest.userType,
                 createMatchRequest.deckId
             )
             reportResponse(HttpStatus.CREATED, response)
