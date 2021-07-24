@@ -8,6 +8,7 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.Human
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.IA
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.User
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.accounts.user.UserType
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.MatchStatus
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
@@ -164,7 +165,7 @@ internal class MatchesControllerTest {
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken(id = "1"))
                 .thenReturn(listOf(userFactory.toEntity(humanOpponent)))
 
-            val response = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
+            val response = instance.createMatch(CreateMatchRequest("1", UserType.HUMAN, "0"), "token")
             assertEquals(201, response.statusCodeValue)
             val match = response.body!!
             assertEquals(0L, match.id)
@@ -208,7 +209,7 @@ internal class MatchesControllerTest {
                     )
                 )
 
-            val response = instance.createMatch(CreateMatchRequest("2", "IA", "0"), "token")
+            val response = instance.createMatch(CreateMatchRequest("2", UserType.IA, "0"), "token")
             assertEquals(201, response.statusCodeValue)
             val match = response.body!!
             assertEquals(0L, match.id)
@@ -221,7 +222,7 @@ internal class MatchesControllerTest {
         fun `Not create match by empty deck`() {
             `when`(deckRepositoryMock.findDeckByIdAndName("0")).thenReturn(emptyList())
 
-            val response = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
+            val response = instance.createMatch(CreateMatchRequest("1", UserType.HUMAN, "0"), "token")
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }
@@ -233,7 +234,7 @@ internal class MatchesControllerTest {
                 .thenReturn(listOf(userFactory.toEntity(user)))
             `when`(userRepositoryMock.getById(1L)).thenReturn(null)
 
-            val response = instance.createMatch(CreateMatchRequest("1", "HUMAN", "0"), "token")
+            val response = instance.createMatch(CreateMatchRequest("1", UserType.HUMAN, "0"), "token")
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
         }

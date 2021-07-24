@@ -1,10 +1,4 @@
 spring:
-  datasource:
-    driver-class-name: "com.mysql.cj.jdbc.Driver"
-    url: "jdbc:mysql://mysql_db:3306/heroCardsGame"
-    username: "root"
-    password: "secret"
-    initialization-mode: always
   jpa:
     hibernate:
       ddl-auto: update

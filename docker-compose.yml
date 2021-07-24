@@ -13,11 +13,14 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: heroCardsGame
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_DATABASE_FILE: /run/secrets/db_name
+    secrets:
+      - db_name
+      - db_password
 
   server:
-    image: fesposta/hero-cards-game-server:1.5
+    build: .
     restart: on-failure
     depends_on:
       - mysql_db
@@ -25,8 +28,17 @@ services:
       - 8080:8080
     environment:
       MYSQL_USER: root
-      MYSQL_PASSWORD: secret
-      MYSQL_DB: heroCardsGame
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_DB_FILE: /run/secrets/db_name
+    secrets:
+      - db_name
+      - db_password
+
+secrets:
+  db_name:
+    file: ./secrets/db_name.txt
+  db_password:
+    file: ./secrets/db_password.txt
 
 volumes:
   mysql-data:
