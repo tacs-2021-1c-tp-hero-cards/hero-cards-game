@@ -69,7 +69,3 @@ allOpen {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
-
-tasks.withType<Test> {
-    environment("ACCESS_TOKEN", "10226310284967175")
-}

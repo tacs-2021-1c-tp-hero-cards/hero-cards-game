@@ -5,9 +5,11 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration.client.api.ImageApi
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.mock
 import java.io.File
 
 internal class RestClientTest {
@@ -20,9 +22,10 @@ internal class RestClientTest {
     private class ClientMock(client: OkHttpClient) :
         RestClient(
             client = client,
-            host = "test.com",
-            accessToken = "ACCESS_TOKEN"
-        )
+            host = "test.com"
+        ){
+        override fun getAccessToken(): String = "ACCESS_TOKEN"
+    }
 
     @Test
     fun buildUrlWithUriParams() {

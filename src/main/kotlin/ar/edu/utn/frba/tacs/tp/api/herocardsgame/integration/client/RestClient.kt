@@ -6,15 +6,14 @@ import okhttp3.Request
 import okhttp3.Response
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.io.IOException
 
 abstract class RestClient(
     private var client: OkHttpClient = OkHttpClient(),
     private var protocol: String = "https://",
     private var host: String = "superheroapi.com",
-    private var baseUrl: String = "/api/",
-    //private var accessToken: String = System.getenv("ACCESS_TOKEN")
-    private var accessToken: String = "10225693555586194"
+    private var baseUrl: String = "/api/"
 ) {
 
     val log: Logger = LoggerFactory.getLogger(RestClient::class.java)
@@ -32,7 +31,7 @@ abstract class RestClient(
         val serviceUrlWithParams = uriParams.fold(serviceUrl) { url, uriParam ->
             url.replaceFirst("{}", uriParam)
         }
-        return protocol + host + baseUrl + accessToken + serviceUrlWithParams
+        return protocol + host + baseUrl + getAccessToken() + serviceUrlWithParams
     }
 
     fun run(url: String): Response {
@@ -47,4 +46,8 @@ abstract class RestClient(
             throw RuntimeException(e);
         }
     }
+
+    open fun getAccessToken(): String =
+        File(System.getenv("API_TOKEN_FILE")).bufferedReader().readText()
+
 }
