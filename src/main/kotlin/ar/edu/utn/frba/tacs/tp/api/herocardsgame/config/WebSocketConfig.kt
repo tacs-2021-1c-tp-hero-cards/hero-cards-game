@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.tacs.tp.api.herocardsgame.socket
+package ar.edu.utn.frba.tacs.tp.api.herocardsgame.config
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.messaging.simp.config.MessageBrokerRegistry
