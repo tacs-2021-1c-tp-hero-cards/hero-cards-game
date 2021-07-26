@@ -51,4 +51,3 @@ abstract class RestClient(
         File(System.getenv("API_TOKEN_FILE")).bufferedReader().readText()
 
 }
-
