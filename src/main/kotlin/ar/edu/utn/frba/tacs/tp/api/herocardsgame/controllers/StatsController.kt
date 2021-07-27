@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*
 
 @Controller
 @RequestMapping("/admin/stats")
-@CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
+@CrossOrigin(origins = ["http://localhost:5000"], allowedHeaders = ["*"])
 class StatsController(val statsService: StatsService) :
     AbstractController<StatsController>(StatsController::class.java) {
 

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMethod
 
 @Controller
-@CrossOrigin(origins = ["http://localhost:3000"], allowedHeaders = ["*"])
+@CrossOrigin(origins = ["http://localhost:5000"], allowedHeaders = ["*"])
 class CharacterController(val superHeroIntegration: SuperHeroIntegration) :
     AbstractController<CharacterController>(CharacterController::class.java) {
 

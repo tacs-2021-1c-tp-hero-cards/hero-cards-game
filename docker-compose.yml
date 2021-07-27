@@ -1,9 +1,9 @@
 version: "3.7"
 services:
   frontend:
-    image: fesposta/hero-cards-game-ui:1.5
+    image: fesposta/hero-cards-game-ui:1.6
     ports:
-      - 3000:5000
+      - 5000:5000
 
   mysql_db:
     image: mysql:8.0
