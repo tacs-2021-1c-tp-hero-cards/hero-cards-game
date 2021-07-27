@@ -8,7 +8,8 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CardMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.CharacterMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.CardEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.CardRepository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.utils.BuilderContextUtils
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -17,11 +18,12 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import org.springframework.context.annotation.Bean
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+import java.util.*
 
 internal class CardsControllerTest {
 
     lateinit var superHeroClientMock: SuperHeroClient
-    lateinit var dao: Dao
+    lateinit var cardRepositoryMock: CardRepository
     lateinit var cardIntegration: CardIntegration
     lateinit var superHeroIntegration: SuperHeroIntegration
     lateinit var instance: CardsController
@@ -36,7 +38,6 @@ internal class CardsControllerTest {
         context.register(CardsControllerTest::class.java)
         context.register(CardsController::class.java)
         context.register(CardIntegration::class.java)
-        context.register(Dao::class.java)
         context.register(SuperHeroIntegration::class.java)
         context.register(CardMapper::class.java)
         context.register(CharacterMapper::class.java)
@@ -47,8 +48,8 @@ internal class CardsControllerTest {
 
 
         superHeroClientMock = context.getBean(SuperHeroClient::class.java)
+        cardRepositoryMock = context.getBean(CardRepository::class.java)
         superHeroIntegration = context.getBean(SuperHeroIntegration::class.java)
-        dao = context.getBean(Dao::class.java)
         cardIntegration = context.getBean(CardIntegration::class.java)
         instance = context.getBean(CardsController::class.java)
     }
@@ -56,12 +57,15 @@ internal class CardsControllerTest {
     @Bean
     fun getSuperHeroClientBean(): SuperHeroClient = mock(SuperHeroClient::class.java)
 
+    @Bean
+    fun getCardRepository(): CardRepository = mock(CardRepository::class.java)
+
     @Nested
     inner class GetCard {
 
         @Test
         fun `Search by character id, returns all information of the character in database`() {
-            dao.saveCard(batmanII)
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batmanII)))
 
             val response = instance.getCard("70")
             assertEquals(200, response.statusCodeValue)
@@ -71,6 +75,8 @@ internal class CardsControllerTest {
 
         @Test
         fun `Search by character id, returns all information of the character`() {
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.empty())
+            `when`(cardRepositoryMock.save(CardEntity(batmanII))).thenReturn(CardEntity(batmanII))
             `when`(superHeroClientMock.getCharacter("70")).thenReturn(BuilderContextUtils.buildCharacterApi())
 
             val response = instance.getCard("70")
@@ -95,6 +101,9 @@ internal class CardsControllerTest {
         fun `Search character by name, returns all the information of the characters`() {
             `when`(superHeroClientMock.getCharacterByName("batman"))
                 .thenReturn(BuilderContextUtils.buildCharactersSearchApi())
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
+            `when`(cardRepositoryMock.save(CardEntity(batmanII))).thenReturn(CardEntity(batmanII))
+            `when`(cardRepositoryMock.save(CardEntity(batmanIII))).thenReturn(CardEntity(batmanIII))
 
             val response = instance.getCardByName("batman")
             assertEquals(200, response.statusCodeValue)
@@ -121,9 +130,8 @@ internal class CardsControllerTest {
 
         @Test
         fun `Exist saved cards in database`() {
-            dao.saveCard(batman)
-            dao.saveCard(batmanII)
-            dao.saveCard(batmanIII)
+            `when`(cardRepositoryMock.findAll())
+                .thenReturn(listOf(CardEntity(batman),CardEntity(batmanII),CardEntity(batmanIII)))
 
             val response = instance.getSavedCards()
             assertEquals(200, response.statusCodeValue)
@@ -137,6 +145,8 @@ internal class CardsControllerTest {
 
         @Test
         fun `No saved cards and generate list of random cards`() {
+            `when`(cardRepositoryMock.findAll()).thenReturn(emptyList())
+            `when`(cardRepositoryMock.save(CardEntity(batmanII))).thenReturn(CardEntity(batmanII))
             `when`(superHeroClientMock.getCharacter(anyString())).thenReturn(BuilderContextUtils.buildCharacterApi())
 
             cardIntegration.limitCard = 3

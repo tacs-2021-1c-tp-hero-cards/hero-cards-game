@@ -16,10 +16,11 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.DuelHistory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.match.Match
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.Player
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.player.PlayerHistory
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.CardEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.match.MatchFactory
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.user.UserFactory
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.CardRepository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.DeckRepository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.MatchRepository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.UserRepository
@@ -43,12 +44,14 @@ import org.mockito.Mockito.mock
 import org.springframework.context.annotation.Bean
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+import java.util.*
 
 internal class MatchesControllerTest {
 
     private lateinit var userRepositoryMock: UserRepository
     private lateinit var matchRepositoryMock: MatchRepository
     private lateinit var deckRepositoryMock: DeckRepository
+    private lateinit var cardRepositoryMock: CardRepository
     private lateinit var userFactory: UserFactory
     private lateinit var matchFactory: MatchFactory
     private lateinit var superHeroIntegrationMock: SuperHeroIntegration
@@ -85,7 +88,6 @@ internal class MatchesControllerTest {
         context.register(DeckService::class.java)
         context.register(DeckIntegration::class.java)
         context.register(UserIntegration::class.java)
-        context.register(Dao::class.java)
         context.register(NotificationClientService::class.java)
         context.register(UserFactory::class.java)
         context.register(MatchFactory::class.java)
@@ -96,6 +98,7 @@ internal class MatchesControllerTest {
         userRepositoryMock = context.getBean(UserRepository::class.java)
         matchRepositoryMock = context.getBean(MatchRepository::class.java)
         deckRepositoryMock = context.getBean(DeckRepository::class.java)
+        cardRepositoryMock = context.getBean(CardRepository::class.java)
         userFactory = context.getBean(UserFactory::class.java)
         matchFactory = context.getBean(MatchFactory::class.java)
         superHeroIntegrationMock = context.getBean(SuperHeroIntegration::class.java)
@@ -110,6 +113,9 @@ internal class MatchesControllerTest {
 
     @Bean
     fun getDeckRepository(): DeckRepository = mock(DeckRepository::class.java)
+
+    @Bean
+    fun getCardRepository(): CardRepository = mock(CardRepository::class.java)
 
     @Bean
     fun getSuperHeroIntegrationBean(): SuperHeroIntegration {
@@ -165,6 +171,9 @@ internal class MatchesControllerTest {
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken(id = "1"))
                 .thenReturn(listOf(userFactory.toEntity(humanOpponent)))
 
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
+
             val response = instance.createMatch(CreateMatchRequest("1", UserType.HUMAN, "0"), "token")
             assertEquals(201, response.statusCodeValue)
             val match = response.body!!
@@ -209,6 +218,9 @@ internal class MatchesControllerTest {
                     )
                 )
 
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
+
             val response = instance.createMatch(CreateMatchRequest("2", UserType.IA, "0"), "token")
             assertEquals(201, response.statusCodeValue)
             val match = response.body!!
@@ -233,6 +245,9 @@ internal class MatchesControllerTest {
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken(token = "token"))
                 .thenReturn(listOf(userFactory.toEntity(user)))
             `when`(userRepositoryMock.getById(1L)).thenReturn(null)
+
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             val response = instance.createMatch(CreateMatchRequest("1", UserType.HUMAN, "0"), "token")
             assertEquals(400, response.statusCodeValue)
@@ -283,6 +298,9 @@ internal class MatchesControllerTest {
                 .thenReturn(listOf(userFactory.toEntity(user)))
             `when`(matchRepositoryMock.save(newMatchEntity)).thenReturn(newMatchEntity)
 
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
+
             val response = instance.nextDuel("0", NextDuelRequest(DuelType.COMBAT), "token")
             assertEquals(200, response.statusCodeValue)
 
@@ -332,6 +350,9 @@ internal class MatchesControllerTest {
             `when`(matchRepositoryMock.getById(0L)).thenReturn(matchEntity)
             `when`(matchRepositoryMock.save(newMatchEntity)).thenReturn(newMatchEntity)
 
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
+
             val response = instance.nextDuel("0", NextDuelRequest(null), "token")
             assertEquals(200, response.statusCodeValue)
 
@@ -370,6 +391,9 @@ internal class MatchesControllerTest {
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken("0"))
                 .thenReturn(listOf(userFactory.toEntity(user)))
 
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
+
             val response = instance.nextDuel("0", NextDuelRequest(DuelType.COMBAT), "token")
             assertEquals(400, response.statusCodeValue)
             assertNull(response.body)
@@ -391,6 +415,9 @@ internal class MatchesControllerTest {
             `when`(matchRepositoryMock.getById(0L)).thenReturn(matchEntity)
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken("0"))
                 .thenReturn(listOf(userFactory.toEntity(user)))
+
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             val response = instance.nextDuel("0", NextDuelRequest(DuelType.COMBAT), "token2")
             assertEquals(400, response.statusCodeValue)
@@ -416,6 +443,8 @@ internal class MatchesControllerTest {
             )
 
             `when`(matchRepositoryMock.getById(0L)).thenReturn(matchEntity)
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             val response = instance.getMatch("0")
             assertEquals(200, response.statusCodeValue)
@@ -469,6 +498,8 @@ internal class MatchesControllerTest {
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken("0"))
                 .thenReturn(listOf(userFactory.toEntity(user)))
             `when`(matchRepositoryMock.save(newMatchEntity)).thenReturn(newMatchEntity)
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             val response = instance.abortMatch("0", "token")
             assertEquals(200, response.statusCodeValue)
@@ -505,6 +536,8 @@ internal class MatchesControllerTest {
             `when`(matchRepositoryMock.getById(0L)).thenReturn(matchEntity)
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken("0"))
                 .thenReturn(listOf(userFactory.toEntity(user)))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             instance.abortMatch("0", "token")
 
@@ -529,6 +562,8 @@ internal class MatchesControllerTest {
             `when`(matchRepositoryMock.getById(0L)).thenReturn(matchEntity)
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken("0"))
                 .thenReturn(listOf(userFactory.toEntity(user)))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             val response = instance.abortMatch("0", "token2")
             assertEquals(400, response.statusCodeValue)
@@ -572,6 +607,8 @@ internal class MatchesControllerTest {
                 .thenReturn(listOf(userFactory.toEntity(humanOpponent)))
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken(token = "token"))
                 .thenReturn(listOf(userFactory.toEntity(user)))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             val response =
                 instance.confirmMatch("0", MatchConfirmationRequest(true), "token")
@@ -620,6 +657,8 @@ internal class MatchesControllerTest {
                 .thenReturn(listOf(userFactory.toEntity(humanOpponent)))
             `when`(userRepositoryMock.findHumanByIdAndUserNameAndFullNameAndToken(token = "token"))
                 .thenReturn(listOf(userFactory.toEntity(user)))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             val response = instance.confirmMatch("0", MatchConfirmationRequest(false), "token")
             assertEquals(200, response.statusCodeValue)
@@ -649,6 +688,8 @@ internal class MatchesControllerTest {
             )
 
             `when`(matchRepositoryMock.getById(0L)).thenReturn(matchEntity)
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             val response =
                 instance.confirmMatch("0", MatchConfirmationRequest(false), "token")
@@ -684,6 +725,9 @@ internal class MatchesControllerTest {
             )
 
             `when`(matchRepositoryMock.findMatchByCreatedUserId(0L)).thenReturn(listOf(matchEntity))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
+
             val response = instance.getMatchByUserId("0", true)
             assertEquals(200, response.statusCodeValue)
 
@@ -721,6 +765,8 @@ internal class MatchesControllerTest {
             )
 
             `when`(matchRepositoryMock.findMatchByUserId(0L)).thenReturn(listOf(matchEntity))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batman)))
+            `when`(cardRepositoryMock.save(CardEntity(batman))).thenReturn(CardEntity(batman))
 
             val response = instance.getMatchByUserId("0", false)
             assertEquals(200, response.statusCodeValue)

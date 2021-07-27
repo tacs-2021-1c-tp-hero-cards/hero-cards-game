@@ -20,6 +20,7 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -51,6 +52,7 @@ dependencies {
 
     runtimeOnly("mysql:mysql-connector-java")
     runtimeOnly("com.h2database:h2")
+    implementation("io.lettuce:lettuce-core:6.1.4.RELEASE")
 }
 
 tasks.withType<KotlinCompile> {

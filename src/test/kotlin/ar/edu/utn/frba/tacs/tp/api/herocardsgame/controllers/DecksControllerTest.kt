@@ -11,9 +11,10 @@ import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.ImageMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.mapper.PowerstatsMapper
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.Deck
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.deck.DeckHistory
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.CardEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckEntity
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.deck.DeckHistoryEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.CardRepository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.DeckRepository
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.CreateDeckRequest
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.request.UpdateDeckRequest
@@ -27,11 +28,14 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.springframework.context.annotation.Bean
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+import java.util.*
 
 internal class DecksControllerTest {
 
     lateinit var superHeroClientMock: SuperHeroClient
     lateinit var repositoryMock: DeckRepository
+    lateinit var cardRepositoryMock: CardRepository
+    lateinit var cardMapper: CardMapper
     lateinit var instance: DecksController
 
     private val batmanII = BuilderContextUtils.buildBatmanII()
@@ -53,13 +57,14 @@ internal class DecksControllerTest {
         context.register(ImageMapper::class.java)
         context.register(SuperHeroIntegration::class.java)
         context.register(CardIntegration::class.java)
-        context.register(Dao::class.java)
 
         context.refresh()
         context.start()
 
         superHeroClientMock = context.getBean(SuperHeroClient::class.java)
         repositoryMock = context.getBean(DeckRepository::class.java)
+        cardRepositoryMock = context.getBean(CardRepository::class.java)
+        cardMapper = context.getBean(CardMapper::class.java)
         instance = context.getBean(DecksController::class.java)
     }
 
@@ -69,6 +74,9 @@ internal class DecksControllerTest {
     @Bean
     fun getDeckRepository(): DeckRepository = mock(DeckRepository::class.java)
 
+    @Bean
+    fun getCardRepository(): CardRepository = mock(CardRepository::class.java)
+
     @Nested
     inner class GetDecks {
 
@@ -76,6 +84,8 @@ internal class DecksControllerTest {
         fun `Search all decks`() {
             `when`(superHeroClientMock.getCharacter("70")).thenReturn(characterApi)
             `when`(repositoryMock.findDeckByIdAndName()).thenReturn(listOf(deckEntity))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batmanII)))
+            `when`(cardRepositoryMock.save(CardEntity(batmanII))).thenReturn(CardEntity(batmanII))
 
             val response = instance.getDecks()
             assertEquals(200, response.statusCodeValue)
@@ -103,6 +113,8 @@ internal class DecksControllerTest {
         fun `Search by deck id`() {
             `when`(superHeroClientMock.getCharacter("70")).thenReturn(characterApi)
             `when`(repositoryMock.findDeckByIdAndName("0")).thenReturn(listOf(deckEntity))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batmanII)))
+            `when`(cardRepositoryMock.save(CardEntity(batmanII))).thenReturn(CardEntity(batmanII))
 
             val response = instance.getDeckByIdOrName("0", null)
             assertEquals(200, response.statusCodeValue)
@@ -126,6 +138,8 @@ internal class DecksControllerTest {
         fun `Search by deck name`() {
             `when`(superHeroClientMock.getCharacter("70")).thenReturn(characterApi)
             `when`(repositoryMock.findDeckByIdAndName(null, "deckNameTest")).thenReturn(listOf(deckEntity))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batmanII)))
+            `when`(cardRepositoryMock.save(CardEntity(batmanII))).thenReturn(CardEntity(batmanII))
 
             val response = instance.getDeckByIdOrName(null, "deckNameTest")
             assertEquals(200, response.statusCodeValue)
@@ -149,6 +163,8 @@ internal class DecksControllerTest {
         fun `Search by deck name and id`() {
             `when`(superHeroClientMock.getCharacter("70")).thenReturn(characterApi)
             `when`(repositoryMock.findDeckByIdAndName("0", "deckNameTest")).thenReturn(listOf(deckEntity))
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batmanII)))
+            `when`(cardRepositoryMock.save(CardEntity(batmanII))).thenReturn(CardEntity(batmanII))
 
             val response = instance.getDeckByIdOrName("0", "deckNameTest")
             assertEquals(200, response.statusCodeValue)
@@ -196,6 +212,8 @@ internal class DecksControllerTest {
         fun `Create deck`() {
             `when`(superHeroClientMock.getCharacter("70")).thenReturn(characterApi)
             `when`(repositoryMock.save(deckEntity.copy(id = null))).thenReturn(deckEntity)
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batmanII)))
+            `when`(cardRepositoryMock.save(CardEntity(batmanII))).thenReturn(CardEntity(batmanII))
 
             val response = instance.createDeck(CreateDeckRequest("deckNameTest", listOf("70")))
             assertEquals(201, response.statusCodeValue)
@@ -216,6 +234,9 @@ internal class DecksControllerTest {
         fun `Not create deck by invalid powerstats card`() {
             `when`(superHeroClientMock.getCharacter("124"))
                 .thenReturn(BuilderContextUtils.buildCharacterApiWithInvalidPowerstats())
+            `when`(cardRepositoryMock.findById("124")).thenReturn(Optional.empty())
+            val cardInvalidPowerstats = CardEntity(cardMapper.map(BuilderContextUtils.buildCharacterApiWithInvalidPowerstats()))
+            `when`(cardRepositoryMock.save(cardInvalidPowerstats)).thenReturn(cardInvalidPowerstats)
 
             val response = instance.createDeck(CreateDeckRequest("deckNameTest", listOf("124")))
             assertEquals(400, response.statusCodeValue)
@@ -244,6 +265,8 @@ internal class DecksControllerTest {
                         deckHistory = listOf(deckHistoryEntity.copy(id = 0))
                     )
                 )
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.of(CardEntity(batmanII)))
+            `when`(cardRepositoryMock.save(CardEntity(batmanII))).thenReturn(CardEntity(batmanII))
 
             val response = instance.updateDeck("0", UpdateDeckRequest("deckNameTest2", null))
             assertEquals(200, response.statusCodeValue)
@@ -264,6 +287,14 @@ internal class DecksControllerTest {
             `when`(repositoryMock.getById(0L)).thenReturn(deckEntity)
             `when`(repositoryMock.save(deckEntity.copy(cardIds = "71", deckHistory = listOf(deckHistoryEntity))))
                 .thenReturn(deckEntity.copy(cardIds = "71", deckHistory = listOf(deckHistoryEntity.copy(id = 0))))
+
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.empty())
+            val cardEntity = CardEntity(cardMapper.map(characterApi))
+            `when`(cardRepositoryMock.save(cardEntity)).thenReturn(cardEntity)
+
+            `when`(cardRepositoryMock.findById("71")).thenReturn(Optional.empty())
+            val cardEntity2 = CardEntity(cardMapper.map(characterApi.copy(id = "71")))
+            `when`(cardRepositoryMock.save(cardEntity2)).thenReturn(cardEntity2)
 
             val response = instance.updateDeck("0", UpdateDeckRequest(null, listOf("71")))
             assertEquals(200, response.statusCodeValue)
@@ -299,6 +330,14 @@ internal class DecksControllerTest {
                     )
                 )
 
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.empty())
+            val cardEntity = CardEntity(cardMapper.map(characterApi))
+            `when`(cardRepositoryMock.save(cardEntity)).thenReturn(cardEntity)
+
+            `when`(cardRepositoryMock.findById("71")).thenReturn(Optional.empty())
+            val cardEntity2 = CardEntity(cardMapper.map(characterApi.copy(id = "71")))
+            `when`(cardRepositoryMock.save(cardEntity2)).thenReturn(cardEntity2)
+
             val response = instance.updateDeck("0", UpdateDeckRequest("deckNameTest2", listOf("71")))
             assertEquals(200, response.statusCodeValue)
             assertEquals(
@@ -326,6 +365,18 @@ internal class DecksControllerTest {
             `when`(superHeroClientMock.getCharacter("70")).thenReturn(characterApi)
             `when`(superHeroClientMock.getCharacter("71")).thenReturn(characterApi)
             `when`(superHeroClientMock.getCharacter("124")).thenReturn(BuilderContextUtils.buildCharacterApiWithInvalidPowerstats())
+
+            `when`(cardRepositoryMock.findById("70")).thenReturn(Optional.empty())
+            val cardEntity = CardEntity(cardMapper.map(characterApi))
+            `when`(cardRepositoryMock.save(cardEntity)).thenReturn(cardEntity)
+
+            `when`(cardRepositoryMock.findById("71")).thenReturn(Optional.empty())
+            val cardEntity2 = CardEntity(cardMapper.map(characterApi))
+            `when`(cardRepositoryMock.save(cardEntity2)).thenReturn(cardEntity2)
+
+            `when`(cardRepositoryMock.findById("71")).thenReturn(Optional.empty())
+            val cardEntity3 = CardEntity(cardMapper.map(BuilderContextUtils.buildCharacterApiWithInvalidPowerstats()))
+            `when`(cardRepositoryMock.save(cardEntity3)).thenReturn(cardEntity3)
 
             `when`(repositoryMock.getById(0L)).thenReturn(deckEntity)
 

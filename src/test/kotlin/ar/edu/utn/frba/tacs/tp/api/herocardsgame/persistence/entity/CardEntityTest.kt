@@ -2,12 +2,12 @@ package ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Powerstats
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class CardEntityTest {
 
-    private val id = 69L
+    private val id = "69"
     private val name = "Batman"
     private val height = 178
     private val weight = 77
@@ -20,7 +20,7 @@ internal class CardEntityTest {
 
     @Test
     fun toEntity() {
-        val model = Card(id, name, Powerstats(height, weight, intelligence, speed, power, combat, strength), imageUrl)
+        val model = Card(id.toLong(), name, Powerstats(height, weight, intelligence, speed, power, combat, strength), imageUrl)
 
         val entity = CardEntity(model)
         assertEquals(id, entity.id)
@@ -39,7 +39,7 @@ internal class CardEntityTest {
     fun toModel() {
         val entity = CardEntity(
             Card(
-                id,
+                id.toLong(),
                 name,
                 Powerstats(height, weight, intelligence, speed, power, combat, strength),
                 imageUrl
@@ -47,7 +47,7 @@ internal class CardEntityTest {
         )
 
         val model = entity.toModel()
-        assertEquals(id, model.id)
+        assertEquals(id.toLong(), model.id)
         assertEquals(name, model.name)
         assertEquals(height, model.powerstats.height)
         assertEquals(weight, model.powerstats.weight)

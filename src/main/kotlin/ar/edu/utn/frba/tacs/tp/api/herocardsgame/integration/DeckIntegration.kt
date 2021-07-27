@@ -26,7 +26,6 @@ class DeckIntegration(private val cardIntegration: CardIntegration, private val 
             .plus(deck.cards)
             .distinct()
 
-        deck.cards.map { cardIntegration.saveCard(it) }
         return repository.save(DeckEntity(deck)).toModel(allCards)
     }
 
