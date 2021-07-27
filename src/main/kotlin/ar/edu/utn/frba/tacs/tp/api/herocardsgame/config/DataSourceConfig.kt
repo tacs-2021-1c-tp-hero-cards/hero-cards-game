@@ -33,5 +33,5 @@ class DataSourceConfig(
         LettuceConnectionFactory(RedisStandaloneConfiguration("redis_db", 6380))
 
 
-    private fun readProperty(pathName: String) = File(pathName).bufferedReader().readText()
+    private fun readProperty(pathName: String) = File(pathName).bufferedReader().readText().trim()
 }
