@@ -1,35 +1,36 @@
 package ar.edu.utn.frba.tacs.tp.api.herocardsgame.integration
 
 import ar.edu.utn.frba.tacs.tp.api.herocardsgame.models.game.Card
-import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.Dao
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.entity.CardEntity
+import ar.edu.utn.frba.tacs.tp.api.herocardsgame.persistence.repository.CardRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 
 @Component
-class CardIntegration(private val dao: Dao, private val superHeroIntegration: SuperHeroIntegration) {
+class CardIntegration(
+    private val superHeroIntegration: SuperHeroIntegration,
+    private val repository: CardRepository
+) {
 
     var limitCard: Int = 20
 
-    fun saveCard(card: Card): Card {
-        val allCard = dao.getAllCard()
+    fun getCardById(id: String): Card =
+        (repository.findByIdOrNull(id) ?: repository.save(CardEntity(superHeroIntegration.getCard(id)))).toModel()
 
-        return when {
-            allCard.any { card.id == it.id } -> dao.saveCard(card)
-            allCard.size < limitCard -> dao.saveCard(card)
-            else -> {
-                dao.removeLastUse()
-                dao.saveCard(card)
-            }
-        }.toModel()
+    fun searchCardByName(characterName: String): List<Card> {
+        val cards = superHeroIntegration.searchCardByName(characterName)
+        return saveAll(cards)
     }
 
-    fun getCardById(id: String): Card =
-        dao.getAllCard().find { it.id == id.toLong() }?.toModel() ?: superHeroIntegration.getCard(id)
-
-    fun searchCardByName(characterName: String): List<Card> = superHeroIntegration.searchCardByName(characterName)
-
     fun getSavedCards(): List<Card> =
-        dao.getAllCard()
+        repository.findAll()
             .map { it.toModel() }
-            .ifEmpty { superHeroIntegration.getRandomCards(limitCard) }
+            .ifEmpty {
+                val cards = superHeroIntegration.getRandomCards(limitCard)
+                return saveAll(cards)
+            }
+
+    private fun saveAll(cards: List<Card>) =
+        cards.map { repository.save(CardEntity(it)).toModel() }
 
 }

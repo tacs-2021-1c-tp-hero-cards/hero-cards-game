@@ -23,11 +23,21 @@ services:
       - db_top_password
       - db_password
 
+  redis_db:
+    image: redis
+    restart: always
+    ports:
+      - 6380:6380
+    volumes:
+      - redis-data:/var/lib/redis
+    command: redis-server --port 6380
+
   server:
-    image: fesposta/hero-cards-game-server:1.5
+    build: .
     restart: on-failure
     depends_on:
       - mysql_db
+      - redis_db
     ports:
       - 8080:8080
     environment:
@@ -55,3 +65,4 @@ secrets:
 
 volumes:
   mysql-data:
+  redis-data:

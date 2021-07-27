@@ -95,9 +95,7 @@ internal class DeckIntegrationTest {
     @Test
     fun saveDeck() {
         `when`(cardIntegrationMock.getCardById(batman.id.toString())).thenReturn(batman)
-        `when`(cardIntegrationMock.saveCard(batman)).thenReturn(batman)
         `when`(cardIntegrationMock.getCardById(flash.id.toString())).thenReturn(flash)
-        `when`(cardIntegrationMock.saveCard(flash)).thenReturn(flash)
         `when`(repositoryMock.save(deckEntity)).thenReturn(deckEntity)
 
         instance.saveDeck(deck)
